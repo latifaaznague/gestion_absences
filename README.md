@@ -7,13 +7,10 @@ Système distribué pour la gestion des présences et absences des étudiants de
 
 ## 📋 Table des matières
 - [Description](#description)
-- [Architecture](#architecture)
 - [Base de données](#base-de-données)
 - [Installation](#installation)
 - [Utilisation](#utilisation)
 - [Données de test](#données-de-test)
-- [Équipe](#équipe)
-
 ---
 
 ## 📖 Description
