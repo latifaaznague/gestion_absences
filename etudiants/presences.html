@@ -1,0 +1,14 @@
+<h2>Mes Présences</h2>
+<table >
+<tr>
+    <th>ID</th><th>Séance</th><th>Statut</th><th>Date</th>
+</tr>
+{% for p in presences %}
+<tr>
+    <td>{{ p.id }}</td>
+    <td>{{ p.seance_id }}</td>
+    <td>{{ p.statut }}</td>
+    <td>{{ p.date_saisie }}</td>
+</tr>
+{% endfor %}
+</table>

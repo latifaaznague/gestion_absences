@@ -1,0 +1,12 @@
+<h2>Marquer Présence</h2>
+<form method="post">{% csrf_token %}
+    Etudiant ID: <input type="number" name="etudiant_id"><br>
+    Séance ID: <input type="number" name="seance_id"><br>
+    Statut: 
+    <select name="statut">
+        <option value="présent">Présent</option>
+        <option value="absent">Absent</option>
+        <option value="justifié">Justifié</option>
+    </select><br>
+    <button type="submit">Marquer</button>
+</form>
