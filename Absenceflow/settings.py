@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'Home',
     'etudiants',
     'professeurs',
     'administration',
@@ -79,8 +79,12 @@ WSGI_APPLICATION = 'Absenceflow.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'gestion_absences',
+        'USER': 'postgres',
+        'PASSWORD': '2032Houda!!', 
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
