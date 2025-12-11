@@ -6,3 +6,5 @@ __pycache__/
 *.pyo
 *.pyd
 .env
+local_settings.py
+db_dev.sqlite3

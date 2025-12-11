@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'Absenceflow',
     'Home',
     'etudiants',
     'professeurs',
@@ -131,3 +132,9 @@ STATIC_URL = 'static/'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+#hadchi sedto bach nkhdem ana localement b sqllite
+try:
+    from .local_settings import *
+except ImportError:
+    pass
