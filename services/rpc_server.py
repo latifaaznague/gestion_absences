@@ -1,43 +1,71 @@
 from jsonrpcserver import method, serve
-from db import execute_query
+from Absenceflow.models import Professeur, Groupe, Seance, Presence, Planning
+from etudiants.models import Etudiant
+from django.shortcuts import get_object_or_404
+from datetime import date
+
+# -------------------------------
+# Méthodes RPC exposées
+# -------------------------------
 
 @method
-def marquer_presence(etudiant_id: int, seance_id: int, statut: str):
-    query = """
-        INSERT INTO presence (etudiant_id, seance_id, statut, date_saisie)
-        VALUES (%s, %s, %s, NOW())
-        RETURNING id;
-    """
-    row = execute_query(query, (etudiant_id, seance_id, statut), fetch_one=True)
-    return {"presence_id": row[0]}
+def cours_du_jour_rpc(prof_id: int):
+    prof = Professeur.objects.get(id=prof_id)
+    seances = prof.voir_cours_du_jour()
+    return [{"id": s.id, "date": str(s.date), "groupe": s.groupe.nom, "salle": s.salle} for s in seances]
 
 @method
-def get_presences(etudiant_id: int):
-    query = "SELECT id, etudiant_id, seance_id, statut, date_saisie FROM presence WHERE etudiant_id = %s"
-    rows = execute_query(query, (etudiant_id,), fetch_all=True)
-    result = []
-    for r in rows or []:
-        result.append({
-            "id": r[0],
-            "etudiant_id": r[1],
-            "seance_id": r[2],
-            "statut": r[3],
-            "date_saisie": str(r[4])
-        })
-    return result
-
+def marquer_presence_rpc(prof_id: int, groupe_id: int, seance_id: int):
+    prof = Professeur.objects.get(id=prof_id)
+    groupe = Groupe.objects.get(id=groupe_id)
+    seance = Seance.objects.get(id=seance_id)
+    prof.marquer_presence(groupe, seance)
+    return {"message": "Présences marquées avec succès"}
 
 @method
-def valider_seance(seance_id: int, validation: bool):
-    """
-    Met à jour le champ 'valide' dans la table seance.
-    """
-    query = "UPDATE seance SET valide = %s WHERE id = %s RETURNING id;"
-    row = execute_query(query, (validation, seance_id), fetch_one=True)
-    if row is None:
-        return {"status": "not_found", "seance_id": seance_id}
-    return {"status": "ok", "seance_id": row[0], "validation": validation}
+def statistiques_seance_rpc(seance_id: int):
+    seance = Seance.objects.get(id=seance_id)
+    prof = seance.professeur
+    stats = prof.voir_statistiques(seance)
+    return stats
 
+@method
+def donnees_graphique_rpc(seance_id: int):
+    seance = Seance.objects.get(id=seance_id)
+    prof = seance.professeur
+    return prof.voir_donnees_graphique(seance)
+
+@method
+def taux_presence_moyen_rpc(prof_id: int):
+    prof = Professeur.objects.get(id=prof_id)
+    taux = prof.voir_taux_presence_moyen()
+    return {"taux_moyen": taux}
+
+@method
+def liste_etudiants_rpc(groupe_id: int):
+    groupe = Groupe.objects.get(id=groupe_id)
+    return [{"id": e.id, "nom": e.nom, "prenom": e.prenom, "email": e.email} for e in groupe.etudiant_set.all()]
+
+@method
+def historique_etudiant_rpc(etudiant_id: int):
+    etudiant = Etudiant.objects.get(id=etudiant_id)
+    presences = Presence.objects.filter(etudiant=etudiant)
+    return [{"seance": p.seance.id, "date": str(p.seance.date), "statut": p.statut} for p in presences]
+
+@method
+def tableau_de_bord_rpc(prof_id: int):
+    prof = Professeur.objects.get(id=prof_id)
+    return prof.voir_tableau_bord()
+
+@method
+def presence_globale_rpc(prof_id: int):
+    prof = Professeur.objects.get(id=prof_id)
+    presences = prof.voir_presence_globale()
+    return [{"etudiant": p.etudiant.nom, "seance": p.seance.id, "statut": p.statut} for p in presences]
+
+# -------------------------------
+# Lancement du serveur RPC
+# -------------------------------
 if __name__ == "__main__":
-    print("Starting RPC Server...")
-    serve()
+    print("Starting RPC Server on http://localhost:5000")
+    serve("localhost", 5000)

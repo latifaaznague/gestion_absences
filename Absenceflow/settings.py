@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'etudiants',
     'professeurs',
     'administration',
+    #"jsonrpc",
 
 ]
 
