@@ -1,68 +1,97 @@
-import socket
+import requests
 import json
 
-HOST = "127.0.0.1"
-PORT = 5000
-TIMEOUT_SECONDS = 5  # timeout réseau
+RPC_URL = "http://127.0.0.1:5000/"
 
-def _call(method, params=None):
-    """
-    Envoie une requête JSON-RPC au serveur (tcp) avec gestion
-    du timeout et des erreurs réseau.
-    """
-    if params is None:
-        params = {}
-
+def call_rpc(method, params):
+    """Fonction générique pour appeler le serveur RPC"""
     payload = {
         "jsonrpc": "2.0",
         "method": method,
         "params": params,
         "id": 1
     }
-    data = json.dumps(payload) + "\n"
-
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(TIMEOUT_SECONDS)
+    
+    try:
+        response = requests.post(RPC_URL, json=payload, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        return {"status": "error", "message": f"Erreur réseau : {str(e)}"}
 
     try:
-        s.connect((HOST, PORT))
-        s.sendall(data.encode("utf-8"))
+        data = response.json()
+    except json.JSONDecodeError:
+        return {"status": "error", "message": "Réponse invalide du serveur"}
 
-        buffer = s.recv(4096).decode("utf-8")
+    # Gestion des erreurs JSON-RPC
+    if "error" in data:
+        error_msg = data["error"].get("message", "Erreur serveur")
+        return {"status": "error", "message": error_msg}
+    
+    # Si succès
+    if "result" in data:
+        result = data["result"]
+        # Vérifier si c'est un objet Success de jsonrpcserver
+        if isinstance(result, dict) and "value" in result:
+            return result["value"]
+        return result
+    
+    return {"status": "error", "message": "Réponse inattendue du serveur"}
 
-    except socket.timeout:
-        # Timeout : le serveur ne répond pas à temps
-        raise Exception("Erreur réseau : timeout lors de l'appel RPC")
+# =========================================
+# FONCTIONS CLIENT
+# =========================================
 
-    except OSError as e:
-        # Problème de connexion ou autre erreur réseau
-        raise Exception(f"Erreur réseau lors de l'appel RPC : {e}")
+def login_etudiant(email, mot_de_passe):
+    """Connexion étudiant"""
+    return call_rpc("login_etudiant", {"email": email, "mot_de_passe": mot_de_passe})
 
-    finally:
-        s.close()
+def get_info_etudiant(etudiant_id):
+    """Récupère les informations complètes d'un étudiant"""
+    return call_rpc("get_info_etudiant", {"etudiant_id": etudiant_id})
 
-    # Traitement de la réponse JSON-RPC
-    response = json.loads(buffer)
-    if "error" in response:
-        raise Exception(f"Erreur RPC : {response['error']}")
+def get_groupes_etudiant(etudiant_id):
+    """Récupère les groupes d'un étudiant"""
+    return call_rpc("get_groupes_etudiant", {"etudiant_id": etudiant_id})
 
-    return response.get("result")
+def get_seances_aujourdhui(etudiant_id):
+    """Récupère les séances d'aujourd'hui pour un étudiant"""
+    return call_rpc("get_seances_aujourdhui", {"etudiant_id": etudiant_id})
 
-def marquer_presence(etudiant_id, seance_id, statut):
-    return _call("marquer_presence", {
+def get_seances_semaine(etudiant_id):
+    """Récupère les séances de la semaine pour un étudiant"""
+    return call_rpc("get_seances_semaine", {"etudiant_id": etudiant_id})
+
+def get_absences_etudiant(etudiant_id):
+    """Récupère les absences d'un étudiant"""
+    return call_rpc("get_absences_etudiant", {"etudiant_id": etudiant_id})
+
+def get_notifications_etudiant(etudiant_id, non_lues_seulement=False):
+    """Récupère les notifications d'un étudiant"""
+    params = {"etudiant_id": etudiant_id}
+    if non_lues_seulement:
+        params["non_lues_seulement"] = non_lues_seulement
+    return call_rpc("get_notifications_etudiant", params)
+
+def marquer_notifications_lues(etudiant_id):
+    """Marque toutes les notifications comme lues"""
+    return call_rpc("marquer_notifications_lues", {"etudiant_id": etudiant_id})
+
+def get_statistiques_presence(etudiant_id):
+    """Récupère les statistiques de présence d'un étudiant"""
+    return call_rpc("get_statistiques_presence", {"etudiant_id": etudiant_id})
+
+def get_presences_etudiant(etudiant_id, statut=None):
+    """Récupère toutes les présences d'un étudiant avec filtre optionnel"""
+    params = {"etudiant_id": etudiant_id}
+    if statut:
+        params["statut"] = statut
+    return call_rpc("get_presences_etudiant", params)
+
+def ajouter_justification_absence(etudiant_id, presence_id, justification):
+    """Ajoute une justification à une absence"""
+    return call_rpc("ajouter_justification_absence", {
         "etudiant_id": etudiant_id,
-        "seance_id": seance_id,
-        "statut": statut
+        "presence_id": presence_id,
+        "justification": justification
     })
-
-def get_presences(etudiant_id):
-    return _call("get_presences", {
-        "etudiant_id": etudiant_id
-    })
-
-def valider_seance(seance_id, validation: bool):
-    return _call("valider_seance", {
-        "seance_id": seance_id,
-        "validation": validation
-    })
-

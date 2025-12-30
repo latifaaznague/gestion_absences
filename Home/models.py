@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.auth.models import AbstractBaseUser
 
 # ============================================
 # Modèle: Filiere
@@ -25,7 +24,8 @@ class Filiere(models.Model):
 class Promotion(models.Model):
     libelle = models.CharField(max_length=100)
     annee_scolaire = models.CharField(max_length=20)
-    filiere = models.ForeignKey(Filiere, on_delete=models.CASCADE, related_name='promotions')
+    # SEUL CHANGEMENT: Ajout de db_column='filiere_id'
+    filiere = models.ForeignKey(Filiere, on_delete=models.CASCADE, db_column='filiere_id', related_name='promotions')
     
     class Meta:
         db_table = 'promotion'
@@ -70,10 +70,12 @@ class Utilisateur(models.Model):
 # Modèle: Administrateur
 # ============================================
 class Administrateur(models.Model):
+    # CHANGEMENT CRITIQUE: db_column='id' car dans la BD c'est 'id', pas 'utilisateur_id'
     utilisateur = models.OneToOneField(
         Utilisateur, 
         on_delete=models.CASCADE, 
         primary_key=True,
+        db_column='id',  # <-- CHANGEMENT ICI
         related_name='admin_profile'
     )
     
@@ -90,10 +92,12 @@ class Administrateur(models.Model):
 # Modèle: Professeur
 # ============================================
 class Professeur(models.Model):
+    # CHANGEMENT CRITIQUE: db_column='id' car dans la BD c'est 'id', pas 'utilisateur_id'
     utilisateur = models.OneToOneField(
         Utilisateur, 
         on_delete=models.CASCADE, 
         primary_key=True,
+        db_column='id',  # <-- CHANGEMENT ICI
         related_name='prof_profile'
     )
     specialite = models.CharField(max_length=100, blank=True, null=True)
@@ -108,20 +112,24 @@ class Professeur(models.Model):
 
 
 # ============================================
-# Modèle: Etudiant
+# Modèle: Etudiant (CHANGEMENTS IMPORTANTS)
 # ============================================
 class Etudiant(models.Model):
+    # CHANGEMENT CRITIQUE: db_column='id' car dans la BD c'est 'id' (clé étrangère vers Utilisateur)
     utilisateur = models.OneToOneField(
         Utilisateur, 
         on_delete=models.CASCADE, 
         primary_key=True,
+        db_column='id',  # <-- CHANGEMENT ICI
         related_name='etudiant_profile'
     )
+    # CHANGEMENT: db_column='promotion_id'
     promotion = models.ForeignKey(
         Promotion, 
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True,
+        db_column='promotion_id',  # <-- CHANGEMENT ICI
         related_name='etudiants'
     )
     code_etudiant = models.CharField(max_length=50, unique=True)
@@ -136,6 +144,11 @@ class Etudiant(models.Model):
     
     def __str__(self):
         return f"{self.code_etudiant} - {self.utilisateur.prenom} {self.utilisateur.nom}"
+    
+    # Propriété pour accéder à l'ID utilisateur facilement
+    @property
+    def id(self):
+        return self.utilisateur.id
 
 
 # ============================================
@@ -143,8 +156,8 @@ class Etudiant(models.Model):
 # ============================================
 class Groupe(models.Model):
     nom = models.CharField(max_length=100)
-    promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE, related_name='groupes')
-    etudiants = models.ManyToManyField(Etudiant, through='EtudiantGroupe', related_name='groupes')
+    # CHANGEMENT: db_column='promotion_id'
+    promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE, db_column='promotion_id', related_name='groupes')
     
     class Meta:
         db_table = 'groupe'
@@ -159,8 +172,9 @@ class Groupe(models.Model):
 # Modèle: EtudiantGroupe (table association)
 # ============================================
 class EtudiantGroupe(models.Model):
-    etudiant = models.ForeignKey(Etudiant, on_delete=models.CASCADE)
-    groupe = models.ForeignKey(Groupe, on_delete=models.CASCADE)
+    # CHANGEMENTS: Ajout de db_column
+    etudiant = models.ForeignKey(Etudiant, on_delete=models.CASCADE, db_column='etudiant_id')
+    groupe = models.ForeignKey(Groupe, on_delete=models.CASCADE, db_column='groupe_id')
     
     class Meta:
         db_table = 'etudiant_groupe'
@@ -179,11 +193,13 @@ class Cours(models.Model):
     code = models.CharField(max_length=50, unique=True)
     libelle = models.CharField(max_length=150)
     volume_horaire = models.IntegerField(default=0)
+    # CHANGEMENT: db_column='professeur_id'
     professeur = models.ForeignKey(
         Professeur, 
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True,
+        db_column='professeur_id',  # <-- CHANGEMENT ICI
         related_name='cours'
     )
     
@@ -202,11 +218,13 @@ class Cours(models.Model):
 class Planning(models.Model):
     semaine = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(52)])
     annee = models.IntegerField()
+    # CHANGEMENT: db_column='administrateur_id'
     administrateur = models.ForeignKey(
         Administrateur, 
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True,
+        db_column='administrateur_id',  # <-- CHANGEMENT ICI
         related_name='plannings'
     )
     date_creation = models.DateTimeField(auto_now_add=True)
@@ -228,9 +246,10 @@ class Seance(models.Model):
     heure_debut = models.TimeField()
     heure_fin = models.TimeField()
     salle = models.CharField(max_length=50, blank=True, null=True)
-    cours = models.ForeignKey(Cours, on_delete=models.CASCADE, related_name='seances')
-    groupe = models.ForeignKey(Groupe, on_delete=models.CASCADE, related_name='seances')
-    planning = models.ForeignKey(Planning, on_delete=models.CASCADE, related_name='seances')
+    # CHANGEMENTS: db_column pour toutes les clés étrangères
+    cours = models.ForeignKey(Cours, on_delete=models.CASCADE, db_column='cours_id', related_name='seances')
+    groupe = models.ForeignKey(Groupe, on_delete=models.CASCADE, db_column='groupe_id', related_name='seances')
+    planning = models.ForeignKey(Planning, on_delete=models.CASCADE, db_column='planning_id', related_name='seances')
     
     class Meta:
         db_table = 'seance'
@@ -259,13 +278,25 @@ class Presence(models.Model):
         ('ABSENT_JUSTIFIE', 'Absent Justifié'),
         ('ABSENT_NON_JUSTIFIE', 'Absent Non Justifié'),
     ]
-    
+    STATUT_JUSTIFICATION_CHOICES = [
+        ('EN_ATTENTE', 'En attente'),
+        ('ACCEPTEE', 'Acceptée'),
+        ('REFUSEE', 'Refusée'),
+    ]
     statut = models.CharField(max_length=30, choices=STATUT_CHOICES)
     justification = models.TextField(blank=True, null=True)
     fichier_justificatif = models.BinaryField(blank=True, null=True)
+    statut_justification = models.CharField(  # NOUVEAU: statut de validation
+        max_length=20, 
+        choices=STATUT_JUSTIFICATION_CHOICES, 
+        default='EN_ATTENTE',
+        blank=True,
+        null=True
+    )
     date_saisie = models.DateTimeField(auto_now_add=True)
-    etudiant = models.ForeignKey(Etudiant, on_delete=models.CASCADE, related_name='presences')
-    seance = models.ForeignKey(Seance, on_delete=models.CASCADE, related_name='presences')
+    # CHANGEMENTS: db_column pour les clés étrangères
+    etudiant = models.ForeignKey(Etudiant, on_delete=models.CASCADE, db_column='etudiant_id', related_name='presences')
+    seance = models.ForeignKey(Seance, on_delete=models.CASCADE, db_column='seance_id', related_name='presences')
     
     class Meta:
         db_table = 'presence'
@@ -276,6 +307,7 @@ class Presence(models.Model):
             models.Index(fields=['etudiant']),
             models.Index(fields=['seance']),
             models.Index(fields=['statut']),
+             models.Index(fields=['statut_justification']),
         ]
     
     def __str__(self):
@@ -289,12 +321,14 @@ class Notification(models.Model):
     message = models.TextField()
     date_envoi = models.DateTimeField(auto_now_add=True)
     lu = models.BooleanField(default=False)
-    etudiant = models.ForeignKey(Etudiant, on_delete=models.CASCADE, related_name='notifications')
+    # CHANGEMENTS: db_column pour les clés étrangères
+    etudiant = models.ForeignKey(Etudiant, on_delete=models.CASCADE, db_column='etudiant_id', related_name='notifications')
     presence = models.ForeignKey(
         Presence, 
         on_delete=models.CASCADE, 
         null=True, 
         blank=True,
+        db_column='presence_id',  # <-- CHANGEMENT ICI
         related_name='notifications'
     )
     

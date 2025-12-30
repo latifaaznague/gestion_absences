@@ -7,5 +7,7 @@ def home(request):
  
 urlpatterns = [ 
     path('admin/', admin.site.urls), 
+      path('etudiants/', include(('etudiants.urls', 'etudiants'), namespace='etudiants')),
     path('', home), 
+    
 ] 
