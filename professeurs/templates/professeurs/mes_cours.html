@@ -1,0 +1,231 @@
+{% extends 'professeurs/base_professeur.html' %}
+
+{% block title %}Mes Cours{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'professeurs:dashboard_professeur' %}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="bi bi-journal-text"></i> Mes Cours
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Header avec statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-0">
+                                <i class="bi bi-journal-text me-2"></i>
+                                Mes Cours
+                            </h4>
+                            <p class="mb-0 mt-1 small opacity-75">
+                                <i class="bi bi-mortarboard"></i> {{ utilisateur.prenom }} {{ utilisateur.nom }}
+                                {% if prof.specialite %}
+                                • <i class="bi bi-tags"></i> {{ prof.specialite }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-white text-primary px-3 py-2 rounded">
+                                    <i class="bi bi-book me-2"></i>
+                                    <strong class="fs-5">{{ total_cours }}</strong> cours
+                                </div>
+                                <a href="{% url 'professeurs:dashboard_professeur' %}" class="btn btn-light">
+                                    <i class="bi bi-arrow-left"></i> Retour au Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Courses Grid -->
+    <div class="row">
+        {% if cours_professeur %}
+            {% for cours in cours_professeur %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card course-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="card-title mb-1">{{ cours.libelle }}</h5>
+                                <span class="badge bg-secondary">{{ cours.code }}</span>
+                                <span class="badge bg-primary ms-1">{{ cours.volume_horaire }}h</span>
+                            </div>
+                            {% if cours.statistiques.nombre_seances > 0 %}
+                            <span class="badge bg-success">
+                                <i class="bi bi-calendar-check"></i> {{ cours.statistiques.nombre_seances }} séances
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Détails du cours -->
+                        <div class="course-details mt-3">
+                            <!-- Filière -->
+                            {% if cours.filiere %}
+                            <div class="course-detail-item">
+                                <i class="bi bi-diagram-3"></i>
+                                <span class="me-2">Filière:</span>
+                                <span class="badge bg-info detail-badge">{{ cours.filiere }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Groupe(s) enseigné(s) -->
+                            {% if cours.statistiques.nombre_groupes > 0 %}
+                            <div class="course-detail-item">
+                                <i class="bi bi-people"></i>
+                                <span class="me-2">Groupes:</span>
+                                <span class="badge bg-warning text-dark detail-badge">{{ cours.statistiques.nombre_groupes }} groupe(s)</span>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Liste des groupes (si disponible) -->
+                            {% if cours.groupes %}
+                            <div class="course-detail-item">
+                                <i class="bi bi-person-badge"></i>
+                                <div>
+                                    {% for groupe in cours.groupes %}
+                                    <span class="badge bg-light text-dark border me-1 mb-1">{{ groupe }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Salle(s) habituelle(s) -->
+                            {% if cours.salles %}
+                            <div class="course-detail-item">
+                                <i class="bi bi-building"></i>
+                                <span class="me-2">Salle(s):</span>
+                                {% for salle in cours.salles %}
+                                <span class="badge bg-secondary detail-badge me-1">{{ salle }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Période -->
+                            {% if cours.periode %}
+                            <div class="course-detail-item">
+                                <i class="bi bi-calendar-range"></i>
+                                <span class="me-2">Période:</span>
+                                <span class="badge bg-dark detail-badge">{{ cours.periode }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Statut -->
+                            <div class="course-detail-item">
+                                <i class="bi bi-check-circle"></i>
+                                <span class="me-2">Statut:</span>
+                                <span class="badge bg-success detail-badge">Actif</span>
+                            </div>
+                            
+                            <!-- Professeur -->
+                            <div class="course-detail-item">
+                                <i class="bi bi-person-fill"></i>
+                                <span class="me-2">Enseignant:</span>
+                                <span class="fw-semibold">{{ utilisateur.prenom }} {{ utilisateur.nom }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Informations supplémentaires -->
+                        {% if cours.description %}
+                        <div class="mt-3">
+                            <p class="small text-muted mb-0">
+                                <i class="bi bi-chat-left-text"></i>
+                                {{ cours.description|truncatechars:80 }}
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-transparent border-top">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar-week"></i> 
+                                Cours actif
+                            </small>
+                            {% if cours.statistiques.nombre_seances > 0 %}
+                            <small class="text-success">
+                                <i class="bi bi-check-lg"></i> Séances programmées
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- Message quand il n'y a pas de cours -->
+            <div class="col-12">
+                <div class="card text-center py-5">
+                    <i class="bi bi-journal-x" style="font-size: 48px; color: #dee2e6;"></i>
+                    <h3 class="mt-3 text-muted">Aucun cours assigné</h3>
+                    <p class="text-muted">Vous n'avez pas encore de cours à enseigner.</p>
+                    <a href="#" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Ajouter un cours
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.course-card {
+    border-left: 4px solid #3498db;
+    transition: transform 0.2s;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.course-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+.course-detail-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    color: #555;
+}
+.course-detail-item i {
+    width: 20px;
+    color: #6c757d;
+    margin-right: 10px;
+}
+.detail-badge {
+    font-size: 0.8em;
+    padding: 4px 8px;
+}
+.breadcrumb {
+    background-color: #f8f9fa;
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+}
+.breadcrumb-item a {
+    color: #6c757d;
+    text-decoration: none;
+}
+.breadcrumb-item.active {
+    color: #495057;
+    font-weight: 500;
+}
+.card-header h4 {
+    font-weight: 600;
+}
+</style>
+{% endblock %}

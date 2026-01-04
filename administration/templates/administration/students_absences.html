@@ -1,0 +1,158 @@
+{% extends "administration/base.html" %}
+
+{% block title %}Absences par Cours{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="mb-4">
+        <i class="bi bi-calendar-x text-danger me-2"></i>Absences par Cours
+    </h1>
+
+    <!-- Filtres SIMPLIFIÉS -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Seuil d'absences</label>
+                    <select name="limit" class="form-select">
+                        <option value="0" {% if limit == 0 %}selected{% endif %}>Toutes les absences</option>
+                        <option value="1" {% if limit == 1 %}selected{% endif %}>1+ absences</option>
+                        <option value="2" {% if limit == 2 %}selected{% endif %}>2+ absences</option>
+                        <option value="3" {% if limit == 3 %}selected{% endif %}>3+ absences</option>
+                        <option value="5" {% if limit == 5 %}selected{% endif %}>5+ absences</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">Filière</label>
+                    <select name="filiere" class="form-select">
+                        <option value="">Toutes les filières</option>
+                        {% for f in filieres %}
+                        <option value="{{ f.id }}" {% if f.id == selected_filiere %}selected{% endif %}>
+                            {{ f.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- SUPPRIMER: Filtre Cours -->
+                
+                <div class="col-12 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-funnel"></i> Filtrer
+                    </button>
+                    <a href="?" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Résultats -->
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    {% if absences %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        {% if limit == 0 %}
+            Affichage de <strong>toutes</strong> les absences non justifiées.
+            {% if selected_filiere %}
+                <br>Filtré par filière: 
+                {% for f in filieres %}
+                    {% if f.id == selected_filiere %}{{ f.nom }}{% endif %}
+                {% endfor %}
+            {% endif %}
+        {% else %}
+            Affichage des étudiants avec <strong>{{ limit }}+</strong> absences dans un même cours.
+        {% endif %}
+        <span class="badge bg-primary ms-2">{{ absences|length }} résultat(s)</span>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                {% if limit == 0 %}
+                    Liste de toutes les absences non justifiées
+                {% else %}
+                    Étudiants avec {{ limit }}+ absences dans un même cours
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Étudiant</th>
+                        <th>Filière/Promotion</th>
+                        <th>Cours</th>
+                        <th>Absences</th>
+                        <th>Dates des absences</th>
+                        <th>Groupes</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for absence in absences %}
+                    <tr class="{% if absence.nombre_absences > 2 %}table-warning{% endif %}">
+                        <td>
+                            <div class="fw-bold">{{ absence.nom }} {{ absence.prenom }}</div>
+                            <small class="text-muted">{{ absence.email }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-info mb-1">{{ absence.filiere }}</span><br>
+                            <span class="badge bg-secondary">{{ absence.promotion }}</span>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ absence.cours_code }}</div>
+                            <small>{{ absence.cours_libelle|truncatechars:30 }}</small>
+                        </td>
+                        <td>
+                            <span class="badge {% if absence.nombre_absences > 1 %}bg-danger{% else %}bg-warning{% endif %} rounded-pill">
+                                {{ absence.nombre_absences }}
+                            </span>
+                        </td>
+                        <td>
+                            <small>{{ absence.dates_absences|default:"-" }}</small>
+                        </td>
+                        <td>
+                            <small>{{ absence.groupes|default:"-" }}</small>
+                        </td>
+                        <td>
+                            {% if absence.nombre_absences > 1 %}
+                            <span class="badge bg-warning">
+                                <i class="bi bi-exclamation-triangle me-1"></i>À surveiller
+                            </span>
+                            {% else %}
+                            <span class="badge bg-info">
+                                <i class="bi bi-info-circle me-1"></i>Normal
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning text-center py-4">
+        <i class="bi bi-exclamation-triangle fs-1 text-warning mb-3 d-block"></i>
+        <h4>Aucune donnée trouvée</h4>
+        <p class="mb-0">
+            {% if limit > 0 %}
+                Aucun étudiant n'a {{ limit }} absences ou plus dans un même cours avec les filtres sélectionnés.
+            {% else %}
+                Aucune absence non justifiée trouvée avec les filtres sélectionnés.
+            {% endif %}
+        </p>
+        <div class="mt-3">
+            <a href="?limit=0" class="btn btn-outline-primary me-2">Voir toutes les absences</a>
+            <a href="?limit=1" class="btn btn-outline-primary">Voir 1+ absences</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

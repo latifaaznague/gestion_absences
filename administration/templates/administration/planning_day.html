@@ -1,0 +1,21 @@
+<h2>Planning du jour</h2>
+{% if error %}<p style="color:red;">{{ error }}</p>{% endif %}
+
+<form method="get">
+  Date (YYYY-MM-DD): <input name="date" value="{{ date }}">
+  <button type="submit">Afficher</button>
+</form>
+
+<table border="1" cellpadding="6">
+  <tr>
+    <th>ID</th><th>Date</th><th>Début</th><th>Fin</th><th>Salle</th><th>Cours</th><th>Groupe</th><th>Planning</th>
+  </tr>
+  {% for s in sessions %}
+  <tr>
+    <td>{{ s.id }}</td><td>{{ s.date }}</td><td>{{ s.heureDebut }}</td><td>{{ s.heureFin }}</td>
+    <td>{{ s.salle }}</td><td>{{ s.courseId }}</td><td>{{ s.groupeId }}</td><td>{{ s.planningId }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<p><a href="{% url 'administration:planning_home' %}">Retour</a></p>

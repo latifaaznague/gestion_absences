@@ -1,0 +1,39 @@
+<h2>{{ planning }}</h2>
+<p>Du {{ monday }} au {{ sunday }}</p>
+
+<p>
+  <a href="{% url 'administration:seance_add' planning.id %}">+ Ajouter séance</a> |
+  <a href="{% url 'administration:dashboard' %}">Dashboard</a>
+</p>
+
+{% for day in days_data %}
+  <h3>{{ day.date }}</h3>
+  {% if day.seances|length == 0 %}
+    <p>Aucune séance</p>
+  {% else %}
+    <table border="1" cellpadding="6">
+      <tr>
+        <th>Heure</th><th>Cours</th><th>Groupe</th><th>Salle</th><th>Prof</th><th>Action</th>
+      </tr>
+      {% for s in day.seances %}
+        <tr>
+          <td>{{ s.heure_debut }} - {{ s.heure_fin }}</td>
+          <td>{{ s.cours.code }} - {{ s.cours.libelle }}</td>
+          <td>{{ s.groupe.nom }}</td>
+          <td>{{ s.salle }}</td>
+          <td>
+            {% if s.cours.professeur %}
+              {{ s.cours.professeur.utilisateur.prenom }} {{ s.cours.professeur.utilisateur.nom }}
+            {% else %}-{% endif %}
+          </td>
+          <td>
+            <form method="post" action="{% url 'administration:seance_delete' s.id %}">
+              {% csrf_token %}
+              <button type="submit">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+{% endfor %}

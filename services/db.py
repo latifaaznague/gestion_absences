@@ -1,34 +1,25 @@
+import os
 import psycopg2
-from psycopg2.extras import RealDictCursor
 
-DB_HOST = "localhost"
-DB_NAME = "absenceflow"
+
+DB_NAME = "gestion_absences"
 DB_USER = "postgres"
-DB_PASSWORD = "ton_motdepasse"
-DB_PORT = 5432
+DB_PASS = "123456"
+DB_HOST = "localhost"
+DB_PORT = "5432"
 
-def get_connection():
+
+def get_conn():
     return psycopg2.connect(
-        host=DB_HOST,
         dbname=DB_NAME,
         user=DB_USER,
-        password=DB_PASSWORD,
-        port=DB_PORT
+        password=DB_PASS,
+        host=DB_HOST,
+        port=DB_PORT,
+        client_encoding='UTF8'  # Ajoutez cette ligne
     )
-
-def execute_query(query, params=None, fetch_one=False, fetch_all=False):
-    conn = get_connection()
-    cur = conn.cursor()
-    try:
-        cur.execute(query, params)
-        if fetch_one:
-            result = cur.fetchone()
-        elif fetch_all:
-            result = cur.fetchall()
-        else:
-            result = None
-        conn.commit()
-        return result
-    finally:
-        cur.close()
-        conn.close()
+    
+    
+    
+    conn.set_client_encoding('UTF8')
+    return conn

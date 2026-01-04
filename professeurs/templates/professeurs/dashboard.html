@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Professeur</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            padding-top: 70px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 220px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            padding-top: 70px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .sidebar ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .sidebar li {
+            margin: 5px 0;
+        }
+        .sidebar a {
+            display: block;
+            text-decoration: none;
+            color: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            padding-left: 20px;
+        }
+        .sidebar a.active {
+            background-color: #2980b9;
+            color: white;
+            font-weight: bold;
+        }
+        .content {
+            margin-left: 240px;
+            padding: 20px;
+            min-height: calc(100vh - 70px);
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1100;
+            background: linear-gradient(90deg, #1a2980 0%, #26d0ce 100%);
+        }
+        
+        /* Dashboard specific styles */
+        .card {
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .badge-stat {
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+        .stat-card-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        .welcome-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        .today-seance {
+            border-left: 4px solid #3498db;
+        }
+        .justification-card {
+            border-left: 4px solid #f39c12;
+        }
+        .calendar-day {
+            background-color: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .calendar-day.today {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        
+        /* Profil menu styles */
+        .user-menu {
+            color: white;
+            padding: 15px;
+            margin: 10px;
+            text-align: center;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar (identique au profil) -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'professeurs:dashboard_professeur' %}">
+                <i class="bi bi-person-workspace"></i> Espace Professeur
+            </a>
+            
+            <div class="dropdown ms-auto">
+                <button class="btn btn-outline-light dropdown-toggle" type="button" 
+                        id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle"></i> 
+                    {{ utilisateur.prenom }} {{ utilisateur.nom }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li>
+                        <a class="dropdown-item" href="{% url 'professeurs:profil_professeur' %}">
+                            <i class="bi bi-person"></i> Mon Profil
+                        </a>
+                    </li>
+                    <li class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item active" href="{% url 'professeurs:dashboard_professeur' %}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'professeurs:logout_view' %}" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?');">
+                            <i class="bi bi-box-arrow-right"></i> Déconnexion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar (identique au profil) -->
+    <div class="sidebar">
+        <!-- User Info -->
+        <div class="user-menu text-center mb-4">
+            <div class="profile-avatar mb-3">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <div>
+                <strong>{{ utilisateur.prenom }} {{ utilisateur.nom }}</strong>
+                <div class="small text-muted">
+                    <i class="bi bi-mortarboard"></i> Professeur
+                </div>
+                {% if prof.specialite %}
+                <div class="small mt-1">
+                    <i class="bi bi-tags"></i> {{ prof.specialite }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <nav>
+            <ul>
+                <li>
+                    <a href="{% url 'professeurs:dashboard_professeur' %}" class="active">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'professeurs:mes_cours' %}">
+                        <i class="bi bi-journal-text"></i> Mes Cours
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'professeurs:mes_seances' %}">
+                        <i class="bi bi-calendar-week"></i> Mes Séances
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'professeurs:justifications_attente' %}">
+                        <i class="bi bi-file-earmark-check"></i> Justifications
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'professeurs:profil_professeur' %}">
+                        <i class="bi bi-person-gear"></i> Mon Profil
+                    </a>
+                </li>
+                <li><hr style="border-color: rgba(255,255,255,0.2); margin: 15px;"></li>
+                <li>
+                    <a href="{% url 'professeurs:logout_view' %}" 
+                       onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?');"
+                       style="color: #e74c3c;">
+                        <i class="bi bi-box-arrow-right"></i> Déconnexion
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="mt-5 px-3 text-white-50 small">
+            <hr style="border-color: rgba(255,255,255,0.2);">
+            <div>
+                <i class="bi bi-calendar-date"></i> {{ today|date:"d/m/Y" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Welcome Card -->
+        <div class="welcome-card">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="mb-3">Bonjour, {{ utilisateur.prenom }} !</h2>
+                    <p class="mb-4">Bienvenue dans votre espace professeur. Vous avez {{ total_seances_aujourdhui }} séance{{ total_seances_aujourdhui|pluralize }} aujourd'hui.</p>
+                    <div class="d-flex gap-3">
+                        <div class="bg-white text-dark px-3 py-2 rounded">
+                            <i class="bi bi-book me-2"></i>
+                            <strong>{{ total_cours }}</strong> cours
+                        </div>
+                        <div class="bg-white text-dark px-3 py-2 rounded">
+                            <i class="bi bi-calendar-check me-2"></i>
+                            <strong>{{ total_seances_semaine }}</strong> séances cette semaine
+                        </div>
+                        {% if total_justifications_attente > 0 %}
+                        <div class="bg-warning text-dark px-3 py-2 rounded">
+                            <i class="bi bi-clock-history me-2"></i>
+                            <strong>{{ total_justifications_attente }}</strong> justification{{ total_justifications_attente|pluralize }} en attente
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="bi bi-person-workspace" style="font-size: 120px; opacity: 0.8;"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row">
+            <!-- Total Cours -->
+            <div class="col-md-3 col-sm-6">
+                <a href="{% url 'professeurs:mes_cours' %}" style="text-decoration: none;">
+                    <div class="card text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Mes Cours</h5>
+                                    <h2 class="card-text">{{ total_cours }}</h2>
+                                </div>
+                                <i class="bi bi-journal-text stat-card-icon"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="bi bi-check-circle"></i> Actuellement enseignés
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Séances Aujourd'hui -->
+            <div class="col-md-3 col-sm-6">
+                <a href="{% url 'professeurs:mes_seances' %}" style="text-decoration: none;">
+                    <div class="card text-white" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Séances Aujourd'hui</h5>
+                                    <h2 class="card-text">{{ total_seances_aujourdhui }}</h2>
+                                </div>
+                                <i class="bi bi-calendar-check stat-card-icon"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="bi bi-clock"></i> {{ today|date:"d/m/Y" }}
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Justifications en attente -->
+            <div class="col-md-3 col-sm-6">
+                <a href="{% url 'professeurs:justifications_attente' %}" style="text-decoration: none;">
+                    <div class="card text-white" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Justifications</h5>
+                                    <h2 class="card-text">{{ total_justifications_attente }}</h2>
+                                </div>
+                                <i class="bi bi-file-earmark-check stat-card-icon"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="bi bi-clock-history"></i> En attente de validation
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Taux de présence -->
+            <div class="col-md-3 col-sm-6">
+                <div class="card text-white" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">Taux Présence</h5>
+                                <h2 class="card-text">{{ stats.taux_presence }}%</h2>
+                            </div>
+                            <i class="bi bi-graph-up stat-card-icon"></i>
+                        </div>
+                        <div class="small mt-2">
+                            <i class="bi bi-people"></i> Sur {{ stats.total_presences }} séances
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Columns Content -->
+        <div class="row mt-4">
+            <!-- Left Column: Séances d'aujourd'hui -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-day"></i> Séances d'aujourd'hui
+                        </h5>
+                        <span class="badge bg-light text-dark">{{ total_seances_aujourdhui }}</span>
+                    </div>
+                    <div class="card-body">
+                        {% if seances_aujourdhui %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Heure</th>
+                                            <th>Cours</th>
+                                            <th>Groupe</th>
+                                            <th>Salle</th>
+                                            <th>Durée</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for seance in seances_aujourdhui %}
+                                        <tr class="today-seance">
+                                            <td>
+                                                <strong>{{ seance.heure_debut|time:"H:i" }}</strong><br>
+                                                <small class="text-muted">{{ seance.heure_fin|time:"H:i" }}</small>
+                                            </td>
+                                            <td>
+                                                <strong>{{ seance.cours.libelle }}</strong><br>
+                                                <small class="text-muted">{{ seance.cours.code }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ seance.groupe.nom }}</span>
+                                            </td>
+                                            <td>
+                                                {% if seance.salle %}
+                                                <span class="badge bg-secondary">{{ seance.salle }}</span>
+                                                {% else %}
+                                                <span class="badge bg-light text-dark">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-dark">
+                                                    {{ seance.heure_debut|time:"H:i" }}-{{ seance.heure_fin|time:"H:i" }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'professeurs:prendre_presences' seance.id %}" 
+                                                   class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-clipboard-check"></i> Présences
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="bi bi-calendar-x" style="font-size: 48px; color: #dee2e6;"></i>
+                                <h5 class="mt-3 text-muted">Aucune séance aujourd'hui</h5>
+                                <p class="text-muted">Profitez de votre journée !</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Calendrier de la semaine -->
+                <div class="card mt-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-week"></i> Séances de la semaine
+                            <small class="float-end">{{ start_of_week|date:"d/m" }} - {{ end_of_week|date:"d/m/Y" }}</small>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if seances_semaine %}
+                            {% regroup seances_semaine by date as seances_par_jour %}
+                            <div class="row">
+                                {% for jour in seances_par_jour %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="calendar-day {% if jour.grouper == today %}today{% endif %}">
+                                        <h6 class="mb-2">
+                                            <strong>{{ jour.grouper|date:"l"|capfirst }} {{ jour.grouper|date:"d/m" }}</strong>
+                                            <span class="badge bg-primary float-end">{{ jour.list|length }}</span>
+                                        </h6>
+                                        {% for seance in jour.list %}
+                                        <div class="mb-2 p-2 bg-white rounded">
+                                            <div class="d-flex justify-content-between">
+                                                <span class="badge bg-dark">{{ seance.heure_debut|time:"H:i" }}</span>
+                                                <small class="text-muted">{{ seance.cours.code }}</small>
+                                            </div>
+                                            <div class="mt-1">
+                                                <strong>{{ seance.cours.libelle|truncatechars:25 }}</strong><br>
+                                                <small>{{ seance.groupe.nom }} • {{ seance.salle|default:"Salle non définie" }}</small>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-3">
+                                <i class="bi bi-calendar-x text-muted" style="font-size: 36px;"></i>
+                                <p class="text-muted mt-2">Aucune séance cette semaine</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Justifications en attente et Statistiques -->
+            <div class="col-md-4">
+                <!-- Justifications en attente -->
+                <div class="card">
+                    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history"></i> Justifications en attente
+                        </h5>
+                        {% if total_justifications_attente > 0 %}
+                        <span class="badge bg-danger">{{ total_justifications_attente }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        {% if justifications_attente %}
+                            <div class="list-group list-group-flush">
+                                {% for justification in justifications_attente|slice:":5" %}
+                                <div class="list-group-item px-0 py-2 border-0">
+                                    <div class="d-flex align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">{{ justification.etudiant.utilisateur.prenom }} {{ justification.etudiant.utilisateur.nom }}</h6>
+                                            <small class="text-muted d-block">
+                                                <i class="bi bi-book"></i> {{ justification.seance.cours.libelle }}
+                                            </small>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar"></i> {{ justification.seance.date|date:"d/m/Y" }}
+                                            </small>
+                                        </div>
+                                        <a href="{% url 'professeurs:justifications_attente' %}" 
+                                           class="btn btn-sm btn-outline-warning">
+                                            Voir
+                                        </a>
+                                    </div>
+                                    {% if justification.justification %}
+                                    <p class="small text-muted mt-2 mb-0">
+                                        <em>"{{ justification.justification|truncatechars:50 }}"</em>
+                                    </p>
+                                    {% endif %}
+                                </div>
+                                {% if not forloop.last %}<hr class="my-1">{% endif %}
+                                {% endfor %}
+                            </div>
+                            {% if total_justifications_attente > 5 %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'professeurs:justifications_attente' %}" 
+                                   class="btn btn-sm btn-outline-secondary">
+                                    Voir toutes ({{ total_justifications_attente }})
+                                </a>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="bi bi-check-circle" style="font-size: 48px; color: #28a745;"></i>
+                                <h5 class="mt-3 text-success">Tout est à jour !</h5>
+                                <p class="text-muted">Aucune justification en attente</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Statistiques de présence -->
+                <div class="card mt-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-data"></i> Statistiques de présence
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <div class="display-4 fw-bold">{{ stats.taux_presence }}%</div>
+                            <small class="text-muted">Taux de présence global</small>
+                            <div class="mt-2">
+                                <span class="badge bg-info">{{ stats.total_presences }} séances</span>
+                            </div>
+                        </div>
+                        
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-check-circle-fill text-success me-2"></i>Présents</span>
+                                <span class="badge bg-success">{{ stats.presents }}</span>
+                            </div>
+                            <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-clock-fill text-warning me-2"></i>Absents justifiés</span>
+                                <span class="badge bg-warning">{{ stats.absents_justifies }}</span>
+                            </div>
+                            <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-x-circle-fill text-danger me-2"></i>Absents non justifiés</span>
+                                <span class="badge bg-danger">{{ stats.absents_non_justifies }}</span>
+                            </div>
+                            <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                                <span><strong>Total des absences</strong></span>
+                                <span class="badge bg-dark">{{ stats.total_absences }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="progress mt-3" style="height: 20px;">
+                            <div class="progress-bar bg-success" style="width: {{ stats.taux_presence }}%">
+                                {{ stats.taux_presence }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-5 pt-4 border-top text-center text-muted">
+            <p>Système de Gestion des Absences - Espace Professeur</p>
+            <p class="small">© {% now "Y" %} Université. Connecté en tant que {{ utilisateur.prenom }} {{ utilisateur.nom }}</p>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script>
+        // Mettre à jour l'heure en temps réel
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const timeElement = document.getElementById('currentTime');
+            if (timeElement) {
+                timeElement.textContent = timeString;
+            }
+        }
+        
+        // Mettre à jour l'heure toutes les secondes
+        setInterval(updateTime, 1000);
+        updateTime(); // Initial call
+        
+        // Confirmation avant certaines actions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 300);
+                });
+            }, 5000);
+            
+            // Highlight today in the calendar
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                if (day.classList.contains('today')) {
+                    day.style.backgroundColor = '#d4edda';
+                    day.style.border = '1px solid #c3e6cb';
+                }
+            });
+        });
+        
+        // Print functionality
+        function printSchedule() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

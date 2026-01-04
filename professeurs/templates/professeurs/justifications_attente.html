@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion des justifications</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            padding-top: 70px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 220px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            padding-top: 70px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .sidebar ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .sidebar li {
+            margin: 5px 0;
+        }
+        .sidebar a {
+            display: block;
+            text-decoration: none;
+            color: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            padding-left: 20px;
+        }
+        .sidebar a.active {
+            background-color: #2980b9;
+            color: white;
+            font-weight: bold;
+        }
+        .content {
+            margin-left: 240px;
+            padding: 20px;
+            min-height: calc(100vh - 70px);
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1100;
+            background: linear-gradient(90deg, #1a2980 0%, #26d0ce 100%);
+        }
+        
+        /* Profil menu styles */
+        .user-menu {
+            color: white;
+            padding: 15px;
+            margin: 10px;
+            text-align: center;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 15px;
+        }
+        
+        /* Justifications specific styles */
+        .justification-text {
+            max-height: 60px;
+            overflow: hidden;
+            position: relative;
+        }
+        .voir-plus {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, white 30%);
+            padding-left: 30px;
+        }
+        .modal-body .alert-light {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .pdf-viewer-container {
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .pdf-viewer-container iframe {
+            flex-grow: 1;
+            border-radius: 5px;
+        }
+        .badge-stat {
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'professeurs:dashboard_professeur' %}">
+                <i class="bi bi-person-workspace"></i> Espace Professeur
+            </a>
+            
+            <div class="dropdown ms-auto">
+                <button class="btn btn-outline-light dropdown-toggle" type="button" 
+                        id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle"></i> 
+                    {{ utilisateur.prenom }} {{ utilisateur.nom }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li>
+                        <a class="dropdown-item" href="{% url 'professeurs:profil_professeur' %}">
+                            <i class="bi bi-person"></i> Mon Profil
+                        </a>
+                    </li>
+                    <li class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'professeurs:dashboard_professeur' %}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'professeurs:logout_view' %}" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?');">
+                            <i class="bi bi-box-arrow-right"></i> Déconnexion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- User Info -->
+        <div class="user-menu text-center mb-4">
+            <div class="profile-avatar mb-3">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <div>
+                <strong>{{ utilisateur.prenom }} {{ utilisateur.nom }}</strong>
+                <div class="small text-muted">
+                    <i class="bi bi-mortarboard"></i> Professeur
+                </div>
+                {% if prof.specialite %}
+                <div class="small mt-1">
+                    <i class="bi bi-tags"></i> {{ prof.specialite }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <nav>
+            <ul>
+                <li>
+                    <a href="{% url 'professeurs:dashboard_professeur' %}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'professeurs:mes_cours' %}">
+                        <i class="bi bi-journal-text"></i> Mes Cours
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'professeurs:mes_seances' %}">
+                        <i class="bi bi-calendar-week"></i> Mes Séances
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'professeurs:justifications_attente' %}" class="active">
+                        <i class="bi bi-file-earmark-check"></i> Justifications
+                        {% if total_justifications_attente and total_justifications_attente > 0 %}
+                        <span class="badge bg-danger badge-stat">{{ total_justifications_attente }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'professeurs:profil_professeur' %}">
+                        <i class="bi bi-person-gear"></i> Mon Profil
+                    </a>
+                </li>
+                <li><hr style="border-color: rgba(255,255,255,0.2); margin: 15px;"></li>
+                <li>
+                    <a href="{% url 'professeurs:logout_view' %}" 
+                       onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?');"
+                       style="color: #e74c3c;">
+                        <i class="bi bi-box-arrow-right"></i> Déconnexion
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="mt-5 px-3 text-white-50 small">
+            <hr style="border-color: rgba(255,255,255,0.2);">
+            <div>
+                <i class="bi bi-calendar-date"></i> {% now "d/m/Y" %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Contenu original de la page des justifications -->
+        <div class="container-fluid py-4">
+            <div class="row">
+                <div class="col-md-12">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'professeurs:dashboard_professeur' %}">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                <i class="bi bi-file-earmark-check"></i> Gestion des justifications
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-0">
+                                <i class="bi bi-file-earmark-check me-2"></i>
+                                {{ titre }}
+                            </h4>
+                            <p class="mb-0 mt-1 small opacity-75">
+                                Validez ou refusez les justifications d'absence des étudiants
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-danger fs-6">{{ total_en_attente }} en attente</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Filtres -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-3">
+                                        <i class="bi bi-funnel"></i> Filtrer les justifications
+                                    </h5>
+                                    <div class="btn-group" role="group">
+                                        <a href="?statut=EN_ATTENTE" 
+                                           class="btn {% if statut_filter == 'EN_ATTENTE' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                                            <i class="bi bi-clock-history"></i> En attente
+                                            <span class="badge bg-dark ms-1">{{ total_en_attente }}</span>
+                                        </a>
+                                        <a href="?statut=ACCEPTEE" 
+                                           class="btn {% if statut_filter == 'ACCEPTEE' %}btn-success{% else %}btn-outline-success{% endif %}">
+                                            <i class="bi bi-check-circle"></i> Acceptées
+                                        </a>
+                                        <a href="?statut=REFUSEE" 
+                                           class="btn {% if statut_filter == 'REFUSEE' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                                            <i class="bi bi-x-circle"></i> Refusées
+                                        </a>
+                                        <a href="?statut=TRAITEES" 
+                                           class="btn {% if statut_filter == 'TRAITEES' %}btn-info{% else %}btn-outline-info{% endif %}">
+                                            <i class="bi bi-check-all"></i> Traitées
+                                            <span class="badge bg-dark ms-1">{{ total_traitees }}</span>
+                                        </a>
+                                        <a href="?statut=TOUS" 
+                                           class="btn {% if statut_filter == 'TOUS' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
+                                            <i class="bi bi-list"></i> Toutes
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Liste des justifications -->
+                    {% if justifications %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="20%">Étudiant</th>
+                                    <th width="20%">Cours</th>
+                                    <th width="15%">Date séance</th>
+                                    <th width="20%">Justification</th>
+                                    <th width="10%">Statut</th>
+                                    <th width="10%">Fichier</th>
+                                    <th width="10%">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in justifications %}
+                                {% with presence=item.presence %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <strong>{{ presence.etudiant.utilisateur.prenom }} {{ presence.etudiant.utilisateur.nom }}</strong><br>
+                                        <small class="text-muted">{{ presence.etudiant.code_etudiant }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ presence.seance.cours.libelle }}</strong><br>
+                                        <small class="text-muted">
+                                            {{ presence.seance.cours.code }} • {{ presence.seance.groupe.nom }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ presence.seance.date|date:"d/m/Y" }}</strong><br>
+                                        <small class="text-muted">{{ presence.seance.heure_debut|time:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if presence.justification %}
+                                        <div class="justification-text">
+                                            {{ presence.justification|truncatechars:50 }}
+                                            {% if presence.justification|length > 50 %}
+                                            <a href="#" class="small voir-plus" data-bs-toggle="modal" data-bs-target="#modalJustification{{ presence.id }}">
+                                                ...voir plus
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">Aucune justification textuelle</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if presence.statut_justification == 'EN_ATTENTE' %}
+                                        <span class="badge bg-warning">En attente</span>
+                                        {% elif presence.statut_justification == 'ACCEPTEE' %}
+                                        <span class="badge bg-success">Acceptée</span>
+                                        {% elif presence.statut_justification == 'REFUSEE' %}
+                                        <span class="badge bg-danger">Refusée</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.has_file %}
+                                        <button class="btn btn-sm btn-outline-info" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#modalFichier{{ presence.id }}">
+                                            <i class="bi bi-file-earmark"></i> Voir
+                                        </button>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'professeurs:voir_justification' presence.id %}" 
+                                               class="btn btn-sm btn-outline-primary" title="Voir les détails">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            {% if presence.statut_justification == 'EN_ATTENTE' %}
+                                            <button class="btn btn-sm btn-outline-success" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#modalAccepter{{ presence.id }}"
+                                                    title="Accepter">
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#modalRefuser{{ presence.id }}"
+                                                    title="Refuser">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Modal pour voir la justification complète -->
+                                <div class="modal fade" id="modalJustification{{ presence.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">
+                                                    <i class="bi bi-chat-text"></i> Justification complète
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p><strong>Étudiant :</strong> {{ presence.etudiant.utilisateur.prenom }} {{ presence.etudiant.utilisateur.nom }}</p>
+                                                <p><strong>Cours :</strong> {{ presence.seance.cours.libelle }}</p>
+                                                <p><strong>Date :</strong> {{ presence.seance.date|date:"d/m/Y" }} à {{ presence.seance.heure_debut|time:"H:i" }}</p>
+                                                <hr>
+                                                <h6>Justification :</h6>
+                                                <div class="alert alert-light border">
+                                                    {{ presence.justification|linebreaks }}
+                                                </div>
+                                                <p class="text-muted small">
+                                                    <i class="bi bi-clock"></i> Soumis le : {{ presence.date_saisie|date:"d/m/Y H:i" }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Modal pour le fichier justificatif -->
+                                <div class="modal fade" id="modalFichier{{ presence.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-xl">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-info text-white">
+                                                <h5 class="modal-title">
+                                                    <i class="bi bi-file-earmark"></i> Fichier justificatif
+                                                    <small class="ms-2 opacity-75">
+                                                        {{ presence.etudiant.utilisateur.prenom }} {{ presence.etudiant.utilisateur.nom }}
+                                                    </small>
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body p-0">
+                                                <div id="fileContent{{ presence.id }}" style="min-height: 300px;">
+                                                    <div class="text-center py-5">
+                                                        <div class="spinner-border text-primary" role="status">
+                                                            <span class="visually-hidden">Chargement...</span>
+                                                        </div>
+                                                        <p class="mt-2">Chargement du fichier...</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                    <i class="bi bi-x-circle"></i> Fermer
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Modal pour accepter -->
+                                <div class="modal fade" id="modalAccepter{{ presence.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form method="POST" action="{% url 'professeurs:traiter_justification' presence.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-header bg-success text-white">
+                                                    <h5 class="modal-title">
+                                                        <i class="bi bi-check-circle"></i> Accepter la justification
+                                                    </h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Êtes-vous sûr de vouloir accepter la justification de :</p>
+                                                    <div class="alert alert-info">
+                                                        <strong>{{ presence.etudiant.utilisateur.prenom }} {{ presence.etudiant.utilisateur.nom }}</strong><br>
+                                                        <small>{{ presence.seance.cours.libelle }} - {{ presence.seance.date|date:"d/m/Y" }}</small>
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="commentaire_{{ presence.id }}" class="form-label">
+                                                            <i class="bi bi-chat-left-text"></i> Commentaire (optionnel)
+                                                        </label>
+                                                        <textarea class="form-control" 
+                                                                  id="commentaire_{{ presence.id }}" 
+                                                                  name="commentaire_prof" 
+                                                                  rows="3"
+                                                                  placeholder="Ajoutez un commentaire si nécessaire..."></textarea>
+                                                    </div>
+                                                    
+                                                    <input type="hidden" name="action" value="accepter">
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                        <i class="bi bi-x-circle"></i> Annuler
+                                                    </button>
+                                                    <button type="submit" class="btn btn-success">
+                                                        <i class="bi bi-check-lg"></i> Accepter
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Modal pour refuser -->
+                                <div class="modal fade" id="modalRefuser{{ presence.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form method="POST" action="{% url 'professeurs:traiter_justification' presence.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-header bg-danger text-white">
+                                                    <h5 class="modal-title">
+                                                        <i class="bi bi-x-circle"></i> Refuser la justification
+                                                    </h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Êtes-vous sûr de vouloir refuser la justification de :</p>
+                                                    <div class="alert alert-warning">
+                                                        <strong>{{ presence.etudiant.utilisateur.prenom }} {{ presence.etudiant.utilisateur.nom }}</strong><br>
+                                                        <small>{{ presence.seance.cours.libelle }} - {{ presence.seance.date|date:"d/m/Y" }}</small>
+                                                    </div>
+                                                    
+                                                    <p class="text-danger">
+                                                        <i class="bi bi-exclamation-triangle"></i>
+                                                        Attention : En refusant, l'absence sera marquée comme "Non justifiée".
+                                                    </p>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="commentaire_refus_{{ presence.id }}" class="form-label">
+                                                            <i class="bi bi-chat-left-text"></i> Commentaire (recommandé)
+                                                        </label>
+                                                        <textarea class="form-control" 
+                                                                  id="commentaire_refus_{{ presence.id }}" 
+                                                                  name="commentaire_prof" 
+                                                                  rows="3"
+                                                                  placeholder="Expliquez pourquoi vous refusez cette justification..."
+                                                                  required></textarea>
+                                                        <div class="form-text">
+                                                            Ce commentaire sera visible par l'étudiant.
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <input type="hidden" name="action" value="refuser">
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                        <i class="bi bi-x-circle"></i> Annuler
+                                                    </button>
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="bi bi-x-lg"></i> Refuser
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="text-muted">
+                            Affichage de {{ justifications|length }} justification{{ justifications|pluralize }}
+                        </div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-sm">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1">Précédent</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#">Suivant</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-check-circle" style="font-size: 72px; color: #28a745;"></i>
+                        <h4 class="mt-4 text-success">Aucune justification en attente</h4>
+                        <p class="text-muted">Toutes les justifications ont été traitées.</p>
+                        <a href="?statut=TRAITEES" class="btn btn-outline-info mt-2">
+                            <i class="bi bi-clock-history"></i> Voir les justifications traitées
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-5 pt-4 border-top text-center text-muted">
+            <p>Système de Gestion des Absences - Espace Professeur</p>
+            <p class="small">© {% now "Y" %} Université. Connecté en tant que {{ utilisateur.prenom }} {{ utilisateur.nom }}</p>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Charger le contenu du fichier quand la modal s'ouvre
+            document.querySelectorAll('.modal[id^="modalFichier"]').forEach(function(modal) {
+                modal.addEventListener('show.bs.modal', function(event) {
+                    var modalId = this.id;
+                    var presenceId = modalId.replace('modalFichier', '');
+                    var contentDiv = document.getElementById('fileContent' + presenceId);
+                    
+                    // Afficher le loader
+                    contentDiv.innerHTML = `
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                            <p class="mt-2">Chargement du fichier...</p>
+                        </div>
+                    `;
+                    
+                    // Utiliser l'URL Django avec le template tag
+                    var url = "{% url 'professeurs:afficher_fichier_modal' 0 %}".replace('0', presenceId);
+                    
+                    // Charger le contenu via AJAX
+                    fetch(url)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Erreur HTTP ' + response.status);
+                            }
+                            return response.text();
+                        })
+                        .then(data => {
+                            contentDiv.innerHTML = data;
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors du chargement du fichier:', error);
+                            contentDiv.innerHTML = `
+                                <div class="alert alert-danger text-center">
+                                    <i class="bi bi-exclamation-triangle fs-1"></i>
+                                    <h5>Erreur lors du chargement du fichier</h5>
+                                    <p>Détails: ${error.message}</p>
+                                </div>
+                            `;
+                        });
+                });
+            });
+            
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 300);
+                });
+            }, 5000);
+            
+            // Raccourcis clavier
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+Enter pour accepter dans un modal ouvert
+                if (e.ctrlKey && e.key === 'Enter') {
+                    const modal = document.querySelector('.modal.show');
+                    if (modal) {
+                        const submitBtn = modal.querySelector('button[type="submit"]');
+                        if (submitBtn) submitBtn.click();
+                    }
+                }
+                // Échap pour fermer les modals
+                if (e.key === 'Escape') {
+                    const modals = document.querySelectorAll('.modal.show');
+                    modals.forEach(modal => {
+                        const closeBtn = modal.querySelector('.btn-close');
+                        if (closeBtn) closeBtn.click();
+                    });
+                }
+            });
+            
+            // Auto-focus sur les textarea des modals
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.addEventListener('shown.bs.modal', function() {
+                    const textarea = this.querySelector('textarea');
+                    if (textarea) textarea.focus();
+                });
+            });
+            
+            // Mettre à jour l'heure en temps réel
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('fr-FR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                const timeElement = document.getElementById('currentTime');
+                if (timeElement) {
+                    timeElement.textContent = timeString;
+                }
+            }
+            
+            // Mettre à jour l'heure toutes les secondes
+            setInterval(updateTime, 1000);
+            updateTime(); // Initial call
+        });
+    </script>
+</body>
+</html>

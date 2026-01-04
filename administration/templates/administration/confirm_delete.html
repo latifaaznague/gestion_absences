@@ -1,0 +1,11 @@
+<h2>{{ title }}</h2>
+<p>{{ message }}</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit">Oui, supprimer</button>
+</form>
+
+<p>
+  <a href="{% url cancel_url %}">Annuler</a>
+</p>

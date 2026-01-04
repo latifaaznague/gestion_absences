@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Présences</title>
+    <style>
+        <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        /* Menu horizontal en haut */
+        .top-menu {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            padding: 0 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .menu-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            font-size: 1.5em;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            position: relative;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
+            transition: background 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-links i {
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
+        
+        .badge {
+            background: #ff5722;
+            color: white;
+            font-size: 0.7em;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+        
+        /* Container principal */
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        /* En-tête de la page */
+        .page-header {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .page-header h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 300;
+            display: flex;
+            align-items: center;
+        }
+        
+        .page-header h1 i {
+            margin-right: 15px;
+            color: #4CAF50;
+        }
+        
+        .page-header .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        /* Section des filtres */
+        .filter-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .filter-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+        }
+        
+        .filter-section h2 i {
+            margin-right: 10px;
+            color: #2196F3;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        
+        .filter-btn i {
+            margin-right: 8px;
+        }
+        
+        .filter-btn.active {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .btn-tous {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-present {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 2px solid #4CAF50;
+        }
+        
+        .btn-absent-justifie {
+            background: #fff3e0;
+            color: #ef6c00;
+            border: 2px solid #ff9800;
+        }
+        
+        .btn-absent-non {
+            background: #ffebee;
+            color: #c62828;
+            border: 2px solid #f44336;
+        }
+        
+        .btn-tous:hover, .btn-tous.active {
+            background: #bdbdbd;
+        }
+        
+        .btn-present:hover, .btn-present.active {
+            background: #c8e6c9;
+            color: #1b5e20;
+        }
+        
+        .btn-absent-justifie:hover, .btn-absent-justifie.active {
+            background: #ffe0b2;
+            color: #e65100;
+        }
+        
+        .btn-absent-non:hover, .btn-absent-non.active {
+            background: #ffcdd2;
+            color: #b71c1c;
+        }
+        
+        /* Statistiques du filtre */
+        .filter-stats {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            min-width: 120px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .stat-item .count {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .stat-item .label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .stat-total .count { color: #2196F3; }
+        .stat-present .count { color: #4CAF50; }
+        .stat-absent-just .count { color: #ff9800; }
+        .stat-absent-non .count { color: #f44336; }
+        
+        /* Liste des présences */
+        .presences-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .presence-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .presence-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
+        
+        /* Bande de couleur selon le statut */
+        .presence-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 100%;
+        }
+        
+        .presence-card.present::before { background: #4CAF50; }
+        .presence-card.absent-justifie::before { background: #ff9800; }
+        .presence-card.absent-non-justifie::before { background: #f44336; }
+        
+        /* En-tête de la carte */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .cours-info {
+            flex: 1;
+        }
+        
+        .cours-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .cours-code {
+            color: #666;
+            font-size: 0.9em;
+            background: #f5f5f5;
+            padding: 3px 10px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        
+        .statut-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+        }
+        
+        .statut-badge i {
+            margin-right: 5px;
+        }
+        
+        .badge-present {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .badge-absent-justifie {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .badge-absent-non-justifie {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        /* Corps de la carte */
+        .card-body {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-item i {
+            width: 30px;
+            color: #666;
+            font-size: 1.2em;
+        }
+        
+        .info-content h3 {
+            color: #666;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 3px;
+        }
+        
+        .info-content p {
+            color: #333;
+            font-weight: 500;
+        }
+        
+        /* Section justification */
+        .justification-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .justification-section h4 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            display: flex;
+            align-items: center;
+        }
+        
+        .justification-section h4 i {
+            margin-right: 8px;
+            color: #ff9800;
+        }
+        
+        .justification-text {
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        /* Formulaire d'ajout de justification */
+        .add-justification-form {
+            margin-top: 15px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 2px dashed #ddd;
+            display: none; /* Caché par défaut */
+        }
+        
+        .add-justification-form.active {
+            display: block;
+        }
+        
+        .form-title {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-title i {
+            margin-right: 8px;
+            color: #2196F3;
+        }
+        
+        .justification-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.95em;
+            resize: vertical;
+            margin-bottom: 15px;
+            transition: border 0.3s;
+        }
+        
+        .justification-textarea:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+        }
+        
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .form-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .btn-cancel {
+            background: #f5f5f5;
+            color: #666;
+        }
+        
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+        
+        .btn-submit {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-submit:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+        
+        /* Bouton pour ajouter justification */
+        .add-justification-btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .add-justification-btn:hover {
+            background: #f57c00;
+            transform: translateY(-2px);
+        }
+        
+        .add-justification-btn i {
+            font-size: 0.9em;
+        }
+        
+        /* Message de succès */
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            display: none;
+        }
+        
+        .success-message i {
+            margin-right: 8px;
+        }
+        
+        .success-message.show {
+            display: flex;
+        }
+        
+        /* Message d'erreur */
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            display: none;
+        }
+        
+        .error-message i {
+            margin-right: 8px;
+        }
+        
+        .error-message.show {
+            display: flex;
+        }
+        
+        /* Date de saisie */
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            font-size: 0.85em;
+            color: #888;
+        }
+        
+        .date-saisie {
+            display: flex;
+            align-items: center;
+        }
+        
+        .date-saisie i {
+            margin-right: 5px;
+        }
+        
+        /* Message vide */
+        .empty-message {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .empty-message i {
+            font-size: 4em;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .empty-message h3 {
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .empty-message p {
+            color: #999;
+            max-width: 400px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .back-link i {
+            margin-right: 8px;
+        }
+        
+        /* Badge de statut de validation */
+        .validation-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 15px;
+        }
+        
+        .validation-en-attente {
+            background: #fff3e0;
+            color: #ef6c00;
+            border: 1px solid #ff9800;
+        }
+        
+        .validation-acceptee {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #4CAF50;
+        }
+        
+        .validation-refusee {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #f44336;
+        }
+        
+        /* Contenu de justification */
+        .justification-content {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        
+        /* Upload de fichiers */
+        .file-upload-section {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            background: #f9f9f9;
+            cursor: pointer;
+            transition: border-color 0.3s;
+            margin-bottom: 15px;
+        }
+        
+        .file-upload-section:hover {
+            border-color: #2196F3;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-input-label {
+            background: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        
+        .file-input-label:hover {
+            background: #1976D2;
+        }
+        
+        .selected-files {
+            margin-top: 15px;
+        }
+        
+        .files-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 6px;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .file-icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        
+        .file-pdf {
+            background: #ffebee;
+            color: #f44336;
+        }
+        
+        .file-image {
+            background: #e3f2fd;
+            color: #2196F3;
+        }
+        
+        .file-doc {
+            background: #f3e5f5;
+            color: #9c27b0;
+        }
+        
+        .file-remove {
+            background: none;
+            border: none;
+            color: #f44336;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .file-remove:hover {
+            color: #c62828;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .top-menu {
+                padding: 0 15px;
+            }
+            
+            .menu-container {
+                flex-direction: column;
+                padding: 10px 0;
+            }
+            
+            .logo {
+                margin-bottom: 15px;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: space-around;
+            }
+            
+            .nav-links a {
+                padding: 15px;
+                font-size: 0.9em;
+            }
+            
+            .container {
+                padding: 0 15px;
+                margin: 15px auto;
+            }
+            
+            .filter-buttons {
+                justify-content: center;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .statut-badge {
+                align-self: flex-start;
+            }
+            
+            .card-body {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>   </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Menu horizontal en haut -->
+     <nav class="top-menu">
+        <div class="menu-container">
+            <a href="{% url 'etudiants:dashboard_etudiant' %}" class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                Dashboard Étudiant
+            </a>
+            
+            <ul class="nav-links">
+                <li>
+                    <a href="{% url 'etudiants:mes_presences' %}">
+                        <i class="fas fa-clipboard-check"></i>
+                        Mes Présences
+                    </a>
+                </li>
+                <li>
+                     <a href="{% url 'etudiants:mes_notifications' %}">
+                        <i class="fas fa-bell"></i>
+                        Notifications
+                        {% if notifications_count > 0 %}
+                        <span class="badge">{{ notifications_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'etudiants:logout_view' %}">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Déconnexion
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <!-- Contenu principal -->
+    <div class="container">
+        <!-- En-tête de la page -->
+        <div class="page-header">
+            <h1><i class="fas fa-clipboard-check"></i> Mes Présences</h1>
+            <p class="subtitle">Consultez et gérez vos présences et absences</p>
+        </div>
+
+        <!-- Messages de session -->
+        {% if alert %}
+        <div class="alert-message" style="background: #ffebee; color: #c62828; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: flex; align-items: center;">
+            <i class="fas fa-exclamation-circle" style="margin-right: 10px;"></i>
+            {{ alert }}
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <div class="success-message" style="background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: flex; align-items: center;">
+            <i class="fas fa-check-circle" style="margin-right: 10px;"></i>
+            {{ success }}
+        </div>
+        {% endif %}
+
+        <!-- Section des filtres -->
+        <div class="filter-section">
+            <h2><i class="fas fa-filter"></i> Filtrez par statut</h2>
+            
+            <div class="filter-buttons">
+                <a href="?statut=TOUS" 
+                   class="filter-btn btn-tous {% if statut_filter == 'TOUS' %}active{% endif %}">
+                    <i class="fas fa-layer-group"></i>
+                    Tous les statuts
+                </a>
+                
+                <a href="?statut=PRESENT" 
+                   class="filter-btn btn-present {% if statut_filter == 'PRESENT' %}active{% endif %}">
+                    <i class="fas fa-check-circle"></i>
+                    Présences seulement
+                </a>
+                
+                <a href="?statut=ABSENT_JUSTIFIE" 
+                   class="filter-btn btn-absent-justifie {% if statut_filter == 'ABSENT_JUSTIFIE' %}active{% endif %}">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Absences justifiées
+                </a>
+                
+                <a href="?statut=ABSENT_NON_JUSTIFIE" 
+                   class="filter-btn btn-absent-non {% if statut_filter == 'ABSENT_NON_JUSTIFIE' %}active{% endif %}">
+                    <i class="fas fa-times-circle"></i>
+                    Absences non justifiées
+                </a>
+            </div>
+            
+            <!-- Statistiques du filtre actuel -->
+            <div class="filter-stats">
+                <div class="stat-item stat-total">
+                    <div class="count">{{ total }}</div>
+                    <div class="label">Séances totales</div>
+                </div>
+                
+                <div class="stat-item stat-present">
+                    <div class="count">{{ presents }}</div>
+                    <div class="label">Présences</div>
+                </div>
+                
+                <div class="stat-item stat-absent-just">
+                    <div class="count">{{ absents_justifies }}</div>
+                    <div class="label">Absences justifiées</div>
+                </div>
+                
+                <div class="stat-item stat-absent-non">
+                    <div class="count">{{ absents_non_justifies }}</div>
+                    <div class="label">Absences non justifiées</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des présences -->
+        <div class="presences-list">
+            {% if presences %}
+                {% for presence in presences %}
+                <div class="presence-card 
+                    {% if presence.statut == 'PRESENT' %}present
+                    {% elif presence.statut == 'ABSENT_JUSTIFIE' %}absent-justifie
+                    {% else %}absent-non-justifie{% endif %}"
+                    id="presence-{{ presence.id }}">
+                    
+                    <div class="card-header">
+                        <div class="cours-info">
+                            <div class="cours-title">{{ presence.seance.cours.libelle }}</div>
+                            <span class="cours-code">{{ presence.seance.cours.code }}</span>
+                        </div>
+                        
+                        <div class="statut-badge 
+                            {% if presence.statut == 'PRESENT' %}badge-present
+                            {% elif presence.statut == 'ABSENT_JUSTIFIE' %}badge-absent-justifie
+                            {% else %}badge-absent-non-justifie{% endif %}">
+                            <i class="fas 
+                                {% if presence.statut == 'PRESENT' %}fa-check-circle
+                                {% elif presence.statut == 'ABSENT_JUSTIFIE' %}fa-exclamation-triangle
+                                {% else %}fa-times-circle{% endif %}">
+                            </i>
+                            {% if presence.statut == 'PRESENT' %}
+                                Présent
+                            {% elif presence.statut == 'ABSENT_JUSTIFIE' %}
+                                Absent Justifié
+                            {% else %}
+                                Absent Non Justifié
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="info-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <div class="info-content">
+                                <h3>Date</h3>
+                                <p>{{ presence.seance.date|date:"l d F Y" }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <i class="fas fa-clock"></i>
+                            <div class="info-content">
+                                <h3>Horaire</h3>
+                                <p>{{ presence.seance.heure_debut|date:"H:i" }} - {{ presence.seance.heure_fin|date:"H:i" }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <i class="fas fa-users"></i>
+                            <div class="info-content">
+                                <h3>Groupe</h3>
+                                <p>{{ presence.seance.groupe.nom }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <i class="fas fa-door-open"></i>
+                            <div class="info-content">
+                                <h3>Salle</h3>
+                                <p>{{ presence.seance.salle|default:"Non spécifiée" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section justification existante -->
+                    {% if presence.statut == 'ABSENT_JUSTIFIE' %}
+                    <div class="justification-section">
+                        <div class="justification-header">
+                            <h4><i class="fas fa-file-alt"></i> Votre justification</h4>
+                            
+                            <!-- Badge de statut de validation -->
+                            <div class="validation-badge 
+                                {% if presence.statut_justification == 'ACCEPTEE' %}validation-acceptee
+                                {% elif presence.statut_justification == 'REFUSEE' %}validation-refusee
+                                {% else %}validation-en-attente{% endif %}">
+                                <i class="fas 
+                                    {% if presence.statut_justification == 'ACCEPTEE' %}fa-check-circle
+                                    {% elif presence.statut_justification == 'REFUSEE' %}fa-times-circle
+                                    {% else %}fa-clock{% endif %}">
+                                </i>
+                                {% if presence.statut_justification == 'ACCEPTEE' %}
+                                    Acceptée
+                                {% elif presence.statut_justification == 'REFUSEE' %}
+                                    Refusée
+                                {% else %}
+                                    En attente
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if presence.justification %}
+                        <div class="justification-content">
+                            <p>{{ presence.justification }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if presence.fichier_justificatif %}
+                        <div class="fichier-justificatif" style="margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 4px;">
+                            <p><i class="fas fa-paperclip"></i> <strong>Fichier justificatif joint</strong></p>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Date de soumission -->
+                        <div class="date-saisie">
+                            <i class="fas fa-calendar-check"></i>
+                            Soumis le {{ presence.date_saisie|date:"d/m/Y à H:i" }}
+                        </div>
+                    </div>
+                    
+                    {% elif presence.statut == 'ABSENT_NON_JUSTIFIE' %}
+                    <!-- Formulaire d'ajout de justification (FORMULAIRE HTML STANDARD) -->
+                    <div class="justification-section">
+                        <div class="form-title">
+                            <i class="fas fa-edit"></i>
+                            Justifiez votre absence
+                        </div>
+                        
+                        <!-- Formulaire HTML standard - PAS d'AJAX -->
+                        <form method="post" action="{% url 'etudiants:ajouter_justification' presence.id %}" enctype="multipart/form-data" id="justification-form-{{ presence.id }}">
+                            {% csrf_token %}
+                            
+                            <div class="form-group">
+                                <label for="justification-text-{{ presence.id }}">
+                                    <i class="fas fa-font"></i> Description de la justification:
+                                </label>
+                                <textarea 
+                                    class="justification-textarea" 
+                                    id="justification-text-{{ presence.id }}"
+                                    name="justification"
+                                    placeholder="Expliquez les raisons de votre absence (maladie, problème de transport, etc.)..."
+                                    maxlength="500"
+                                    rows="4"
+                                    required></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="file-input-{{ presence.id }}">
+                                    <i class="fas fa-file-upload"></i> Fichier justificatif (optionnel):
+                                </label>
+                                <div class="file-upload-section" onclick="document.getElementById('file-input-{{ presence.id }}').click()">
+                                    <i class="fas fa-cloud-upload-alt fa-2x"></i>
+                                    <p>Cliquez pour sélectionner un fichier</p>
+                                    <small>Formats acceptés : PDF, JPG, PNG, DOC (Max 5MB)</small>
+                                </div>
+                                <input type="file" 
+                                       class="file-input" 
+                                       id="file-input-{{ presence.id }}"
+                                       name="fichier_justificatif"
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                       onchange="updateFileList('{{ presence.id }}')"
+                                       style="display: none;"
+                                       >
+                                
+                                <div class="selected-files" id="selected-files-{{ presence.id }}" style="display: none;">
+                                    <h5>Fichier sélectionné :</h5>
+                                    <div class="files-list" id="files-list-{{ presence.id }}"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-buttons">
+                                <button type="submit" class="form-btn btn-submit">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Soumettre la justification
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-footer">
+                        <div class="date-saisie">
+                            <i class="fas fa-history"></i>
+                            Enregistré le {{ presence.date_saisie|date:"d/m/Y à H:i" }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+            {% else %}
+                <!-- Message si aucune présence -->
+                <div class="empty-message">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3>Aucune présence trouvée</h3>
+                    <p>
+                        {% if statut_filter != 'TOUS' %}
+                        Aucune séance avec le statut "{{ statut_filter }}" n'a été trouvée.
+                        {% else %}
+                        Vous n'avez aucune séance enregistrée dans le système.
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Système de gestion des absences - {{ today|date:"d F Y" }}</p>
+            <a href="{% url 'etudiants:dashboard_etudiant' %}" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                Retour au tableau de bord
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Fonction simple pour afficher les fichiers sélectionnés
+        function updateFileList(presenceId) {
+            const fileInput = document.getElementById('file-input-' + presenceId);
+            const selectedFilesDiv = document.getElementById('selected-files-' + presenceId);
+            const filesList = document.getElementById('files-list-' + presenceId);
+            
+            if (!fileInput || !selectedFilesDiv || !filesList) return;
+            
+            filesList.innerHTML = '';
+            
+            if (fileInput.files && fileInput.files.length > 0) {
+                selectedFilesDiv.style.display = 'block';
+                
+                const file = fileInput.files[0];
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                // Déterminer l'icône selon le type
+                let iconClass = 'fa-file-alt';
+                let iconColor = 'file-doc';
+                
+                if (file.type === 'application/pdf') {
+                    iconClass = 'fa-file-pdf';
+                    iconColor = 'file-pdf';
+                } else if (file.type.startsWith('image/')) {
+                    iconClass = 'fa-file-image';
+                    iconColor = 'file-image';
+                }
+                
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-icon ${iconColor}">
+                            <i class="fas ${iconClass}"></i>
+                        </div>
+                        <span>${file.name}</span>
+                        <small>(${(file.size / 1024 / 1024).toFixed(2)} MB)</small>
+                    </div>
+                    <button type="button" class="file-remove" onclick="removeFile('${presenceId}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                filesList.appendChild(fileItem);
+            } else {
+                selectedFilesDiv.style.display = 'none';
+            }
+        }
+        
+        // Supprimer un fichier sélectionné
+        function removeFile(presenceId) {
+            const fileInput = document.getElementById('file-input-' + presenceId);
+            if (fileInput) {
+                fileInput.value = '';
+                updateFileList(presenceId);
+            }
+        }
+        
+        // Validation avant soumission
+        document.addEventListener('DOMContentLoaded', function() {
+            // Validation de la taille du fichier
+            document.querySelectorAll('input[type="file"]').forEach(input => {
+                input.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const fileSize = this.files[0].size / 1024 / 1024; // en MB
+                        if (fileSize > 5) {
+                            alert('Le fichier dépasse la taille maximale de 5MB');
+                            this.value = '';
+                        }
+                    }
+                });
+            });
+            
+            // Animation des cartes
+            const cards = document.querySelectorAll('.presence-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

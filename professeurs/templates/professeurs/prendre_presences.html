@@ -1,0 +1,371 @@
+{% extends 'professeurs/base_professeur.html' %}
+
+{% block title %}Prendre les présences - {{ cours.libelle }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'professeurs:dashboard_professeur' %}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="bi bi-clipboard-check"></i> Prendre les présences
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0">
+                        <i class="bi bi-clipboard-check me-2"></i>
+                        Prendre les présences
+                    </h4>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-light text-dark fs-6">{{ seance.date|date:"d/m/Y" }}</span>
+                    {% if presences_existantes %}
+                    <span class="badge bg-warning ms-2">
+                        <i class="bi bi-clock-history"></i> Déjà enregistrées
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <!-- Informations de la séance - TOUJOURS VISIBLE -->
+            <div class="alert alert-info mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-book fs-4 me-3"></i>
+                            <div>
+                                <strong>Cours:</strong><br>
+                                <span class="fs-5">{{ cours.libelle }}</span><br>
+                                <small class="text-muted">{{ cours.code }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-people fs-4 me-3"></i>
+                            <div>
+                                <strong>Groupe:</strong><br>
+                                <span class="fs-5">{{ groupe.nom }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-clock fs-4 me-3"></i>
+                            <div>
+                                <strong>Horaire:</strong><br>
+                                <span class="fs-5">{{ seance.heure_debut|time:"H:i" }} - {{ seance.heure_fin|time:"H:i" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-geo-alt fs-4 me-3"></i>
+                            <div>
+                                <strong>Salle:</strong><br>
+                                <span class="fs-5">{{ seance.salle|default:"Non spécifiée" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-check fs-4 me-3"></i>
+                            <div>
+                                <strong>Étudiants:</strong><br>
+                                <span class="fs-5">{{ etudiants_data|length }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message si présences déjà enregistrées -->
+            {% if presences_existantes %}
+            <div class="alert alert-warning d-flex align-items-center">
+                <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                <div>
+                    <h5 class="alert-heading mb-2">
+                        <i class="bi bi-clock-history"></i> Présences déjà enregistrées
+                    </h5>
+                    <p class="mb-0">
+                        Des présences ont déjà été saisies pour cette séance. Vous pouvez les modifier ci-dessous.
+                        Dernière mise à jour : <strong>{{ date_derniere_mise_a_jour|date:"d/m/Y H:i" }}</strong>
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Formulaire de présence -->
+            <form method="POST" id="presenceForm">
+                {% csrf_token %}
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="5%">#</th>
+                                <th width="40%">Étudiant</th>
+                                <th width="15%">Code</th>
+                                <th width="40%">Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in etudiants_data %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar me-3">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                                 style="width: 40px; height: 40px;">
+                                                {{ data.etudiant.utilisateur.prenom|first|upper }}{{ data.etudiant.utilisateur.nom|first|upper }}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <strong>{{ data.etudiant.utilisateur.prenom }} {{ data.etudiant.utilisateur.nom }}</strong><br>
+                                            <small class="text-muted">{{ data.etudiant.utilisateur.email|default:"Pas d'email" }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ data.etudiant.code_etudiant }}</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <input type="radio" 
+                                               class="btn-check" 
+                                               name="statut_{{ data.etudiant.id }}" 
+                                               id="present_{{ data.etudiant.id }}" 
+                                               value="PRESENT"
+                                               {% if data.statut == 'PRESENT' %}checked{% endif %}>
+                                        <label class="btn btn-outline-success btn-sm" for="present_{{ data.etudiant.id }}">
+                                            <i class="bi bi-check-circle"></i> Présent
+                                        </label>
+                                        
+                                        <input type="radio" 
+                                               class="btn-check" 
+                                               name="statut_{{ data.etudiant.id }}" 
+                                               id="absent_{{ data.etudiant.id }}" 
+                                               value="ABSENT"
+                                               {% if data.statut != 'PRESENT' or not data.statut %}checked{% endif %}>
+                                        <label class="btn btn-outline-danger btn-sm" for="absent_{{ data.etudiant.id }}">
+                                            <i class="bi bi-x-circle"></i> Absent
+                                        </label>
+                                    </div>
+                                    {% if data.presence %}
+                                    <div class="mt-1">
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock-history"></i>
+                                            Dernière mise à jour : {{ data.presence.date_saisie|date:"H:i" }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Résumé statistique -->
+                <div class="card mt-4">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-bar-chart"></i> Résumé
+                        </h5>
+                        <div>
+                            <span class="badge bg-info">Total: {{ etudiants_data|length }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-6">
+                                <div class="stat-box present">
+                                    <h3 id="presentCount">0</h3>
+                                    <p class="text-muted">Présents</p>
+                                    <div class="progress" style="height: 8px;">
+                                        <div id="presentProgress" class="progress-bar bg-success" style="width: 0%"></div>
+                                    </div>
+                                    <small id="presentPercentage" class="text-muted">0%</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="stat-box absent">
+                                    <h3 id="absentCount">0</h3>
+                                    <p class="text-muted">Absents</p>
+                                    <div class="progress" style="height: 8px;">
+                                        <div id="absentProgress" class="progress-bar bg-danger" style="width: 0%"></div>
+                                    </div>
+                                    <small id="absentPercentage" class="text-muted">0%</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="mt-4 d-flex justify-content-between">
+                    <div>
+                        <a href="{% url 'professeurs:dashboard_professeur' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Retour au Dashboard
+                        </a>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-outline-success me-2" id="selectAllPresent">
+                            <i class="bi bi-check-all"></i> Tous Présents
+                        </button>
+                        <button type="button" class="btn btn-outline-danger me-2" id="selectAllAbsent">
+                            <i class="bi bi-x-circle"></i> Tous Absents
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            {% if presences_existantes %}
+                            <i class="bi bi-arrow-clockwise"></i> Mettre à jour
+                            {% else %}
+                            <i class="bi bi-save"></i> Enregistrer
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+                
+                
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-box {
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: all 0.3s;
+}
+.stat-box.present {
+    background-color: rgba(40, 167, 69, 0.1);
+    border: 2px solid #28a745;
+}
+.stat-box.absent {
+    background-color: rgba(220, 53, 69, 0.1);
+    border: 2px solid #dc3545;
+}
+.btn-check:checked + .btn-outline-success {
+    background-color: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+.btn-check:checked + .btn-outline-danger {
+    background-color: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+.stat-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.avatar {
+    font-size: 14px;
+    font-weight: bold;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const totalEtudiants = {{ etudiants_data|length }};
+    const radios = document.querySelectorAll('input[type="radio"]');
+    
+    // Fonction pour mettre à jour les compteurs
+    function updateCounters() {
+        let presentCount = 0;
+        let absentCount = 0;
+        
+        // Compter les statuts
+        radios.forEach(radio => {
+            if (radio.checked) {
+                if (radio.value === 'PRESENT') presentCount++;
+                else if (radio.value === 'ABSENT') absentCount++;
+            }
+        });
+        
+        // Calculer les pourcentages
+        const presentPercentage = totalEtudiants > 0 ? Math.round((presentCount / totalEtudiants) * 100) : 0;
+        const absentPercentage = totalEtudiants > 0 ? Math.round((absentCount / totalEtudiants) * 100) : 0;
+        
+        // Mettre à jour les affichages
+        document.getElementById('presentCount').textContent = presentCount;
+        document.getElementById('absentCount').textContent = absentCount;
+        document.getElementById('presentPercentage').textContent = presentPercentage + '%';
+        document.getElementById('absentPercentage').textContent = absentPercentage + '%';
+        
+        // Mettre à jour les barres de progression
+        document.getElementById('presentProgress').style.width = presentPercentage + '%';
+        document.getElementById('absentProgress').style.width = absentPercentage + '%';
+    }
+    
+    // Tous présents
+    document.getElementById('selectAllPresent').addEventListener('click', function() {
+        document.querySelectorAll('input[value="PRESENT"]').forEach(radio => {
+            radio.checked = true;
+        });
+        updateCounters();
+    });
+    
+    // Tous absents
+    document.getElementById('selectAllAbsent').addEventListener('click', function() {
+        document.querySelectorAll('input[value="ABSENT"]').forEach(radio => {
+            radio.checked = true;
+        });
+        updateCounters();
+    });
+    
+    // Mettre à jour les compteurs quand un statut change
+    radios.forEach(radio => {
+        radio.addEventListener('change', updateCounters);
+    });
+    
+    // Gérer la soumission du formulaire
+    document.getElementById('presenceForm').addEventListener('submit', function(e) {
+        const presentCount = parseInt(document.getElementById('presentCount').textContent);
+        
+        if (presentCount === 0) {
+            if (!confirm("Aucun étudiant n'est marqué comme présent. Tous seront donc considérés absents. Confirmer ?")) {
+                e.preventDefault();
+                return false;
+            }
+        }
+        
+        if (presentCount === totalEtudiants) {
+            if (!confirm("Tous les étudiants sont marqués comme présents. Confirmer l'enregistrement ?")) {
+                e.preventDefault();
+                return false;
+            }
+        } else {
+            const absentCount = totalEtudiants - presentCount;
+            if (!confirm(`${presentCount} étudiant(s) présent(s) et ${absentCount} étudiant(s) absent(s). Confirmer l'enregistrement ?`)) {
+                e.preventDefault();
+                return false;
+            }
+        }
+        
+        return true;
+    });
+    
+    // Initialiser les compteurs
+    updateCounters();
+});
+</script>
+{% endblock %}

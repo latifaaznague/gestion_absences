@@ -3,3 +3,12 @@ Django==5.2.8
 psycopg2-binary==2.9.11
 sqlparse==0.5.3
 tzdata==2025.2
+
+# Outils de test
+pytest==7.4.0
+pytest-django==4.5.2
+pytest-cov==4.1.0
+factory-boy==3.3.0
+freezegun==1.2.2
+model-bakery==1.10.1
+Faker==19.6.1

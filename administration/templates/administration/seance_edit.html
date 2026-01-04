@@ -1,0 +1,108 @@
+<!-- administration/templates/administration/seance_edit.html -->
+{% extends 'administration/base.html' %}
+
+{% block content %}
+<h2>Modifier une séance</h2>
+
+<div class="alert alert-info mb-3">
+    <strong>Semaine {{ week }} - {{ year }}</strong><br>
+    Séance du {{ seance.date }}
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <input type="hidden" name="week" value="{{ week }}">
+    <input type="hidden" name="year" value="{{ year }}">
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="date" class="form-label">Date *</label>
+                <input type="date" class="form-control" id="date" name="date" 
+                       value="{{ seance.date }}" required>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="heure_debut" class="form-label">Heure début *</label>
+                <input type="time" class="form-control" id="heure_debut" name="heure_debut" 
+                       value="{{ seance.heureDebut }}" required>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="heure_fin" class="form-label">Heure fin *</label>
+                <input type="time" class="form-control" id="heure_fin" name="heure_fin" 
+                       value="{{ seance.heureFin }}" required>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="salle" class="form-label">Salle *</label>
+                <input type="text" class="form-control" id="salle" name="salle" 
+                       value="{{ seance.salle }}" required>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="cours_id" class="form-label">Cours *</label>
+                <select class="form-control" id="cours_id" name="cours_id" required>
+                    <option value="">Sélectionner un cours</option>
+                    {% for cours in cours_list %}
+                    <option value="{{ cours.id }}" 
+                            {% if cours.id == seance.cours_id %}selected{% endif %}>
+                        {{ cours.code }} - {{ cours.libelle }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="groupe_id" class="form-label">Groupe *</label>
+                <select class="form-control" id="groupe_id" name="groupe_id" required>
+                    <option value="">Sélectionner un groupe</option>
+                    {% for groupe in groupes %}
+                    <option value="{{ groupe.id }}" 
+                            {% if groupe.id == seance.groupe_id %}selected{% endif %}>
+                        {{ groupe.nom }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="professeur_id" class="form-label">Professeur ID</label>
+                <input type="number" class="form-control" id="professeur_id" name="professeur_id" 
+                       value="{{ seance.professeur_id|default:'' }}" 
+                       placeholder="ID du professeur (optionnel)">
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+        <a href="{% url 'administration:planning_week' %}?week={{ week }}&year={{ year }}" 
+           class="btn btn-secondary">Annuler</a>
+    </div>
+</form>
+
+{% if error %}
+<div class="alert alert-danger mt-3">
+    <strong>Erreur :</strong> {{ error }}
+</div>
+{% endif %}
+
+{% endblock %}

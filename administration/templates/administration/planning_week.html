@@ -1,0 +1,92 @@
+<!-- administration/planning_week_simple.html - VERSION SIMPLE -->
+{% extends 'administration/base.html' %}
+
+{% block content %}
+<h2>Planning Semaine {{ week }} - {{ year }}</h2>
+
+<!-- Navigation -->
+<div style="margin: 20px 0;">
+    <a href="?week={{ week|add:'-1' }}&year={{ year }}" class="btn btn-secondary">← Semaine précédente</a>
+    <span style="margin: 0 20px; font-weight: bold;">
+        Du {{ monday|date:"d/m/Y" }} au {{ sunday|date:"d/m/Y" }}
+    </span>
+    <a href="?week={{ week|add:'1' }}&year={{ year }}" class="btn btn-secondary">Semaine suivante →</a>
+</div>
+
+<!-- Boutons d'action SIMPLES -->
+<div class="mb-4">
+    <!-- Bouton principal pour ajouter une séance -->
+    <a href="{% url 'administration:seance_add' %}?week={{ week }}&year={{ year }}" 
+       class="btn btn-primary">
+        + Ajouter une séance
+    </a>
+    
+    <a href="{% url 'administration:planning_generate' %}" class="btn btn-success">
+        📋 Générer un planning
+    </a>
+    <a href="{% url 'administration:planning_day' %}" class="btn btn-info">
+        📅 Voir par jour
+    </a>
+</div>
+
+<!-- Planning par jour -->
+{% for day in days_with_sessions %}
+<div class="card mb-3">
+    <div class="card-header {% if day.sessions %}bg-success{% else %}bg-secondary{% endif %} text-white">
+        <strong>{{ day.name }}</strong> - {{ day.date|date:"d/m/Y" }}
+        <!-- Bouton pour ajouter une séance ce jour précis -->
+        <a href="{% url 'administration:seance_add' %}?date={{ day.date|date:'Y-m-d' }}&week={{ week }}&year={{ year }}" 
+           class="btn btn-sm btn-light float-end">
+            + Ajouter
+        </a>
+    </div>
+    <div class="card-body">
+        {% if day.sessions %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Heure</th>
+                        <th>Cours</th>
+                        <th>Groupe</th>
+                        <th>Salle</th>
+                        <th>Professeur</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in day.sessions %}
+                    <tr>
+                        <td>{{ session.heureDebut }} - {{ session.heureFin }}</td>
+                        <td>{{ session.cours }}</td>
+                        <td>{{ session.groupe }}</td>
+                        <td>{{ session.salle }}</td>
+                        <td>
+                            {% if session.professeur_id %}
+                                ID: {{ session.professeur_id }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'administration:seance_edit' session.id %}" 
+                               class="btn btn-sm btn-warning">✏️</a>
+                            <a href="{% url 'administration:seance_delete' session.id %}" 
+                               class="btn btn-sm btn-danger"
+                               onclick="return confirm('Supprimer cette séance ?')">🗑️</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-muted">Aucune séance prévue</p>
+            <a href="{% url 'administration:seance_add' %}?date={{ day.date|date:'Y-m-d' }}&week={{ week }}&year={{ year }}" 
+               class="btn btn-sm btn-outline-primary">
+                + Ajouter une séance ce jour
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

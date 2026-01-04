@@ -1,0 +1,40 @@
+<h2>{% if mode == "edit" %}Modifier cours{% else %}Ajouter cours{% endif %}</h2>
+
+<style>
+  .form-row { margin: 10px 0; }
+  label { display:block; font-weight:600; margin-bottom:4px; }
+  input, select { width: 350px; padding: 6px; }
+</style>
+
+<form method="post">
+  {% csrf_token %}
+
+  <div class="form-row">
+    <label>Code:</label>
+    <input type="text" name="code" value="{{ course.code|default:'' }}">
+  </div>
+
+  <div class="form-row">
+    <label>Libellé:</label>
+    <input type="text" name="libelle" value="{{ course.libelle|default:'' }}">
+  </div>
+
+  <div class="form-row">
+    <label>Volume horaire:</label>
+    <input type="number" name="volumeHoraire" value="{{ course.volumeHoraire|default:'' }}">
+  </div>
+
+  <div class="form-row">
+    <label>Professeur:</label>
+    <select name="professorId">
+      <option value="">-- Aucun --</option>
+      {% for p in profs %}
+        <option value="{{ p.id }}" {% if course.professorId and p.id == course.professorId %}selected{% endif %}>
+          {{ p.fullName }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <button type="submit">Enregistrer</button>
+</form>

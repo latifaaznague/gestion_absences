@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Espace Professeur - Gestion des Absences{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 70px;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(90deg, #1a2980 0%, #26d0ce 100%);
+        }
+        .breadcrumb {
+            background-color: #f8f9fa;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+        }
+        .breadcrumb-item a {
+            text-decoration: none;
+            color: #6c757d;
+        }
+        .breadcrumb-item.active {
+            color: #495057;
+            font-weight: 500;
+        }
+        /* Styles pour les messages permanents */
+        .alert-permanent {
+            animation: none !important;
+            transition: none !important;
+            opacity: 1 !important;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'professeurs:dashboard_professeur' %}">
+                <i class="bi bi-person-workspace"></i> Espace Professeur
+            </a>
+            
+            <!-- User Profile -->
+            <div class="d-flex align-items-center">
+                <span class="text-light me-3">
+                    <i class="bi bi-person-circle me-1"></i>
+                    {{ utilisateur.prenom }} {{ utilisateur.nom }}
+                </span>
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" 
+                            id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-gear"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'professeurs:dashboard_professeur' %}">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'professeurs:profil_professeur' %}">
+                                <i class="bi bi-person"></i> Mon Profil
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'professeurs:logout_view' %}" 
+                               onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?');">
+                                <i class="bi bi-box-arrow-right"></i> Déconnexion
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0 me-3">
+                    {% if message.tags == 'success' %}
+                    <i class="bi bi-check-circle-fill fs-5"></i>
+                    {% elif message.tags == 'info' %}
+                    <i class="bi bi-info-circle-fill fs-5"></i>
+                    {% elif message.tags == 'warning' %}
+                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                    {% elif message.tags == 'error' or message.tags == 'danger' %}
+                    <i class="bi bi-x-circle-fill fs-5"></i>
+                    {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                    <strong>
+                        {% if message.tags == 'success' %}Succès
+                        {% elif message.tags == 'info' %}Information
+                        {% elif message.tags == 'warning' %}Attention
+                        {% elif message.tags == 'error' or message.tags == 'danger' %}Erreur
+                        {% endif %}:
+                    </strong>
+                    {{ message }}
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Contenu principal -->
+    <main class="container-fluid">
+        {% block content %}
+        <!-- Le contenu spécifique à chaque page viendra ici -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-5 pt-4 border-top text-center text-muted">
+        <p>Système de Gestion des Absences - Espace Professeur</p>
+        <p class="small">© {% now "Y" %} Université. Connecté en tant que {{ utilisateur.prenom }} {{ utilisateur.nom }}</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Fonction pour mettre à jour l'heure en temps réel
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const timeElement = document.getElementById('currentTime');
+            if (timeElement) {
+                timeElement.textContent = timeString;
+            }
+        }
+        
+        // Mettre à jour l'heure toutes les secondes
+        setInterval(updateTime, 1000);
+        updateTime(); // Initial call
+        
+        // SUPPRIMEZ TOUT CE QUI SUIT - PAS D'AUTO-FERMETURE
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

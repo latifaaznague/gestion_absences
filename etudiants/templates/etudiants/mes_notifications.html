@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Notifications</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding-bottom: 20px;
+        }
+        
+        /* Menu horizontal en haut */
+        .top-menu {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            padding: 0 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .menu-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            font-size: 1.5em;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            position: relative;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
+            transition: background 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-links i {
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
+        
+        .badge {
+            background: #ff5722;
+            color: white;
+            font-size: 0.7em;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+            min-width: 18px;
+            text-align: center;
+            display: inline-block;
+        }
+        
+        /* Container principal */
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        /* En-tête de la page */
+        .page-header {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        
+        .page-header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .page-header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        /* Liste des notifications */
+        .notifications-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .notification-item {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            border-left: 5px solid #4CAF50;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .notification-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .notification-item.non-lue {
+            border-left-color: #ff9800;
+            background: linear-gradient(90deg, #fff8e1 0%, white 5%, white 100%);
+        }
+        
+        .notification-item.non-lue::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            background: #ff9800;
+        }
+        
+        .notification-item.urgence {
+            border-left-color: #f44336;
+        }
+        
+        .notification-item.absence {
+            border-left-color: #2196F3;
+        }
+        
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .notification-type {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+        
+        .notification-icon.absence {
+            background: #e3f2fd;
+            color: #2196F3;
+        }
+        
+        .notification-icon.urgence {
+            background: #ffebee;
+            color: #f44336;
+        }
+        
+        .notification-icon.alerte-absences {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .notification-date {
+            color: #666;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .notification-status {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-acceptee {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #4CAF50;
+        }
+        
+        .status-refusee {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #f44336;
+        }
+        
+        .status-en-attente {
+            background: #fff3e0;
+            color: #ef6c00;
+            border: 1px solid #ff9800;
+        }
+        
+        .notification-content {
+            margin-bottom: 20px;
+        }
+        
+        .notification-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .notification-message {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 1.05em;
+            white-space: pre-line;
+        }
+        
+        .notification-details {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #eee;
+        }
+        
+        .details-title {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .detail-value {
+            color: #333;
+            font-size: 1.05em;
+            font-weight: 500;
+        }
+        
+        .feedback-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .feedback-prof {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .feedback-label {
+            font-weight: 600;
+            color: #1565c0;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .feedback-content {
+            color: #333;
+            line-height: 1.6;
+            font-size: 1em;
+        }
+        
+        .justification-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #6c757d;
+        }
+        
+        .no-notifications {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .no-notifications i {
+            font-size: 4em;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+        
+        .no-notifications h3 {
+            margin-bottom: 10px;
+            color: #555;
+            font-weight: 300;
+        }
+        
+        .no-notifications p {
+            max-width: 500px;
+            margin: 0 auto 25px;
+            line-height: 1.6;
+            font-size: 1.1em;
+        }
+        
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1em;
+        }
+        
+        .btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .mark-read-btn {
+            background: #6c757d;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s;
+        }
+        
+        .mark-read-btn:hover {
+            background: #5a6268;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .top-menu {
+                padding: 0 15px;
+            }
+            
+            .menu-container {
+                flex-direction: column;
+                padding: 10px 0;
+            }
+            
+            .logo {
+                margin-bottom: 15px;
+            }
+            
+            .nav-links {
+                width: 100%;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-links a {
+                padding: 12px;
+                font-size: 0.9em;
+            }
+            
+            .container {
+                padding: 0 15px;
+                margin: 15px auto;
+            }
+            
+            .notification-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn-primary, .mark-read-btn {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Menu horizontal en haut -->
+  <nav class="top-menu">
+        <div class="menu-container">
+            <a href="{% url 'etudiants:dashboard_etudiant' %}" class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                Dashboard Étudiant
+            </a>
+            
+            <ul class="nav-links">
+                <li>
+                    <a href="{% url 'etudiants:mes_presences' %}">
+                        <i class="fas fa-clipboard-check"></i>
+                        Mes Présences
+                    </a>
+                </li>
+                <li>
+                     <a href="{% url 'etudiants:mes_notifications' %}">
+                        <i class="fas fa-bell"></i>
+                        Notifications
+                        {% if notifications_count > 0 %}
+                        <span class="badge">{{ notifications_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'etudiants:logout_view' %}">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Déconnexion
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <!-- Contenu principal -->
+    <div class="container">
+        <!-- En-tête de la page -->
+        <div class="page-header">
+            <h1><i class="fas fa-bell"></i> Mes Notifications</h1>
+           
+        </div>
+
+        <!-- Liste des notifications -->
+        {% if notifications %}
+            <div class="notifications-list">
+                {% for notification in notifications %}
+                    <div class="notification-item {% if not notification.lu %}non-lue{% endif %} {{ notification.type_notification }}">
+                        <div class="notification-header">
+                            <div class="notification-type">
+                                <div class="notification-icon 
+                                    {% if notification.type_notification == 'ALERTE_ABSENCES' %}alerte-absences
+                                    {% elif notification.type_notification == 'ABSENCE' %}absence
+                                    {% elif notification.type_notification == 'JUSTIFICATION_ACCEPTEE' %}info
+                                    {% elif notification.type_notification == 'JUSTIFICATION_REFUSEE' %}urgence
+                                    {% else %}info{% endif %}">
+                                    {% if notification.type_notification == 'ALERTE_ABSENCES' %}
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    {% elif notification.type_notification == 'ABSENCE' %}
+                                        <i class="fas fa-user-clock"></i>
+                                    {% elif notification.type_notification == 'JUSTIFICATION_ACCEPTEE' %}
+                                        <i class="fas fa-check-circle"></i>
+                                    {% elif notification.type_notification == 'JUSTIFICATION_REFUSEE' %}
+                                        <i class="fas fa-times-circle"></i>
+                                    {% else %}
+                                        <i class="fas fa-info-circle"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="notification-title">
+                                        {% if notification.type_notification == 'ALERTE_ABSENCES' %}
+                                            Alerte d'absences
+                                        {% elif notification.presence and notification.presence.statut_justification %}
+                                            {% if notification.presence.statut_justification == 'ACCEPTEE' %}
+                                                Justification acceptée
+                                            {% elif notification.presence.statut_justification == 'REFUSEE' %}
+                                                Justification refusée
+                                            {% elif notification.presence.statut_justification == 'EN_ATTENTE' %}
+                                                Justification en attente
+                                            {% else %}
+                                                Notification d'absence
+                                            {% endif %}
+                                        {% elif notification.type_notification == 'ABSENCE' %}
+                                            Notification d'absence
+                                        {% else %}
+                                            Notification
+                                        {% endif %}
+                                    </div>
+                                    <div class="notification-date">
+                                        <i class="far fa-clock"></i> {{ notification.date_envoi|date:"d/m/Y H:i" }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if notification.presence and notification.presence.statut_justification %}
+                                <div class="notification-status 
+                                    {% if notification.presence.statut_justification == 'ACCEPTEE' %}status-acceptee
+                                    {% elif notification.presence.statut_justification == 'REFUSEE' %}status-refusee
+                                    {% elif notification.presence.statut_justification == 'EN_ATTENTE' %}status-en-attente{% endif %}">
+                                    {% if notification.presence.statut_justification == 'ACCEPTEE' %}
+                                        <i class="fas fa-check-circle"></i> Acceptée
+                                    {% elif notification.presence.statut_justification == 'REFUSEE' %}
+                                        <i class="fas fa-times-circle"></i> Refusée
+                                    {% elif notification.presence.statut_justification == 'EN_ATTENTE' %}
+                                        <i class="fas fa-clock"></i> En attente
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="notification-content">
+                            <div class="notification-message">
+                                {{ notification.message|safe }}
+                            </div>
+                            
+                            {% if notification.presence %}
+                                <div class="notification-details">
+                                    <h4 class="details-title">
+                                        <i class="fas fa-info-circle"></i> Détails de l'absence
+                                    </h4>
+                                    
+                                    <div class="detail-grid">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Cours</span>
+                                            <span class="detail-value">
+                                                <strong>{{ notification.presence.seance.cours.libelle }}</strong>
+                                                ({{ notification.presence.seance.cours.code }})
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="detail-item">
+                                            <span class="detail-label">Date du cours</span>
+                                            <span class="detail-value">
+                                                {{ notification.presence.seance.date|date:"l d/m/Y"|capfirst }}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="detail-item">
+                                            <span class="detail-label">Horaire</span>
+                                            <span class="detail-value">
+                                                {{ notification.presence.seance.heure_debut|time:"H:i" }} - {{ notification.presence.seance.heure_fin|time:"H:i" }}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="detail-item">
+                                            <span class="detail-label">Salle</span>
+                                            <span class="detail-value">
+                                                {{ notification.presence.seance.salle|default:"Non spécifiée" }}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="detail-item">
+                                            <span class="detail-label">Groupe</span>
+                                            <span class="detail-value">
+                                                {{ notification.presence.seance.groupe.nom }}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="detail-item">
+                                            <span class="detail-label">Statut de présence</span>
+                                            <span class="detail-value">
+                                                {% if notification.presence.statut == 'PRESENT' %}
+                                                    <span style="color: #4CAF50;">Présent</span>
+                                                {% elif notification.presence.statut == 'ABSENT_JUSTIFIE' %}
+                                                    <span style="color: #ff9800;">Absent justifié</span>
+                                                {% else %}
+                                                    <span style="color: #f44336;">Absent non justifié</span>
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="detail-item">
+                                            <span class="detail-label">Date de soumission</span>
+                                            <span class="detail-value">
+                                                {{ notification.presence.date_saisie|date:"d/m/Y H:i" }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if notification.presence.justification %}
+                                        <div class="feedback-section">
+                                            <div class="justification-section">
+                                                <div class="feedback-label">
+                                                    <i class="fas fa-file-alt"></i> Votre justification
+                                                </div>
+                                                <div class="feedback-content">
+                                                    {{ notification.presence.justification }}
+                                                </div>
+                                            </div>
+                                            
+                                            {% if notification.presence.feedback_professeur %}
+                                                <div class="feedback-prof">
+                                                    <div class="feedback-label">
+                                                        <i class="fas fa-chalkboard-teacher"></i> Feedback du professeur
+                                                    </div>
+                                                    <div class="feedback-content">
+                                                        {{ notification.presence.feedback_professeur }}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="action-buttons">
+                                {% if not notification.lu %}
+                                    <button class="mark-read-btn">
+                                        <i class="fas fa-check"></i> Marquer comme lu
+                                    </button>
+                                {% endif %}
+                                {% if notification.presence %}
+                                    <a href="{% url 'etudiants:mes_presences' %}?absence_id={{ notification.presence.id }}" 
+                                       class="btn-primary">
+                                        <i class="fas fa-eye"></i> Voir les détails
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-notifications">
+                <i class="far fa-bell-slash"></i>
+                <h3>Aucune notification pour le moment</h3>
+                <p>Vous recevrez des notifications lorsque vos justifications d'absence seront traitées par les professeurs.</p>
+                <div style="margin-top: 30px;">
+                    <a href="{% url 'etudiants:mes_presences' %}" class="btn-primary">
+                        <i class="fas fa-clipboard-check"></i> Voir mes absences
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+        
+        <div class="footer">
+            <p>Système de gestion des absences - © {% now "Y" %}</p>
+        </div>
+    </div>
+
+    <script>
+        // Marquer une notification comme lue
+        document.querySelectorAll('.mark-read-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const notification = this.closest('.notification-item');
+                notification.classList.remove('non-lue');
+                this.style.display = 'none';
+                
+                // Mettre à jour le compteur (simulation)
+                const badge = document.querySelector('.badge');
+                if (badge) {
+                    let count = parseInt(badge.textContent);
+                    if (count > 1) {
+                        badge.textContent = count - 1;
+                    } else {
+                        badge.remove();
+                    }
+                }
+                
+                // Afficher un message de confirmation
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i> Marqué comme lu';
+                this.style.background = '#28a745';
+                
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.style.background = '';
+                }, 2000);
+            });
+        });
+        
+        // Animation au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            const notifications = document.querySelectorAll('.notification-item');
+            notifications.forEach((notification, index) => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    notification.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    notification.style.opacity = '1';
+                    notification.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

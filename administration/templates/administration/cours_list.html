@@ -1,0 +1,35 @@
+<h2>Liste des cours</h2>
+{% if error %}<p style="color:red;">{{ error }}</p>{% endif %}
+
+<p><a href="{% url 'administration:cours_create' %}">+ Nouveau cours</a></p>
+
+<table border="1" cellpadding="6">
+  <tr>
+    <th>ID</th><th>Code</th><th>Libellé</th><th>Volume</th><th>Professeur</th>
+<th>Actions</th>
+  </tr>
+  {% for c in courses %}
+  <tr>
+    <td>{{ c.id }}</td>
+    <td>{{ c.code }}</td>
+    <td>{{ c.libelle }}</td>
+    <td>{{ c.volumeHoraire }}</td>
+    <td>
+        {% if c.profFullName %}
+        {{ c.profFullName }}
+        {% else %}
+         --
+        {% endif %}
+    </td>
+
+
+    <td>
+      <a href="{% url 'administration:cours_edit' c.id %}">Modifier</a> 
+      <a href="{% url 'administration:cours_delete' c.id %}">Supprimer</a>
+
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<p><a href="{% url 'administration:admin_dashboard' %}">Retour dashboard</a></p>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Administration</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            padding-top: 70px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 220px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            padding-top: 70px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .sidebar ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .sidebar li {
+            margin: 5px 0;
+        }
+        .sidebar a {
+            display: block;
+            text-decoration: none;
+            color: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            padding-left: 20px;
+        }
+        .sidebar a.active {
+            background-color: #2980b9;
+            color: white;
+            font-weight: bold;
+        }
+        .content {
+            margin-left: 240px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            min-height: calc(100vh - 70px);
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1100;
+        }
+        .user-menu {
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            background-color: rgba(255,255,255,0.1);
+            margin: 10px;
+        }
+        .user-menu:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+        .badge-stat {
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'administration:admin_dashboard' %}">
+                <i class="bi bi-speedometer2"></i> Admin Dashboard
+            </a>
+            
+            <!-- User Profile Dropdown -->
+            <div class="dropdown ms-auto">
+                <button class="btn btn-outline-light dropdown-toggle" type="button" 
+                        id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle"></i> 
+                    {% if request.session.user_nom %}
+                        {{ request.session.user_prenom }} {{ request.session.user_nom }}
+                    {% else %}
+                        Administrateur
+                    {% endif %}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li>
+                        <a class="dropdown-item" href="{% url 'administration:admin_profile' %}">
+                            <i class="bi bi-person"></i> Mon Profil
+                        </a>
+                    </li>
+                    <li class="dropdown-divider"></li>
+                       <a class="dropdown-item" href="#" onclick="alert('User ID: ' + '{{ request.session.user_id|default:"Non défini" }}')">
+                          <i class="bi bi-info-circle"></i> Debug Session
+                      </a>
+                    <li>
+                        <a class="dropdown-item" href="#">
+                            <i class="bi bi-gear"></i> Paramètres
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'accounts:logout' %}">
+                            <i class="bi bi-box-arrow-right"></i> Déconnexion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- User Info -->
+        <div class="user-menu text-center mb-4">
+            <i class="bi bi-person-badge fs-4"></i>
+            <div class="mt-2">
+                <strong>
+                    {% if request.session.user_nom %}
+                        {{ request.session.user_prenom }} {{ request.session.user_nom }}
+                    {% else %}
+                        Administrateur
+                    {% endif %}
+                </strong>
+                <div class="small text-muted">
+                    <i class="bi bi-shield-check"></i> {{ request.session.user_type|default:"ADMINISTRATEUR" }}
+                </div>
+            </div>
+        </div>
+        
+        <nav>
+            <ul>
+                <li>
+                    <a href="{% url 'administration:admin_dashboard' %}" 
+                       {% if request.resolver_match.url_name == 'admin_dashboard' %}class="active"{% endif %}>
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'administration:student_list' %}" 
+                       {% if 'student' in request.resolver_match.url_name %}class="active"{% endif %}>
+                        <i class="bi bi-people"></i> Gérer Étudiants
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'administration:cours_list' %}" 
+                       {% if 'cours' in request.resolver_match.url_name %}class="active"{% endif %}>
+                        <i class="bi bi-book"></i> Gérer Cours
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'administration:planning_home' %}" 
+                       {% if 'planning' in request.resolver_match.url_name %}class="active"{% endif %}>
+                        <i class="bi bi-calendar-week"></i> Planning
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'administration:students_absences' %}" 
+                       {% if 'absences' in request.resolver_match.url_name %}class="active"{% endif %}>
+                        <i class="bi bi-clipboard-x"></i> Gérer Absences
+                        {% if stats.absences_nj > 0 %}
+                        <span class="badge bg-danger badge-stat">{{ stats.absences_nj }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'administration:admin_profile' %}" 
+                       {% if request.resolver_match.url_name == 'admin_profile' %}class="active"{% endif %}>
+                        <i class="bi bi-person-gear"></i> Mon Profil
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <!-- System Status -->
+        <div class="mt-5 px-3 text-white-50 small">
+            <hr>
+            <div class="mb-2">
+                <i class="bi bi-check-circle-fill text-success"></i> Système actif
+            </div>
+            <div>
+                <i class="bi bi-clock"></i> {% now "H:i" %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h1 class="mb-4">
+            {% if request.resolver_match.url_name == 'admin_dashboard' %}
+                <i class="bi bi-speedometer2 text-primary"></i> Dashboard Administration
+            {% elif request.resolver_match.url_name == 'student_list' %}
+                <i class="bi bi-people text-primary"></i> Gestion des Étudiants
+            {% elif request.resolver_match.url_name == 'cours_list' %}
+                <i class="bi bi-book text-primary"></i> Gestion des Cours
+            {% elif 'planning' in request.resolver_match.url_name %}
+                <i class="bi bi-calendar-week text-primary"></i> Planning
+            {% elif 'absences' in request.resolver_match.url_name %}
+                <i class="bi bi-clipboard-x text-primary"></i> Gestion des Absences
+            {% elif request.resolver_match.url_name == 'admin_profile' %}
+                <i class="bi bi-person-gear text-primary"></i> Mon Profil Administrateur
+            {% else %}
+                Administration
+            {% endif %}
+        </h1>
+
+        <!-- Stats Cards -->
+        <div class="row">
+            <!-- Total Étudiants -->
+            <div class="col-md-3 col-sm-6">
+                <a href="{% url 'administration:student_list' %}" style="text-decoration: none;">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Total Étudiants</h5>
+                                    <h2 class="card-text">{{ stats.students }}</h2>
+                                </div>
+                                <i class="bi bi-people fs-1 opacity-50"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="bi bi-arrow-up-circle"></i> Enregistrés dans le système
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Total Cours -->
+            <div class="col-md-3 col-sm-6">
+                <a href="{% url 'administration:cours_list' %}" style="text-decoration: none;">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Total Cours</h5>
+                                    <h2 class="card-text">{{ stats.courses }}</h2>
+                                </div>
+                                <i class="bi bi-book fs-1 opacity-50"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="bi bi-journal-text"></i> Disponibles
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Absences non justifiées -->
+            <div class="col-md-3 col-sm-6">
+                <a href="{% url 'administration:students_absences' %}" style="text-decoration: none;">
+                    <div class="card text-white bg-danger">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Absences non justifiées</h5>
+                                    <h2 class="card-text">{{ stats.absences_nj }}</h2>
+                                </div>
+                                <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="bi bi-clock"></i> À traiter
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Semaines suivies -->
+            <div class="col-md-3 col-sm-6">
+                <a href="{% url 'administration:planning_home' %}" style="text-decoration: none;">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Semaines suivies</h5>
+                                    <h2 class="card-text">{{ stats.weekly|length }}</h2>
+                                </div>
+                                <i class="bi bi-calendar-week fs-1 opacity-50"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="bi bi-calendar-check"></i> Planning actif
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        {% if request.resolver_match.url_name == 'admin_dashboard' %}
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up"></i> Tendances des absences par semaine
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="absencesChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-pie-chart"></i> Répartition par filière
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="absencesFiliereChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-lightning-charge"></i> Actions Rapides
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <a href="{% url 'administration:student_create' %}" class="btn btn-outline-primary btn-lg w-100">
+                                    <i class="bi bi-person-plus fs-1"></i><br>
+                                    Ajouter Étudiant
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="{% url 'administration:cours_create' %}" class="btn btn-outline-success btn-lg w-100">
+                                    <i class="bi bi-plus-circle fs-1"></i><br>
+                                    Nouveau Cours
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="{% url 'administration:planning_generate' %}" class="btn btn-outline-warning btn-lg w-100">
+                                    <i class="bi bi-calendar-plus fs-1"></i><br>
+                                    Générer Planning
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <a href="{% url 'administration:admin_profile' %}" class="btn btn-outline-info btn-lg w-100">
+                                    <i class="bi bi-gear fs-1"></i><br>
+                                    Mon Profil
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Block content from child templates -->
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Bootstrap JS & Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Charts Script -->
+    {% if request.resolver_match.url_name == 'admin_dashboard' %}
+    <script>
+        // Chart 1: Absences par semaine
+        const weeklyData = {{ stats.weekly|safe }};
+        const labels = weeklyData.map(item => "S" + item.week);
+        const data = weeklyData.map(item => item.total);
+
+        const ctx1 = document.getElementById('absencesChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Absences non justifiées',
+                    data: data,
+                    borderWidth: 3,
+                    borderColor: '#0dcaf0',
+                    backgroundColor: 'rgba(13, 202, 240, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
+            }
+        });
+
+        // Chart 2: Répartition par filière
+        const filiereLabels = {{ stats.absences_par_filiere.labels|safe }};
+        const filiereData = {{ stats.absences_par_filiere.data|safe }};
+
+        const ctx2 = document.getElementById('absencesFiliereChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: filiereLabels,
+                datasets: [{
+                    data: filiereData,
+                    borderWidth: 1,
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                        '#9966FF', '#FF9F40', '#8AC926', '#1982C4'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+    </script>
+    {% endif %}
+    
+    <!-- Auto-refresh stats every 60 seconds -->
+    <script>
+        setTimeout(function() {
+            window.location.reload();
+        }, 60000); // 60 seconds
+    </script>
+</body>
+</html>

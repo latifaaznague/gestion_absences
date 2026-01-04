@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier Profil - Professeur</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            padding-top: 70px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 220px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            padding-top: 70px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .sidebar ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .sidebar li {
+            margin: 5px 0;
+        }
+        .sidebar a {
+            display: block;
+            text-decoration: none;
+            color: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            padding-left: 20px;
+        }
+        .sidebar a.active {
+            background-color: #2980b9;
+            color: white;
+            font-weight: bold;
+        }
+        .content {
+            margin-left: 240px;
+            padding: 20px;
+            min-height: calc(100vh - 70px);
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1100;
+            background: linear-gradient(90deg, #1a2980 0%, #26d0ce 100%);
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .form-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .form-section:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar (identique) -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'professeurs:dashboard_professeur' %}">
+                <i class="bi bi-person-workspace"></i> Espace Professeur
+            </a>
+        </div>
+    </nav>
+
+    <!-- Sidebar (simplifiée) -->
+    <div class="sidebar">
+        <div class="user-menu text-center mb-4">
+            <div class="profile-avatar mb-3">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <div>
+                <strong>{{ utilisateur.prenom }} {{ utilisateur.nom }}</strong>
+                <div class="small text-muted">Professeur</div>
+            </div>
+        </div>
+        
+        <nav>
+            <ul>
+                <li>
+                    <a href="{% url 'professeurs:dashboard_professeur' %}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'professeurs:profil_professeur' %}" class="active">
+                        <i class="bi bi-person-gear"></i> Mon Profil
+                    </a>
+                </li>
+                <li><hr style="border-color: rgba(255,255,255,0.2); margin: 15px;"></li>
+                <li>
+                    <a href="{% url 'professeurs:profil_professeur' %}">
+                        <i class="bi bi-arrow-left"></i> Retour au profil
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <div class="form-container">
+            <!-- Header -->
+            <div class="form-header">
+                <h3 class="mb-0">
+                    <i class="bi bi-pencil-square me-2"></i> Modifier mon profil
+                </h3>
+                <p class="mb-0">Mettez à jour vos informations personnelles</p>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Formulaire -->
+            <form method="POST" action="{% url 'professeurs:modifier_profil' %}">
+                {% csrf_token %}
+                
+                <!-- Informations personnelles -->
+                <div class="form-section">
+                    <h5 class="mb-4 text-primary">
+                        <i class="bi bi-person-vcard me-2"></i> Informations personnelles
+                    </h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="nom" class="form-label">Nom <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="nom" name="nom" 
+                                   value="{{ utilisateur.nom }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="prenom" class="form-label">Prénom <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="prenom" name="prenom" 
+                                   value="{{ utilisateur.prenom }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="email" class="form-label">Adresse email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ utilisateur.email }}" required>
+                            <div class="form-text">
+                                Utilisée pour la connexion et les notifications
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations professionnelles -->
+                <div class="form-section">
+                    <h5 class="mb-4 text-primary">
+                        <i class="bi bi-briefcase me-2"></i> Informations professionnelles
+                    </h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="specialite" class="form-label">Spécialité</label>
+                            <input type="text" class="form-control" id="specialite" name="specialite" 
+                                   value="{{ prof.specialite|default:'' }}">
+                            <div class="form-text">
+                                Votre domaine d'enseignement principal
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations du compte -->
+                <div class="form-section">
+                    <h5 class="mb-4 text-primary">
+                        <i class="bi bi-shield-check me-2"></i> Informations du compte
+                    </h5>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Note importante :</strong> Pour des raisons de sécurité, la modification du mot de passe 
+                        doit être demandée à l'administrateur du système.
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Type de compte</label>
+                            <div class="form-control bg-light">
+                                <i class="bi bi-mortarboard me-2"></i> PROFESSEUR
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date d'inscription</label>
+                            <div class="form-control bg-light">
+                                {{ utilisateur.date_creation|date:"d/m/Y" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'professeurs:profil_professeur' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-2"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i> Enregistrer les modifications
+                    </button>
+                </div>
+                
+                <!-- Avertissement -->
+                <div class="alert alert-warning mt-4">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Attention :</strong> Toute modification sera appliquée immédiatement. 
+                    Assurez-vous que les informations sont correctes avant de valider.
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Validation du formulaire
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(e) {
+                const email = document.getElementById('email').value;
+                const nom = document.getElementById('nom').value;
+                const prenom = document.getElementById('prenom').value;
+                
+                if (!email || !nom || !prenom) {
+                    e.preventDefault();
+                    alert('Veuillez remplir tous les champs obligatoires (*)');
+                    return false;
+                }
+                
+                if (!email.includes('@')) {
+                    e.preventDefault();
+                    alert('Veuillez saisir une adresse email valide');
+                    return false;
+                }
+                
+                // Confirmation avant soumission
+                if (!confirm('Êtes-vous sûr de vouloir modifier votre profil ?')) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Désactiver le bouton pour éviter les doubles clics
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Enregistrement en cours...';
+            });
+        });
+    </script>
+</body>
+</html>

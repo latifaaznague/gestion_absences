@@ -1,6 +1,14 @@
 from django.urls import path
-from .views import etudiant_dashboard
+from . import views
+
+app_name = 'etudiants'
 
 urlpatterns = [
-    path('dashboard/', etudiant_dashboard, name='etudiant_dashboard'),
-]
+ path('login/', views.login_view, name='login_view'),
+    path('dashboard/', views.dashboard_etudiant, name='dashboard_etudiant'),
+    path('mes-presences/', views.mes_presences, name='mes_presences'),
+    path('logout/', views.logout_view, name='logout_view'),
+     path('ajouter-justification/<int:presence_id>/', views.ajouter_justification, name='ajouter_justification'),  # ← Ligne importante
+      path('mes-notifications/', views.mes_notifications, name='mes_notifications'),
+       path('creer-notifications/', views.creer_notifications_pour_justifications, name='creer_notifications'), 
+    ]

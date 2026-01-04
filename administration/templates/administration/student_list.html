@@ -1,0 +1,48 @@
+<h2>Liste des étudiants</h2>
+
+<form method="get">
+  Filière:
+  <select name="filiereId">
+    <option value="">Toutes</option>
+    {% for f in filieres %}
+      <option value="{{ f.id }}" {% if f.id == selected_filiere %}selected{% endif %}>{{ f.nom }}</option>
+    {% endfor %}
+  </select>
+
+  Promotion:
+  <select name="promotionId">
+    <option value="">Toutes</option>
+    {% for p in promotions %}
+      <option value="{{ p.id }}" {% if p.id == selected_promo %}selected{% endif %}>{{ p.libelle }}</option>
+    {% endfor %}
+  </select>
+
+  <button type="submit">Filtrer</button>
+</form>
+
+<p><a href="{% url 'administration:student_create' %}">+ Nouvel étudiant</a></p>
+
+<table border="1" cellpadding="6">
+  <tr>
+    <th>ID</th><th>Nom</th><th>Prénom</th><th>Email</th><th>Code</th><th>Promotion</th><th>Actions</th>
+  </tr>
+  {% for s in students %}
+  <tr>
+    <td>{{ s.id }}</td>
+    <td>{{ s.nom }}</td>
+    <td>{{ s.prenom }}</td>
+    <td>{{ s.email }}</td>
+    <td>{{ s.codeEtudiant }}</td>
+    <td>{{ s.promotionLibelle }}</td>
+
+    <td>
+      <a href="{% url 'administration:student_edit' s.id %}">Modifier</a> |
+      <form method="post" action="{% url 'administration:student_delete' s.id %}" style="display:inline">
+        {% csrf_token %}
+        <button type="submit" onclick="return confirm('Supprimer cet étudiant ?');">Supprimer</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+<p><a href="{% url 'administration:admin_dashboard' %}">Retour dashboard</a></p>

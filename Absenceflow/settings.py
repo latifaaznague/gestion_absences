@@ -37,22 +37,23 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'accounts',
     'Home',
     'etudiants',
     'professeurs',
-    'administration',
-
-]
+    'administration',]
 
 MIDDLEWARE = [
+   # 'debug_middleware.DebugSessionMiddleware',  
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',  # ✅ مهم
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = 'Absenceflow.urls'
 
@@ -66,6 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'etudiants.context_processors.notifications_context',
             ],
         },
     },
@@ -82,7 +84,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'gestion_absences',
         'USER': 'postgres',
-        'PASSWORD': '2032Houda!!', 
+        'PASSWORD': '123456',  # ou le nouveau si tu changes
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -123,11 +125,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
-
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]   # only needed in development
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 # === AJOUTE ÇA ===
 
+#AUTH_USER_MODEL = "accounts.User"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

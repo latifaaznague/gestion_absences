@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon Profil - Professeur</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            padding-top: 70px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 220px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            padding-top: 70px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .sidebar ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .sidebar li {
+            margin: 5px 0;
+        }
+        .sidebar a {
+            display: block;
+            text-decoration: none;
+            color: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            padding-left: 20px;
+        }
+        .sidebar a.active {
+            background-color: #2980b9;
+            color: white;
+            font-weight: bold;
+        }
+        .content {
+            margin-left: 240px;
+            padding: 20px;
+            min-height: calc(100vh - 70px);
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1100;
+            background: linear-gradient(90deg, #1a2980 0%, #26d0ce 100%);
+        }
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            margin: 0 auto 20px;
+        }
+        .info-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        .btn-edit {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .btn-edit:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar (identique au dashboard) -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'professeurs:dashboard_professeur' %}">
+                <i class="bi bi-person-workspace"></i> Espace Professeur
+            </a>
+            
+            <div class="dropdown ms-auto">
+                <button class="btn btn-outline-light dropdown-toggle" type="button" 
+                        id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle"></i> 
+                    {{ utilisateur.prenom }} {{ utilisateur.nom }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li>
+                        <a class="dropdown-item active" href="{% url 'professeurs:profil_professeur' %}">
+                            <i class="bi bi-person"></i> Mon Profil
+                        </a>
+                    </li>
+                    <li class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'professeurs:dashboard_professeur' %}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'professeurs:logout_view' %}" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?');">
+                            <i class="bi bi-box-arrow-right"></i> Déconnexion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar (identique au dashboard) -->
+    <div class="sidebar">
+        <!-- User Info -->
+        <div class="user-menu text-center mb-4">
+            <div class="profile-avatar mb-3">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <div>
+                <strong>{{ utilisateur.prenom }} {{ utilisateur.nom }}</strong>
+                <div class="small text-muted">
+                    <i class="bi bi-mortarboard"></i> Professeur
+                </div>
+                {% if prof.specialite %}
+                <div class="small mt-1">
+                    <i class="bi bi-tags"></i> {{ prof.specialite }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <nav>
+            <ul>
+                <li>
+                    <a href="{% url 'professeurs:dashboard_professeur' %}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'professeurs:mes_cours' %}">
+                        <i class="bi bi-journal-text"></i> Mes Cours
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'professeurs:mes_seances' %}">
+                        <i class="bi bi-calendar-week"></i> Mes Séances
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'professeurs:justifications_attente' %}">
+                        <i class="bi bi-file-earmark-check"></i> Justifications
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'professeurs:profil_professeur' %}" class="active">
+                        <i class="bi bi-person-gear"></i> Mon Profil
+                    </a>
+                </li>
+                <li><hr style="border-color: rgba(255,255,255,0.2); margin: 15px;"></li>
+                <li>
+                    <a href="{% url 'professeurs:logout_view' %}" 
+                       onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?');"
+                       style="color: #e74c3c;">
+                        <i class="bi bi-box-arrow-right"></i> Déconnexion
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="mt-5 px-3 text-white-50 small">
+            <hr style="border-color: rgba(255,255,255,0.2);">
+            <div>
+                <i class="bi bi-calendar-date"></i> {{ today|date:"d/m/Y" }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Header -->
+        <div class="profile-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-3">Mon Profil</h1>
+                    <p class="mb-4">Gérez vos informations personnelles et professionnelles</p>
+                    <a href="{% url 'professeurs:modifier_profil' %}" class="btn btn-edit">
+                        <i class="bi bi-pencil-square me-2"></i> Modifier mon profil
+                    </a>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="profile-avatar">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row">
+            <!-- Informations personnelles -->
+            <div class="col-md-8">
+                <div class="info-card">
+                    <h4 class="mb-4">
+                        <i class="bi bi-person-vcard text-primary me-2"></i> Informations personnelles
+                    </h4>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Nom</label>
+                            <div class="form-control bg-light">{{ utilisateur.nom }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Prénom</label>
+                            <div class="form-control bg-light">{{ utilisateur.prenom }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label text-muted">Adresse email</label>
+                            <div class="form-control bg-light">{{ utilisateur.email }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Spécialité</label>
+                            <div class="form-control bg-light">{{ prof.specialite|default:"Non spécifiée" }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Date d'inscription</label>
+                            <div class="form-control bg-light">{{ utilisateur.date_creation|date:"d/m/Y" }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'professeurs:modifier_profil' %}" class="btn btn-primary">
+                            <i class="bi bi-pencil-square me-2"></i> Modifier les informations
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Dernières activités -->
+                <div class="info-card">
+                    <h4 class="mb-4">
+                        <i class="bi bi-clock-history text-primary me-2"></i> Dernières activités
+                    </h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Derniers cours</h5>
+                            {% if derniers_cours %}
+                            <ul class="list-group list-group-flush">
+                                {% for cours in derniers_cours %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ cours.libelle }}</strong><br>
+                                        <small class="text-muted">{{ cours.code }}</small>
+                                    </div>
+                                    <span class="badge bg-info">{{ cours.volume_horaire }}h</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="text-muted">Aucun cours enregistré</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Dernières séances</h5>
+                            {% if dernieres_seances %}
+                            <ul class="list-group list-group-flush">
+                                {% for seance in dernieres_seances %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ seance.cours.libelle }}</strong><br>
+                                        <small class="text-muted">
+                                            {{ seance.date|date:"d/m" }} • {{ seance.groupe.nom }}
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-secondary">{{ seance.salle|default:"-" }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="text-muted">Aucune séance récente</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="col-md-4">
+                <!-- Statistiques globales -->
+                <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="bi bi-journal-text fs-1 mb-3"></i>
+                    <h3>{{ total_cours }}</h3>
+                    <p>Cours enseignés</p>
+                </div>
+                
+                <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="bi bi-calendar-check fs-1 mb-3"></i>
+                    <h3>{{ total_seances }}</h3>
+                    <p>Séances totales</p>
+                </div>
+                
+                <!-- Compte utilisateur -->
+                <div class="info-card">
+                    <h5 class="mb-3">
+                        <i class="bi bi-shield-check text-success me-2"></i> Compte utilisateur
+                    </h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Type de compte</label>
+                        <div class="form-control bg-light">
+                            <i class="bi bi-mortarboard me-2"></i> PROFESSEUR
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Statut</label>
+                        <div class="form-control bg-light text-success">
+                            <i class="bi bi-check-circle me-2"></i> Actif
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Pour modifier votre mot de passe, contactez l'administrateur.
+                    </div>
+                </div>
+                
+             
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-5 pt-4 border-top text-center text-muted">
+            <p>Système de Gestion des Absences - Profil Professeur</p>
+            <p class="small">Dernière connexion : Aujourd'hui à {% now "H:i" %}</p>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Confirmation avant certaines actions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 300);
+                });
+            }, 5000);
+            
+            // Confirmation avant suppression
+            const deleteButtons = document.querySelectorAll('.btn-delete');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    if (!confirm('Êtes-vous sûr de vouloir supprimer ceci ?')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

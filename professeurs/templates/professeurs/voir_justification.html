@@ -1,0 +1,460 @@
+{% extends 'professeurs/base_professeur.html' %}
+
+{% block title %}Détails de la justification{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'professeurs:dashboard_professeur' %}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'professeurs:justifications_attente' %}">
+                            <i class="bi bi-file-earmark-check"></i> Justifications
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="bi bi-eye"></i> Détails
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0">
+                        <i class="bi bi-eye me-2"></i>
+                        Détails de la justification
+                    </h4>
+                </div>
+                <div class="text-end">
+                    <span class="badge {% if presence.statut_justification == 'EN_ATTENTE' %}bg-warning
+                                      {% elif presence.statut_justification == 'ACCEPTEE' %}bg-success
+                                      {% else %}bg-danger{% endif %} fs-6">
+                        {{ presence.get_statut_justification_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <!-- Informations de base -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-person"></i> Informations étudiant
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar me-3">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                         style="width: 60px; height: 60px;">
+                                        {{ presence.etudiant.utilisateur.prenom|first|upper }}{{ presence.etudiant.utilisateur.nom|first|upper }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="mb-1">{{ presence.etudiant.utilisateur.prenom }} {{ presence.etudiant.utilisateur.nom }}</h4>
+                                    <p class="text-muted mb-0">{{ presence.etudiant.code_etudiant }}</p>
+                                    <p class="text-muted mb-0">{{ presence.etudiant.utilisateur.email }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-calendar-event"></i> Informations séance
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td width="40%"><strong>Cours :</strong></td>
+                                    <td>{{ presence.seance.cours.libelle }} ({{ presence.seance.cours.code }})</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Date :</strong></td>
+                                    <td>{{ presence.seance.date|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Horaire :</strong></td>
+                                    <td>{{ presence.seance.heure_debut|time:"H:i" }} - {{ presence.seance.heure_fin|time:"H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Groupe :</strong></td>
+                                    <td>{{ presence.seance.groupe.nom }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Salle :</strong></td>
+                                    <td>{{ presence.seance.salle|default:"Non spécifiée" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Justification textuelle -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-text"></i> Justification textuelle
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if presence.justification %}
+                    <div class="alert alert-light border p-4">
+                        {{ presence.justification|linebreaks }}
+                    </div>
+                    <p class="text-muted small">
+                        <i class="bi bi-clock"></i> Soumis le : {{ presence.date_saisie|date:"d/m/Y à H:i" }}
+                    </p>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Aucune justification textuelle fournie.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Fichier justificatif -->
+            {% if fichier_justificatif.has_file %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-file-earmark"></i> Fichier justificatif
+                        </h5>
+                        <div class="btn-group">
+                            <!-- Bouton Voir dans une modal -->
+                            <button class="btn btn-sm btn-outline-info" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#modalFichier">
+                                <i class="bi bi-eye"></i> Voir
+                            </button>
+                            <!-- Bouton Télécharger -->
+                            <a href="{% url 'professeurs:telecharger_fichier_justificatif' presence.id %}" 
+                               class="btn btn-sm btn-primary" 
+                               download="justificatif_{{ presence.etudiant.code_etudiant }}"
+                               title="Télécharger le fichier">
+                                <i class="bi bi-download"></i> Télécharger
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        {% if fichier_justificatif.type == 'image/png' or fichier_justificatif.type == 'image/jpeg' %}
+                        <!-- Affichage d'image -->
+                        <div class="mb-3">
+                            <img src="data:{{ fichier_justificatif.type }};base64,{{ fichier_justificatif.data }}" 
+                                 class="img-fluid rounded border" 
+                                 alt="Fichier justificatif"
+                                 style="max-height: 500px;">
+                        </div>
+                        <p class="text-muted">
+                            <i class="bi bi-info-circle"></i>
+                            Cliquez sur "Voir" pour une meilleure visualisation ou "Télécharger" pour sauvegarder.
+                        </p>
+                        {% elif fichier_justificatif.type == 'application/pdf' %}
+                        <!-- Affichage PDF avec iframe -->
+                        <div class="border rounded" style="height: 600px;">
+                            <iframe 
+                                src="data:application/pdf;base64,{{ fichier_justificatif.data }}" 
+                                width="100%" 
+                                height="100%" 
+                                frameborder="0"
+                                style="border: none;">
+                                Votre navigateur ne supporte pas l'affichage des PDF.
+                            </iframe>
+                        </div>
+                        <div class="mt-3">
+                            <p class="text-muted">
+                                <i class="bi bi-info-circle"></i>
+                                Utilisez le bouton "Voir" pour une meilleure visualisation ou "Télécharger" pour sauvegarder le fichier.
+                            </p>
+                        </div>
+                        {% else %}
+                        <!-- Autres types de fichiers -->
+                        <div class="alert alert-info">
+                            <i class="bi bi-file-earmark fs-1"></i>
+                            <h5>Fichier justificatif</h5>
+                            <p class="mb-2">Type: {{ fichier_justificatif.type }}</p>
+                            <p class="text-muted">
+                                <i class="bi bi-info-circle"></i>
+                                Utilisez le bouton "Voir" pour afficher le fichier ou "Télécharger" pour le sauvegarder.
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Commentaire du professeur (si existant) -->
+            {% if presence.commentaire_professeur %}
+            <div class="card mb-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-left-quote"></i> Votre commentaire
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success border">
+                        {{ presence.commentaire_professeur|linebreaks }}
+                    </div>
+                    {% if presence.date_traitement %}
+                    <p class="text-muted small">
+                        <i class="bi bi-clock"></i> Traité le : {{ presence.date_traitement|date:"d/m/Y à H:i" }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-gear"></i> Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <a href="{% url 'professeurs:justifications_attente' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Retour aux justifications
+                            </a>
+                        </div>
+                        <div>
+                            {% if presence.statut_justification == 'EN_ATTENTE' %}
+                            <button class="btn btn-success me-2" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#modalAccepter">
+                                <i class="bi bi-check-lg"></i> Accepter
+                            </button>
+                            <button class="btn btn-danger" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#modalRefuser">
+                                <i class="bi bi-x-lg"></i> Refuser
+                            </button>
+                            {% else %}
+                            <span class="text-muted">
+                                <i class="bi bi-info-circle"></i>
+                                Cette justification a déjà été traitée.
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour le fichier justificatif -->
+<div class="modal fade" id="modalFichier" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-file-earmark"></i> Fichier justificatif
+                    <small class="ms-2 opacity-75">
+                        {{ presence.etudiant.utilisateur.prenom }} {{ presence.etudiant.utilisateur.nom }}
+                    </small>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="fileContent" style="min-height: 300px;">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <p class="mt-2">Chargement du fichier...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Accepter -->
+<div class="modal fade" id="modalAccepter" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'professeurs:traiter_justification' presence.id %}">
+                {% csrf_token %}
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-check-circle"></i> Accepter la justification
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir accepter cette justification ?</p>
+                    <div class="mb-3">
+                        <label for="commentaire_accepter" class="form-label">
+                            <i class="bi bi-chat-left-text"></i> Commentaire (optionnel)
+                        </label>
+                        <textarea class="form-control" 
+                                  id="commentaire_accepter" 
+                                  name="commentaire_prof" 
+                                  rows="3"
+                                  placeholder="Ajoutez un commentaire si nécessaire..."></textarea>
+                    </div>
+                    <input type="hidden" name="action" value="accepter">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Accepter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Refuser -->
+<div class="modal fade" id="modalRefuser" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'professeurs:traiter_justification' presence.id %}">
+                {% csrf_token %}
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-x-circle"></i> Refuser la justification
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir refuser cette justification ?</p>
+                    <p class="text-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Attention : En refusant, l'absence sera marquée comme "Non justifiée".
+                    </p>
+                    <div class="mb-3">
+                        <label for="commentaire_refuser" class="form-label">
+                            <i class="bi bi-chat-left-text"></i> Commentaire (recommandé)
+                        </label>
+                        <textarea class="form-control" 
+                                  id="commentaire_refuser" 
+                                  name="commentaire_prof" 
+                                  rows="3"
+                                  placeholder="Expliquez pourquoi vous refusez cette justification..."
+                                  required></textarea>
+                        <div class="form-text">Ce commentaire sera visible par l'étudiant.</div>
+                    </div>
+                    <input type="hidden" name="action" value="refuser">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Refuser</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar {
+    font-size: 20px;
+    font-weight: bold;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Charger le contenu du fichier quand la modal s'ouvre
+    const modalFichier = document.getElementById('modalFichier');
+    if (modalFichier) {
+        modalFichier.addEventListener('show.bs.modal', function(event) {
+            const contentDiv = document.getElementById('fileContent');
+            
+            // Afficher le loader
+            contentDiv.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <p class="mt-2">Chargement du fichier...</p>
+                </div>
+            `;
+            
+            // Utiliser l'URL Django avec le template tag
+            var url = "{% url 'professeurs:afficher_fichier_modal' presence.id %}";
+            
+            // Charger le contenu via AJAX
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur HTTP ' + response.status);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    contentDiv.innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement du fichier:', error);
+                    contentDiv.innerHTML = `
+                        <div class="alert alert-danger text-center">
+                            <i class="bi bi-exclamation-triangle fs-1"></i>
+                            <h5>Erreur lors du chargement du fichier</h5>
+                            <p>Détails: ${error.message}</p>
+                        </div>
+                    `;
+                });
+        });
+    }
+    
+    // Raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+Enter pour accepter dans un modal ouvert
+        if (e.ctrlKey && e.key === 'Enter') {
+            const modal = document.querySelector('.modal.show');
+            if (modal) {
+                const submitBtn = modal.querySelector('button[type="submit"]');
+                if (submitBtn) submitBtn.click();
+            }
+        }
+        // Échap pour fermer les modals
+        if (e.key === 'Escape') {
+            const modals = document.querySelectorAll('.modal.show');
+            modals.forEach(modal => {
+                const closeBtn = modal.querySelector('.btn-close');
+                if (closeBtn) closeBtn.click();
+            });
+        }
+    });
+    
+    // Auto-focus sur les textarea des modals
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('shown.bs.modal', function() {
+            const textarea = this.querySelector('textarea');
+            if (textarea) textarea.focus();
+        });
+    });
+});
+</script>
+{% endblock %}

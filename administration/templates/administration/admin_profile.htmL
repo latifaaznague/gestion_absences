@@ -1,0 +1,385 @@
+{% extends "administration/base.html" %}
+
+{% block title %}Mon Profil Administrateur{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">
+            <i class="bi bi-person-circle text-primary me-2"></i>Mon Profil Administrateur
+        </h1>
+        <span class="badge bg-primary fs-6">
+            <i class="bi bi-shield-check me-1"></i>{{ user.type_utilisateur|default:"ADMINISTRATEUR" }}
+        </span>
+    </div>
+
+    <!-- Messages d'alerte -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+    {% if success %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>{{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Colonne gauche : Informations personnelles -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-badge text-primary me-2"></i>Informations Personnelles
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="profileForm">
+                        {% csrf_token %}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="nom" class="form-label fw-semibold">
+                                    <i class="bi bi-person me-1"></i>Nom
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-control-lg" 
+                                       id="nom" 
+                                       name="nom" 
+                                       value="{{ user.nom|default_if_none:'' }}" 
+                                       required
+                                       placeholder="Votre nom">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="prenom" class="form-label fw-semibold">
+                                    <i class="bi bi-person me-1"></i>Prénom
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-control-lg" 
+                                       id="prenom" 
+                                       name="prenom" 
+                                       value="{{ user.prenom|default_if_none:'' }}" 
+                                       required
+                                       placeholder="Votre prénom">
+                            </div>
+                            
+                            <div class="col-12">
+                                <label for="email" class="form-label fw-semibold">
+                                    <i class="bi bi-envelope me-1"></i>Adresse Email
+                                </label>
+                                <input type="email" 
+                                       class="form-control form-control-lg" 
+                                       id="email" 
+                                       name="email" 
+                                       value="{{ user.email|default_if_none:'' }}" 
+                                       required
+                                       placeholder="votre.email@exemple.com">
+                            </div>
+                            
+                            <!-- Champ rôle (lecture seule) -->
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-award me-1"></i>Rôle
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" 
+                                           class="form-control form-control-lg bg-light" 
+                                           value="{{ user.type_utilisateur|default:'ADMINISTRATEUR' }}" 
+                                           readonly>
+                                    <span class="input-group-text bg-light">
+                                        <i class="bi bi-lock"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Date de création (si disponible) -->
+                            {% if user.date_creation %}
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-calendar-check me-1"></i>Date de création
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" 
+                                           class="form-control form-control-lg bg-light" 
+                                           value="{{ user.date_creation }}" 
+                                           readonly>
+                                    <span class="input-group-text bg-light">
+                                        <i class="bi bi-clock-history"></i>
+                                    </span>
+                                </div>
+                                <small class="text-muted">Date d'inscription dans le système</small>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Bouton de soumission -->
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg px-4">
+                                    <i class="bi bi-save me-2"></i>Enregistrer les modifications
+                                </button>
+                                <a href="{% url 'administration:admin_dashboard' %}" class="btn btn-outline-secondary btn-lg ms-2">
+                                    <i class="bi bi-arrow-left me-2"></i>Retour au tableau de bord
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Section : Changement de mot de passe -->
+          <div class="card shadow-sm border-0 mt-4">
+    <div class="card-header bg-white border-0 py-3">
+        <h5 class="mb-0 text-warning">
+            <i class="bi bi-shield-lock me-2"></i>Changement de mot de passe
+        </h5>
+    </div>
+    <div class="card-body">
+        <!-- FORMULAIRE INDÉPENDANT avec son propre submit -->
+        <form method="post" id="passwordForm" action="">
+            {% csrf_token %}
+            <!-- CHAMP CACHÉ pour identifier ce formulaire -->
+            <input type="hidden" name="change_password" value="true">
+            
+            <div class="row g-3">
+                <div class="col-12">
+                    <label for="ancien_motdepasse" class="form-label fw-semibold">
+                        <i class="bi bi-key me-1"></i>Ancien mot de passe
+                    </label>
+                    <input type="password" 
+                           class="form-control form-control-lg" 
+                           id="ancien_motdepasse" 
+                           name="ancien_motdepasse"
+                           required
+                           placeholder="Votre mot de passe actuel">
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="nouveau_motdepasse" class="form-label fw-semibold">
+                        <i class="bi bi-key-fill me-1"></i>Nouveau mot de passe
+                    </label>
+                    <input type="password" 
+                           class="form-control form-control-lg" 
+                           id="nouveau_motdepasse" 
+                           name="nouveau_motdepasse"
+                           required
+                           minlength="8"
+                           placeholder="Nouveau mot de passe">
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="confirmation_motdepasse" class="form-label fw-semibold">
+                        <i class="bi bi-key-fill me-1"></i>Confirmation
+                    </label>
+                    <input type="password" 
+                           class="form-control form-control-lg" 
+                           id="confirmation_motdepasse" 
+                           name="confirmation_motdepasse"
+                           required
+                           minlength="8"
+                           placeholder="Confirmez le mot de passe">
+                </div>
+                
+                <div class="col-12 mt-3">
+                    <button type="submit" class="btn btn-warning btn-lg px-4">
+                        <i class="bi bi-key me-2"></i>Changer le mot de passe
+                    </button>
+                    <small class="text-muted ms-3">
+                        <i class="bi bi-info-circle"></i> Minimum 8 caractères
+                    </small>
+                </div>
+              </div>
+          </form>
+       </div>
+    </div>
+        </div>
+        
+        <!-- Colonne droite : Informations système -->
+        <div class="col-lg-4">
+            <!-- Carte : Informations du compte -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle text-info me-2"></i>Informations du Compte
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            <span class="fs-4">{{ user.nom|first|default:"A" }}{{ user.prenom|first|default:"D" }}</span>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">{{ user.nom|default:"Admin" }} {{ user.prenom|default:"Système" }}</h5>
+                            <p class="text-muted mb-0">{{ user.email|default:"admin@system.local" }}</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <span><i class="bi bi-person-badge me-2"></i>Rôle</span>
+                            <span class="badge bg-primary">{{ user.type_utilisateur|default:"ADMINISTRATEUR" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <span><i class="bi bi-calendar me-2"></i>Membre depuis</span>
+                            <span>{{ user.date_creation|date:"d/m/Y"|default:"-" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <span><i class="bi bi-check-circle me-2"></i>Statut</span>
+                            <span class="badge bg-success">Actif</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Carte : Actions rapides -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning text-warning me-2"></i>Actions Rapides
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'administration:admin_dashboard' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
+                        </a>
+                        <a href="{% url 'administration:student_list' %}" class="btn btn-outline-success btn-lg">
+                            <i class="bi bi-people me-2"></i>Gérer étudiants
+                        </a>
+                        <a href="{% url 'administration:cours_list' %}" class="btn btn-outline-info btn-lg">
+                            <i class="bi bi-book me-2"></i>Gérer cours
+                        </a>
+                        <a href="/accounts/logout/" class="btn btn-outline-danger btn-lg">
+                            <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Carte : Aide et support -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-question-circle text-secondary me-2"></i>Aide & Support
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Pour toute assistance technique, contactez l'administrateur système.
+                    </p>
+                    <div class="mt-3">
+                        <a href="#" class="btn btn-outline-secondary btn-sm me-2">
+                            <i class="bi bi-file-earmark-text me-1"></i>Documentation
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-envelope me-1"></i>Contact support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles CSS additionnels -->
+<style>
+.avatar-circle {
+    font-weight: bold;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+    border-radius: 12px;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.form-control:read-only {
+    background-color: #f8f9fa;
+    border-color: #e9ecef;
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.list-group-item {
+    background-color: transparent;
+}
+
+.btn-lg {
+    border-radius: 8px;
+}
+</style>
+<script>
+// Script de debug
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page profil chargée');
+    
+    // Ajouter des logs pour les soumissions
+    const passwordForm = document.getElementById('passwordForm');
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', function(e) {
+            const ancien = document.getElementById('ancien_motdepasse').value;
+            const nouveau = document.getElementById('nouveau_motdepasse').value;
+            const confirm = document.getElementById('confirmation_motdepasse').value;
+            
+            console.log('Soumission formulaire mot de passe:');
+            console.log('- Ancien:', ancien ? '***' : 'VIDE');
+            console.log('- Nouveau:', nouveau ? '***' : 'VIDE');
+            console.log('- Confirm:', confirm ? '***' : 'VIDE');
+            
+            // Validation basique
+            if (!ancien) {
+                e.preventDefault();
+                alert('❌ Veuillez saisir votre ancien mot de passe !');
+                return false;
+            }
+            
+            if (nouveau !== confirm) {
+                e.preventDefault();
+                alert('❌ Les nouveaux mots de passe ne correspondent pas !');
+                return false;
+            }
+            
+            if (nouveau.length < 8) {
+                e.preventDefault();
+                alert('⚠️ Le mot de passe doit contenir au moins 8 caractères !');
+                return false;
+            }
+            
+            return true;
+        });
+    }
+    
+    // Fonction pour voir les mots de passe
+    window.togglePassword = function(fieldId) {
+        const field = document.getElementById(fieldId);
+        if (field.type === 'password') {
+            field.type = 'text';
+        } else {
+            field.type = 'password';
+        }
+    };
+});
+</script>
+{% endblock %}
