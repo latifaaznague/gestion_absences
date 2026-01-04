@@ -7,6 +7,7 @@ from django.conf import settings
 import os
 import uuid
 from services.rpc_client import login_etudiant
+<<<<<<< HEAD
 from Home.models import Etudiant, Promotion, Filiere, Groupe, Seance, EtudiantGroupe, Presence, Notification
 
 # =========================================
@@ -39,6 +40,11 @@ def notifications_context(request):
     return {'notifications_count': 0}
 
 # =========================================
+=======
+from Home.models import Etudiant, Promotion, Filiere, Groupe, Seance, EtudiantGroupe, Presence
+
+# =========================================
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
 # Login étudiant
 # =========================================
 def login_view(request):
@@ -76,6 +82,10 @@ def login_view(request):
     # GET request - afficher le formulaire
     return render(request, "etudiants/login.html")
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
 # =========================================
 # Dashboard étudiant
 # =========================================
@@ -143,9 +153,12 @@ def dashboard_etudiant(request):
             absents_non_justifies = etu.presences.filter(statut='ABSENT_NON_JUSTIFIE').count()
             taux_presence = round((presents / total_presences * 100), 2)
 
+<<<<<<< HEAD
     # Compter les notifications non lues
     notifications_count = get_notifications_count(etudiant_id)
 
+=======
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
     # Préparer le contexte
     context = {
         # Informations étudiant
@@ -177,14 +190,22 @@ def dashboard_etudiant(request):
             "absents_non_justifies": absents_non_justifies,
             "total_absences": absents_justifies + absents_non_justifies,
             "taux_presence": taux_presence
+<<<<<<< HEAD
         },
         
         # Notifications
         "notifications_count": notifications_count
+=======
+        }
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
     }
 
     return render(request, "etudiants/dashboard.html", context)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
 # =========================================
 # Déconnexion
 # =========================================
@@ -195,6 +216,10 @@ def logout_view(request):
     request.session.flush()  # Supprime toutes les données de session
     return redirect("etudiants:login_view")
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
 # =========================================
 # Vue des présences/absences
 # =========================================
@@ -239,9 +264,12 @@ def mes_presences(request):
     alert = request.session.pop('alert', None)
     success = request.session.pop('success', None)
 
+<<<<<<< HEAD
     # Compter les notifications non lues
     notifications_count = get_notifications_count(etudiant_id)
 
+=======
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
     context = {
         "etu": etu,
         "utilisateur": etu.utilisateur,
@@ -254,14 +282,24 @@ def mes_presences(request):
         "statut_filter": statut_filter,
         "today": timezone.now().date(),
         "alert": alert,
+<<<<<<< HEAD
         "success": success,
         "notifications_count": notifications_count
+=======
+        "success": success
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
     }
 
     return render(request, "etudiants/mes_presences.html", context)
 
+<<<<<<< HEAD
 # =========================================
 # Vue pour ajouter une justification
+=======
+
+# =========================================
+# Vue pour ajouter une justification (CORRIGÉE)
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
 # =========================================
 def ajouter_justification(request, presence_id):
     """
@@ -355,6 +393,7 @@ def mes_notifications(request):
     except Etudiant.DoesNotExist:
         request.session.flush()
         return redirect("etudiants:login_view")
+<<<<<<< HEAD
     
     # Récupérer toutes les justifications avec détails
     justifications = Presence.objects.filter(
@@ -473,3 +512,13 @@ def get_notifications_count_api(request):
         return JsonResponse({'count': count})
     except Exception as e:
         return JsonResponse({'count': 0, 'error': str(e)})
+=======
+
+    # Pour le moment, retourner une page vide
+    context = {
+        "etu": etu,
+        "utilisateur": etu.utilisateur,
+    }
+
+    return render(request, "etudiants/mes_notifications.html", context)
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0

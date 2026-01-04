@@ -153,6 +153,7 @@ class Etudiant(models.Model):
     @property
     def id(self):
         return self.utilisateur.id
+<<<<<<< HEAD
     
     # AJOUT: Méthode pour compter les absences
     def compter_absences(self):
@@ -201,6 +202,8 @@ class Etudiant(models.Model):
                 return True
         
         return False
+=======
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
 
 
 # ============================================
@@ -338,7 +341,11 @@ class Presence(models.Model):
     statut = models.CharField(max_length=30, choices=STATUT_CHOICES)
     justification = models.TextField(blank=True, null=True)
     fichier_justificatif = models.BinaryField(blank=True, null=True)
+<<<<<<< HEAD
     statut_justification = models.CharField(
+=======
+    statut_justification = models.CharField(  # NOUVEAU: statut de validation
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
         max_length=20, 
         choices=STATUT_JUSTIFICATION_CHOICES, 
         default='EN_ATTENTE',
@@ -346,10 +353,13 @@ class Presence(models.Model):
         null=True
     )
     date_saisie = models.DateTimeField(auto_now_add=True)
+<<<<<<< HEAD
     
     # AJOUT: Champ pour suivre si une notification d'absence a été créée
     notification_absence_cree = models.BooleanField(default=False, db_column='notification_absence_cree')
     
+=======
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
     # CHANGEMENTS: db_column pour les clés étrangères
     etudiant = models.ForeignKey(Etudiant, on_delete=models.CASCADE, db_column='etudiant_id', related_name='presences')
     seance = models.ForeignKey(Seance, on_delete=models.CASCADE, db_column='seance_id', related_name='presences')
@@ -363,8 +373,12 @@ class Presence(models.Model):
             models.Index(fields=['etudiant']),
             models.Index(fields=['seance']),
             models.Index(fields=['statut']),
+<<<<<<< HEAD
             models.Index(fields=['statut_justification']),
             models.Index(fields=['notification_absence_cree']),
+=======
+             models.Index(fields=['statut_justification']),
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
         ]
     
     def __str__(self):
@@ -502,6 +516,7 @@ class Notification(models.Model):
     message = models.TextField()
     date_envoi = models.DateTimeField(auto_now_add=True)
     lu = models.BooleanField(default=False)
+<<<<<<< HEAD
     
     # AJOUT: Type de notification
     type_notification = models.CharField(
@@ -511,6 +526,8 @@ class Notification(models.Model):
         db_column='type_notification'
     )
     
+=======
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
     # CHANGEMENTS: db_column pour les clés étrangères
     etudiant = models.ForeignKey(Etudiant, on_delete=models.CASCADE, db_column='etudiant_id', related_name='notifications')
     presence = models.ForeignKey(
@@ -518,7 +535,11 @@ class Notification(models.Model):
         on_delete=models.CASCADE, 
         null=True, 
         blank=True,
+<<<<<<< HEAD
         db_column='presence_id',
+=======
+        db_column='presence_id',  # <-- CHANGEMENT ICI
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
         related_name='notifications'
     )
     

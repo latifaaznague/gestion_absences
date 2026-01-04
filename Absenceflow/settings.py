@@ -84,7 +84,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'gestion_absences',
         'USER': 'postgres',
+<<<<<<< HEAD
         'PASSWORD': '123456',  # ou le nouveau si tu changes
+=======
+        'PASSWORD': '123456', 
+>>>>>>> 2e85289e870c9bb608dfa9d388270d523a561fa0
         'HOST': 'localhost',
         'PORT': '5432',
     }
