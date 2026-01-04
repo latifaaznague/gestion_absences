@@ -40,32 +40,35 @@ INSTALLED_APPS = [
     'Home',
     'etudiants',
     'professeurs',
-    'administration',
-
-]
+    'administration',]
 
 MIDDLEWARE = [
+   # 'debug_middleware.DebugSessionMiddleware',  
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',  # ✅ مهم
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'Absenceflow.middleware.DebugMiddleware',
 ]
+
 
 ROOT_URLCONF = 'Absenceflow.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates',],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'etudiants.context_processors.notifications_context',
+                
             ],
         },
     },
@@ -82,7 +85,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'gestion_absences',
         'USER': 'postgres',
-        'PASSWORD': '2032Houda!!', 
+        'PASSWORD': 'emabk',  # ou le nouveau si tu changes
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -123,11 +126,15 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
-
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]   # only needed in development
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 # === AJOUTE ÇA ===
 
+# Permet l'affichage des ressources dans des iframes provenant du même site (utile pour les aperçus PDF)
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+#AUTH_USER_MODEL = "accounts.User"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

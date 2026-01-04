@@ -1,0 +1,770 @@
+{% block head %}
+<!-- Ajouter les CDN pour les icônes ici -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block content %}
+<!-- Sidebar Menu -->
+<div class="sidebar">
+    <div class="top">
+        <div class="logo">
+            <i class="bx bxl-codepen"></i>
+            <span>Gestion Des Absences</span>
+        </div>
+        <i class="bx bx-menu" id="btn"></i>
+    </div>
+    
+    <div class="user">
+            <img src="/static/utilisateur.png" alt="user" class="user-img">
+        <div>
+            <a href="{% url 'administration:admin_profile' %}" 
+               {% if request.resolver_match.url_name == 'admin_profile' %}class="active"{% endif %}>
+                <p class="bold">
+                    {% if request.session.user_nom %}
+                        {{ request.session.user_prenom }} {{ request.session.user_nom }}
+                    {% else %}
+                        Admin Principal
+                    {% endif %}
+                </p>
+            </a>
+        </div>
+    </div>
+    
+    <ul>
+        <li>
+            <a href="{% url 'administration:admin_dashboard' %}"
+               {% if request.resolver_match.url_name == 'admin_dashboard' %}class="active"{% endif %}>
+                <i class='bxr bx-dashboard'></i>
+                <span class="nav_item">Panorama</span>
+            </a>
+            <span class="tooltip">Panorama</span>
+        </li>
+        
+        <li>
+            <div class="dropdown-right" id="planningDropdown">
+                <a href="javascript:void(0)" id="planningLink"
+                   {% if 'planning' in request.resolver_match.url_name %}class="active"{% endif %}>
+                    <i class='bxr bx-calendar-alt'></i>
+                    <span class="nav_item">Planning</span>
+                </a>
+                <span class="tooltip">Planning</span>
+                <div class="dropdown-content">
+                    <a href="{% url 'administration:planning_day' %}?date=2025-12-05">Jour</a>
+                    <a href="{% url 'administration:planning_week' %}?week=1&year=2025">Semaine</a>
+                </div>
+            </div>
+        </li>
+        
+        <li>
+            <a href="{% url 'administration:cours_list' %}"
+               {% if 'cours' in request.resolver_match.url_name %}class="active"{% endif %}>
+                <i class='bxr bx-book-bookmark'></i>
+                <span class="nav_item">Cours</span>
+            </a>
+            <span class="tooltip">Cours</span>
+        </li>
+        
+        <li>
+            <a href="{% url 'administration:student_list' %}"
+               {% if 'student' in request.resolver_match.url_name %}class="active"{% endif %}>
+                <i class='bxr bx-user-id-card'></i>
+                <span class="nav_item">Étudiants</span>
+            </a>
+            <span class="tooltip">Étudiants</span>
+        </li>
+        
+        <li>
+            <a href="{% url 'administration:students_absences' %}"
+               {% if 'absences' in request.resolver_match.url_name %}class="active"{% endif %}>
+                <i class='bxr bx-user-minus'></i>
+                <span class="nav_item">Absences</span>
+            </a>
+            <span class="tooltip">
+                {% if stats.absences_nj > 0 %}
+                    <span class="badge bg-danger badge-stat">{{ stats.absences_nj }}</span>
+                {% endif %}
+                Absences
+            </span>
+        </li>
+        
+        <li>
+    <a href="{% url 'administration:logout' %}">
+        <i class='bxr bx-arrow-out-left-square-half'></i> 
+        <span class="nav_item">Déconnexion</span>
+    </a>
+    <span class="tooltip">Déconnexion</span>
+</li>
+    </ul>
+</div>
+
+<!-- Contenu principal -->
+<div class="main-content">
+    <!-- En-tête comme dans la page cours -->
+    <header>
+        <div class="about-Cours">
+            <h1>Absences par Cours</h1>
+        </div>
+    </header>
+    
+    <!-- Section des filtres avec le style des formulaires cours -->
+  <!-- Section des filtres avec le style des formulaires cours -->
+<section class="table__header">
+    <form id="filterForm" method="get">
+        <div class="action-buttons">
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <!-- Filtre Seuil d'absences -->
+                <div class="filter-group">
+                    <label style="color: #2e7d32; font-weight: bold; margin-right: 8px;">Seuil :</label>
+                    <select name="limit" class="form-select-small" style="padding: 8px 12px; border: 2px solid #4CAF50; border-radius: 8px;">
+                        <option value="0" {% if limit == 0 %}selected{% endif %}>Toutes</option>
+                        <option value="1" {% if limit == 1 %}selected{% endif %}>1+</option>
+                        <option value="2" {% if limit == 2 %}selected{% endif %}>2+</option>
+                        <option value="3" {% if limit == 3 %}selected{% endif %}>3+</option>
+                        <option value="5" {% if limit == 5 %}selected{% endif %}>5+</option>
+                    </select>
+                </div>
+                
+                <!-- Filtre Filière -->
+                <div class="filter-group">
+                    <label style="color: #2e7d32; font-weight: bold; margin-right: 8px;">Filière :</label>
+                    <select name="filiere" class="form-select-small" style="padding: 8px 12px; border: 2px solid #4CAF50; border-radius: 8px;">
+                        <option value="">Toutes</option>
+                        {% for f in filieres %}
+                        <option value="{{ f.id }}" {% if f.id == selected_filiere %}selected{% endif %}>
+                            {{ f.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Bouton Filtrer -->
+                <button type="submit" class="button" style="padding: 8px 20px; display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-funnel"></i> Filtrer
+                </button>
+                
+                <!-- Bouton Réinitialiser -->
+                <a href="?" class="b2" style="padding: 8px 16px; text-decoration: none;">
+                    <i class="bi bi-arrow-clockwise"></i> Réinitialiser
+                </a>
+            </div>
+        </div>
+    </form>
+</section>
+    
+    <!-- Messages d'erreur -->
+    {% if error %}
+    <div class="error-message" style="margin: 20px 0;">
+        {{ error }}
+    </div>
+    {% endif %}
+    
+    <!-- Résumé des résultats -->
+    {% if absences %}
+    <div class="info-card" style="background-color: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2e7d32;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong style="color: #2e7d32;">
+                    <i class="bi bi-info-circle"></i>
+                    {% if limit == 0 %}
+                        Affichage de <strong>toutes</strong> les absences non justifiées
+                    {% else %}
+                        Étudiants avec <strong>{{ limit }}+</strong> absences dans un même cours
+                    {% endif %}
+                </strong>
+                {% if selected_filiere %}
+                    <br>
+                    <small style="color: #4a5568;">
+                        Filière : 
+                        {% for f in filieres %}
+                            {% if f.id == selected_filiere %}{{ f.nom }}{% endif %}
+                        {% endfor %}
+                    </small>
+                {% endif %}
+            </div>
+            <span class="badge bg-primary" style="background-color: #2e7d32 !important;">{{ absences|length }} résultat(s)</span>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Tableau des absences -->
+    <section class="table__body">
+        <table>
+            <thead>
+                <tr>
+                    <th>Étudiant</th>
+                    <th>Filière/Promotion</th>
+                    <th>Cours</th>
+                    <th>Absences</th>
+                    <th>Dates</th>
+                    
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for absence in absences %}
+                <tr class="{% if absence.nombre_absences > 2 %}highlight-row{% endif %}">
+                    <td>
+                        <div class="fw-bold">{{ absence.nom }} {{ absence.prenom }}</div>
+                        <small class="text-muted">{{ absence.email }}</small>
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span class="badge-filiere">{{ absence.filiere }}</span>
+                            <span class="badge-promotion">{{ absence.promotion }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="fw-semibold" style="color: #2e7d32;">{{ absence.cours_code }}</div>
+                        <small>{{ absence.cours_libelle|truncatechars:30 }}</small>
+                    </td>
+                    <td>
+                        <span class="badge-absence {% if absence.nombre_absences > 1 %}badge-danger{% else %}badge-warning{% endif %}">
+                            {{ absence.nombre_absences }}
+                        </span>
+                    </td>
+                    <td>
+                        <small>{{ absence.dates_absences|default:"-" }}</small>
+                    </td>
+                
+                    <td>
+                        {% if absence.nombre_absences > 2 %}
+                        <span class="badge-alert">
+                            <i class="bi bi-exclamation-triangle"></i> À surveiller
+                        </span>
+                        {% elif absence.nombre_absences > 1 %}
+                        <span class="badge-warning">
+                            <i class="bi bi-exclamation-circle"></i> Attention
+                        </span>
+                        {% else %}
+                        <span class="badge-info">
+                            <i class="bi bi-info-circle"></i> Normal
+                        </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px;">
+                        <div style="color: #6c757d; font-style: italic;">
+                            <i class="bi bi-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                            <h4 style="color: #6c757d;">Aucune donnée trouvée</h4>
+                            <p>
+                                {% if limit > 0 %}
+                                    Aucun étudiant n'a {{ limit }} absences ou plus dans un même cours.
+                                {% else %}
+                                    Aucune absence non justifiée trouvée.
+                                {% endif %}
+                            </p>
+                            <div style="margin-top: 20px;">
+                                <a href="?limit=0" class="b2" style="margin-right: 10px;">Voir toutes les absences</a>
+                                <a href="?limit=1" class="button">Voir 1+ absences</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<!-- Styles complets comme les autres pages -->
+<style>
+    /* Palette de couleurs VERT */
+    .user p, .sidebar .top .logo {
+        color: #2d3748;
+    }
+    .bxr {
+        color: #2e7d32;
+    }
+    .bxr:hover {
+        color: #12171e;
+    }
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 80px;
+        background-color: #eee;
+        padding: 0.4rem 0.8rem;
+        transition: width 0.5s ease;
+        z-index: 1000;
+    }
+    .sidebar.active {
+        width: 250px;
+    }
+    .sidebar #btn {
+        position: absolute;
+        color: #4a5568;
+        top: .4rem;
+        left: 50%;
+        font-size: 1.2rem;
+        line-height: 50px;
+        transform: translateX(-50%);
+        cursor: pointer;
+    }
+    .sidebar.active #btn {
+        left: 90%;
+    }
+    .sidebar .top .logo {
+        color: #12171e;
+        display: flex;
+        height: 50px;
+        width: 100%;
+        align-items: center;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .sidebar.active .top .logo {
+        opacity: 1;
+    }
+    .top .logo i {
+        font-size: 2rem;
+        margin-right: 5px;
+        color: #2e7d32;
+    }
+    .user {
+        display: flex;
+        align-items: center;
+        margin: 1rem 0;
+    }
+    .user-img {
+        width: 50px;
+        border-radius: 100%;
+        border: 1px solid #eee;
+    }
+    .user p {
+        color: #12171e;
+        margin-left: 1rem;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .sidebar.active .user p {
+        opacity: 1;
+    }
+    .bold {
+        font-weight: 900;
+    }
+    .sidebar ul li {
+        position: relative;
+        list-style-type: none;
+        height: 50px;
+        width: 90%;
+        margin: 1.3rem auto;
+        line-height: 50px;
+    }
+    .sidebar ul li a {
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        border-radius: 2rem;
+        transition: all 0.3s;
+    }
+    .sidebar ul li a:hover {
+        background-color: #e2e8f0;
+        color: #4CAF50;
+        font-weight: bold;
+    }
+    .sidebar ul li a i {
+        min-width: 50px;
+        text-align: center;
+        height: 50px;
+        border-radius: 12px;
+        line-height: 50px;
+        font-size: 1.5rem;
+    }
+    .nav_item {
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        font-size: large;
+    }
+    .sidebar.active .nav_item {
+        opacity: 1;
+    }
+    .sidebar ul li .tooltip {
+        position: absolute;
+        left: 125px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #fff;
+        box-shadow: 0 0.5rem 0.8rem rgba(0,0,0,0.2);
+        border-radius: .6rem;
+        padding: .4rem 1.2rem;
+        line-height: 1.8rem;
+        z-index: 20;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .sidebar ul li:hover .tooltip {
+        opacity: 1;
+    }
+    .sidebar.active ul li .tooltip {
+        display: none;
+    }
+    
+    /* Main content */
+    .main-content {
+        position: relative;
+        background-color: #eee;
+        min-height: 100vh;
+        top: 0;
+        left: 80px;
+        transition: all 0.5s ease;
+        width: calc(100% - 80px);
+        padding: 1rem;
+    }
+    .sidebar.active ~ .main-content {
+        left: 250px;
+        width: calc(100% - 250px);
+    }
+    
+    /* Header */
+    header {
+        display: flex;
+        background-color: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+    .about-Cours h1 {
+        font-style: italic;
+        font-size: 32px;
+        color: #2e7d32;
+    }
+    .about-Cours {
+        flex-grow: 1;
+        font-family: "Arial", sans-serif;
+        color: #333;
+        padding: 20px;
+    }
+    
+    /* Table header section */
+    .table__header {
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: flex-end;
+        max-width: 95vw;
+        margin-bottom: 20px;
+        background-color: #f9f9f9;
+    }
+    .table__header .action-buttons {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        width: 100%;
+    }
+    
+    /* Table body */
+    .table__body {
+        width: 95%;
+        max-height: calc(89% - 1.6rem);
+        background-color: #fff;
+        border-radius: .6rem;
+        overflow: auto;
+        overflow: overlay;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .table__body::-webkit-scrollbar {
+        width: 0.5rem;
+        height: 0.5rem;
+    }
+    .table__body::-webkit-scrollbar-thumb {
+        border-radius: .5rem;
+        background-color: #0004;
+        visibility: hidden;
+    }
+    .table__body:hover::-webkit-scrollbar-thumb {
+        visibility: visible;
+    }
+    
+    /* Table styling */
+    table {
+        width: 100%;
+    }
+    table, th, td {
+        border-collapse: collapse;
+        padding: 1rem;
+        text-align: left;
+    }
+    thead th {
+        position: sticky;
+        top: 0;
+        left: 0;
+        background-color: #4CAF50;
+        color: white;
+        cursor: pointer;
+        text-transform: capitalize;
+    }
+    tbody tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    tbody tr.highlight-row {
+        background-color: #fff3cd !important;
+    }
+    tbody tr {
+        --delay: .1s;
+        transition: .5s ease-in-out var(--delay), background-color 0s;
+    }
+    tbody tr:hover {
+        background-color: #e8f5e9 !important;
+    }
+    
+    /* Dropdown Planning */
+    .dropdown-right {
+        position: relative;
+        width: 100%;
+        cursor: pointer;
+    }
+    .dropdown-right .dropdown-content {
+        display: none;
+        position: absolute;
+        left: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 140px;
+        background-color: #eee;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        padding: 12px 0;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s;
+        z-index: 1000;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        font-size: large;
+    }
+    .sidebar.active .dropdown-right .dropdown-content {
+        left: 230px;
+    }
+    .dropdown-right.open .dropdown-content {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+    }
+    .dropdown-right .dropdown-content a {
+        display: block;
+        padding: 12px 20px;
+        text-align: center;
+        color: #333;
+        text-decoration: none;
+        font-size: 14px;
+        transition: background 0.3s;
+    }
+    .dropdown-right .dropdown-content a:hover {
+        background-color: #e2e8f0;
+        color: #4CAF50;
+    }
+    .dropdown-right .dropdown-content::before {
+        content: '';
+        position: absolute;
+        left: -8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0;
+        height: 0;
+        border-top: 8px solid transparent;
+        border-bottom: 8px solid transparent;
+        border-right: 8px solid #eee;
+    }
+    
+    /* Badges */
+    .badge-stat {
+        display: inline-block !important;
+        background-color: #dc3545 !important;
+        color: white !important;
+        padding: 3px 6px !important;
+        border-radius: 10px !important;
+        font-size: 0.8em !important;
+        font-weight: bold !important;
+    }
+    .badge-filiere {
+        background-color: #0dcaf0;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        display: inline-block;
+    }
+    .badge-promotion {
+        background-color: #6c757d;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        display: inline-block;
+    }
+    .badge-absence {
+        padding: 6px 12px;
+        border-radius: 50px;
+        font-weight: bold;
+        display: inline-block;
+        min-width: 40px;
+        text-align: center;
+    }
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    .badge-info {
+        background-color: #0dcaf0;
+        color: white;
+    }
+    .badge-alert {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    /* Buttons */
+    .button {
+        padding: 8px 16px;
+        font-size: 14px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s;
+    }
+    .button:hover {
+        background-color: #388E3C;
+    }
+    .b2 {
+        padding: 8px 16px;
+        font-size: 14px;
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s;
+    }
+    .b2:hover {
+        background-color: #5a6268;
+    }
+    
+    /* Form elements */
+    .form-select-small {
+        padding: 8px 12px;
+        border: 2px solid #4CAF50;
+        border-radius: 8px;
+        font-size: 14px;
+        background-color: white;
+        cursor: pointer;
+    }
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    /* Messages */
+    .error-message {
+        color: #721c24;
+        padding: 10px;
+        border: 1px solid #f5c6cb;
+        border-radius: 5px;
+        background-color: #f8d7da;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1000px) {
+        td:not(:first-of-type) {
+            min-width: 12.1rem;
+        }
+    }
+    @media (max-width: 768px) {
+        .table__header {
+            flex-direction: column;
+            gap: 10px;
+        }
+        .table__header .action-buttons {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .filter-group {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .about-Cours h1 {
+            font-size: 24px;
+        }
+    }
+</style>
+
+<!-- JavaScript -->
+<script>
+    // Gestion de la sidebar
+    const btn = document.querySelector('#btn');
+    const sidebar = document.querySelector('.sidebar');
+    const planningDropdown = document.querySelector('#planningDropdown');
+    const planningLink = document.querySelector('#planningLink');
+
+    planningLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (sidebar.classList.contains('active')) {
+            planningDropdown.classList.toggle('open');
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!planningDropdown.contains(e.target)) {
+            planningDropdown.classList.remove('open');
+        }
+    });
+
+    btn.onclick = function() {
+        sidebar.classList.toggle('active');
+        if (!sidebar.classList.contains('active')) {
+            planningDropdown.classList.remove('open');
+        }
+    };
+
+    // Initialisation responsive
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.innerWidth > 768) {
+            sidebar.classList.add('active');
+        }
+    });
+
+    // Gestion responsive
+    window.addEventListener('resize', function() {
+        if (window.innerWidth <= 768) {
+            sidebar.classList.remove('active');
+            planningDropdown.classList.remove('open');
+        } else {
+            sidebar.classList.add('active');
+        }
+    });
+</script>
+{% endblock %}

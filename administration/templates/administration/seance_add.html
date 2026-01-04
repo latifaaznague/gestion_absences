@@ -1,0 +1,1026 @@
+<!-- administration/templates/administration/seance_add.html -->
+{% extends 'administration/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-gradient-success text-white py-3">
+            <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Ajouter une nouvelle séance</h4>
+        </div>
+        
+        <div class="card-body p-4">
+            {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show rounded-lg shadow-sm" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-lg me-3"></i>
+                        <div>
+                            <h6 class="mb-1 fw-bold"><i class="fas fa-times-circle me-1"></i>Erreur d'enregistrement</h6>
+                            <p class="mb-0">{{ error }}</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endif %}
+            
+            <!-- Informations contexte -->
+            <div class="alert alert-info bg-gradient-info border-0 shadow-sm mb-4 rounded-lg">
+                <div class="d-flex">
+                    <i class="fas fa-info-circle fa-lg me-3 mt-1 text-info"></i>
+                    <div>
+                        <h6 class="fw-bold mb-2"><i class="fas fa-calendar-week me-1"></i>Contexte de la séance</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1">
+                                    <span class="badge bg-success me-2">SEMAINE {{ week }}</span>
+                                    <span class="badge bg-primary">{{ year }}</span>
+                                </p>
+                                <p class="mb-0 text-muted">
+                                    <i class="far fa-calendar me-1"></i>
+                                    Du {{ monday|date:"d/m/Y" }} au {{ sunday|date:"d/m/Y" }}
+                                </p>
+                            </div>
+                            {% if prefilled_date %}
+                            <div class="col-md-6">
+                                <p class="mb-0">
+                                    <strong><i class="fas fa-calendar-check me-1"></i>Date pré-remplie :</strong>
+                                    <span class="badge bg-warning text-dark">{{ prefilled_date|date:"d/m/Y" }}</span>
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Formulaire -->
+            <form method="POST" id="addSeanceForm" novalidate class="needs-validation">
+                {% csrf_token %}
+                
+                <!-- Section 1: Date et Heure -->
+                <div class="form-section mb-5">
+                    <div class="section-header mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="section-icon me-3">
+                                <i class="fas fa-calendar-alt fa-2x text-success"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1 text-success">Date et Heure</h5>
+                                <p class="text-muted mb-0">Définissez la plage horaire de la séance</p>
+                            </div>
+                        </div>
+                        <div class="section-divider mt-3"></div>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="date" 
+                                       class="form-control {% if error and 'date' in error %}is-invalid{% endif %}" 
+                                       id="date" 
+                                       name="date" 
+                                       value="{{ form_data.date|default:'' }}" 
+                                       placeholder="Date"
+                                       required>
+                                <label for="date" class="text-muted">
+                                    <i class="fas fa-calendar-day me-1"></i>Date *
+                                </label>
+                                <div class="invalid-feedback fw-bold">
+                                    <i class="fas fa-exclamation-circle me-1"></i>Veuillez sélectionner une date
+                                </div>
+                                <small class="form-text text-muted mt-1 d-block">
+                                    <i class="fas fa-info-circle me-1"></i>Doit être dans la semaine {{ week }}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="time" 
+                                       class="form-control {% if error and 'heure' in error %}is-invalid{% endif %}" 
+                                       id="heure_debut" 
+                                       name="heure_debut" 
+                                       value="{{ form_data.heure_debut|default:'08:00' }}" 
+                                       placeholder="Heure début"
+                                       required>
+                                <label for="heure_debut" class="text-muted">
+                                    <i class="fas fa-play-circle me-1"></i>Heure début *
+                                </label>
+                                <div class="invalid-feedback fw-bold">
+                                    <i class="fas fa-exclamation-circle me-1"></i>Veuillez saisir l'heure de début
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="time" 
+                                       class="form-control {% if error and 'heure' in error %}is-invalid{% endif %}" 
+                                       id="heure_fin" 
+                                       name="heure_fin" 
+                                       value="{{ form_data.heure_fin|default:'10:00' }}" 
+                                       placeholder="Heure fin"
+                                       required>
+                                <label for="heure_fin" class="text-muted">
+                                    <i class="fas fa-stop-circle me-1"></i>Heure fin *
+                                </label>
+                                <div class="invalid-feedback fw-bold">
+                                    <i class="fas fa-exclamation-circle me-1"></i>Veuillez saisir l'heure de fin
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Indicateur de durée -->
+                    <div class="duration-indicator mt-3">
+                        <div class="card border-light shadow-sm">
+                            <div class="card-body py-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>Durée estimée :
+                                    </small>
+                                    <span class="badge bg-info" id="durationDisplay">2h00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section 2: Salle -->
+                <div class="form-section mb-5">
+                    <div class="section-header mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="section-icon me-3">
+                                <i class="fas fa-door-open fa-2x text-primary"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1 text-primary">Localisation</h5>
+                                <p class="text-muted mb-0">Définissez le lieu de la séance</p>
+                            </div>
+                        </div>
+                        <div class="section-divider mt-3"></div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" 
+                                       class="form-control {% if error and 'salle' in error %}is-invalid{% endif %}" 
+                                       id="salle" 
+                                       name="salle" 
+                                       value="{{ form_data.salle|default:'' }}" 
+                                       placeholder="Salle"
+                                       required>
+                                <label for="salle" class="text-muted">
+                                    <i class="fas fa-building me-1"></i>Salle / Amphithéâtre *
+                                </label>
+                                <div class="invalid-feedback fw-bold">
+                                    <i class="fas fa-exclamation-circle me-1"></i>Veuillez saisir le nom de la salle
+                                </div>
+                                <small class="form-text text-muted mt-1 d-block">
+                                    <i class="fas fa-lightbulb me-1"></i>Ex: Ampli 3, Salle A55, Laboratoire B12
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card h-100 border-light bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">
+                                        <i class="fas fa-shield-alt me-1"></i>Vérification des conflits
+                                    </h6>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" 
+                                               id="verifier_conflits" name="verifier_conflits" checked>
+                                        <label class="form-check-label" for="verifier_conflits">
+                                            Activer la vérification des conflits de salle
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Vérifie automatiquement si la salle est disponible aux horaires choisis
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section 3: Cours -->
+                <div class="form-section mb-5">
+                    <div class="section-header mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="section-icon me-3">
+                                <i class="fas fa-book fa-2x text-warning"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1 text-warning">Cours</h5>
+                                <p class="text-muted mb-0">Sélectionnez le cours à dispenser</p>
+                            </div>
+                        </div>
+                        <div class="section-divider mt-3"></div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-floating">
+                                <select class="form-select {% if error and 'cours' in error %}is-invalid{% endif %}" 
+                                        id="cours_id" 
+                                        name="cours_id" 
+                                        required
+                                        style="height: 58px;">
+                                    <option value="" class="text-muted">Sélectionner un cours...</option>
+                                    {% for cours in cours_list %}
+                                        <option value="{{ cours.id }}" 
+                                                data-professeur-id="{{ cours.professeur_id|default:'' }}"
+                                                data-professeur-nom="{{ cours.professeur_nom|default:'' }}"
+                                                {% if form_data.cours_id == cours.id|stringformat:"s" %}selected{% endif %}
+                                                class="option-with-details">
+                                            <div class="d-flex justify-content-between">
+                                                <span>{{ cours.code }} - {{ cours.libelle }}</span>
+                                                {% if cours.professeur_nom %}
+                                                <small class="text-muted">{{ cours.professeur_nom }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <label for="cours_id" class="text-muted">
+                                    <i class="fas fa-graduation-cap me-1"></i>Cours *
+                                </label>
+                                <div class="invalid-feedback fw-bold">
+                                    <i class="fas fa-exclamation-circle me-1"></i>Veuillez sélectionner un cours
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card h-100 border-light bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>Cours sélectionné
+                                    </h6>
+                                    <div id="coursInfo" class="text-center py-3">
+                                        <i class="fas fa-book-open fa-2x text-muted mb-2"></i>
+                                        <p class="text-muted mb-0">Aucun cours sélectionné</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section 4: Groupe -->
+                <div class="form-section mb-5">
+                    <div class="section-header mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="section-icon me-3">
+                                <i class="fas fa-users fa-2x text-danger"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1 text-danger">Groupe d'étudiants</h5>
+                                <p class="text-muted mb-0">Sélectionnez le groupe participant</p>
+                            </div>
+                        </div>
+                        <div class="section-divider mt-3"></div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-floating">
+                                <select class="form-select {% if error and 'groupe' in error %}is-invalid{% endif %}" 
+                                        id="groupe_id" 
+                                        name="groupe_id" 
+                                        required
+                                        style="height: 58px;">
+                                    <option value="" class="text-muted">Sélectionner un groupe...</option>
+                                    {% for groupe in groupes %}
+                                        <option value="{{ groupe.id }}" 
+                                                data-promotion-id="{{ groupe.promotion_id|default:'' }}"
+                                                data-promotion-nom="{{ groupe.promotion_nom|default:'' }}"
+                                                data-filiere-id="{{ groupe.filiere_id|default:'' }}"
+                                                data-filiere-nom="{{ groupe.filiere_nom|default:'' }}"
+                                                {% if form_data.groupe_id == groupe.id|stringformat:"s" %}selected{% endif %}
+                                                class="option-with-details">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="fw-medium">{{ groupe.nom_complet|default:groupe.nom }}</span>
+                                                <div>
+                                                    {% if groupe.promotion_nom %}
+                                                    <small class="badge bg-info me-1">{{ groupe.promotion_nom }}</small>
+                                                    {% endif %}
+                                                    {% if groupe.filiere_nom %}
+                                                    <small class="badge bg-secondary">{{ groupe.filiere_nom|truncatechars:20 }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <label for="groupe_id" class="text-muted">
+                                    <i class="fas fa-user-friends me-1"></i>Groupe *
+                                </label>
+                                <div class="invalid-feedback fw-bold">
+                                    <i class="fas fa-exclamation-circle me-1"></i>Veuillez sélectionner un groupe
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card h-100 border-light bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">
+                                        <i class="fas fa-filter me-1"></i>Filtres optionnels
+                                    </h6>
+                                    <div class="row g-2">
+                                        <div class="col-12">
+                                            <select class="form-select form-select-sm" id="filiere_filter">
+                                                <option value="">Toutes les filières</option>
+                                                {% for filiere in filieres %}
+                                                    <option value="{{ filiere.id }}">
+                                                        {{ filiere.nom|truncatechars:20 }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <select class="form-select form-select-sm" id="promotion_filter">
+                                                <option value="">Toutes les promotions</option>
+                                                {% for promotion in promotions %}
+                                                    <option value="{{ promotion.id }}">
+                                                        {{ promotion.nom_complet|default:promotion.libelle|truncatechars:20 }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-12 mt-2">
+                                            <button type="button" id="resetFilters" class="btn btn-sm btn-outline-secondary w-100">
+                                                <i class="fas fa-redo me-1"></i>Réinitialiser
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Boutons d'action -->
+                <div class="action-buttons mt-5 pt-4 border-top">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2 d-md-block">
+                                <a href="{% url 'administration:planning_week' %}?week={{ week }}&year={{ year }}" 
+                                   class="btn btn-outline-secondary btn-lg px-4">
+                                    <i class="fas fa-arrow-left me-2"></i>Retour au planning
+                                </a>
+                                <button type="button" id="resetForm" class="btn btn-outline-warning btn-lg px-4">
+                                    <i class="fas fa-redo me-2"></i>Réinitialiser
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success btn-lg btn-gradient px-4">
+                                    <i class="fas fa-check-circle me-2"></i>Créer la séance
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Guide d'aide -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card border-light shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-question-circle me-2 text-primary"></i>Guide rapide</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex">
+                                <i class="fas fa-asterisk text-danger me-3 mt-1"></i>
+                                <div>
+                                    <small class="fw-bold">Champs obligatoires</small>
+                                    <p class="mb-0 text-muted small">Tous les champs marqués d'un astérisque (*) doivent être remplis</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex">
+                                <i class="fas fa-clock text-success me-3 mt-1"></i>
+                                <div>
+                                    <small class="fw-bold">Horaires conseillés</small>
+                                    <p class="mb-0 text-muted small">Séances de 2h (08h-10h, 10h-12h, 14h-16h, 16h-18h)</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex">
+                                <i class="fas fa-exclamation-triangle text-warning me-3 mt-1"></i>
+                                <div>
+                                    <small class="fw-bold">Vérification des conflits</small>
+                                    <p class="mb-0 text-muted small">Activez cette option pour éviter les chevauchements de séances</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-light shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-lightbulb me-2 text-warning"></i>Bonnes pratiques</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex">
+                                <div class="step-number me-3">1</div>
+                                <div>
+                                    <small class="fw-bold">Sélectionnez d'abord la date</small>
+                                    <p class="mb-0 text-muted small">La date détermine la semaine de planification</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex">
+                                <div class="step-number me-3">2</div>
+                                <div>
+                                    <small class="fw-bold">Utilisez les filtres de groupe</small>
+                                    <p class="mb-0 text-muted small">Filtrez par filière/promotion pour trouver rapidement votre groupe</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex">
+                                <div class="step-number me-3">3</div>
+                                <div>
+                                    <small class="fw-bold">Vérifiez les disponibilités</small>
+                                    <p class="mb-0 text-muted small">Consultez le planning avant de créer pour éviter les conflits</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript amélioré -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elements DOM
+    const form = document.getElementById('addSeanceForm');
+    const coursSelect = document.getElementById('cours_id');
+    const groupeSelect = document.getElementById('groupe_id');
+    const filiereFilter = document.getElementById('filiere_filter');
+    const promotionFilter = document.getElementById('promotion_filter');
+    const dateInput = document.getElementById('date');
+    const heureDebutInput = document.getElementById('heure_debut');
+    const heureFinInput = document.getElementById('heure_fin');
+    const coursInfo = document.getElementById('coursInfo');
+    const resetFormBtn = document.getElementById('resetForm');
+    const resetFiltersBtn = document.getElementById('resetFilters');
+    const durationDisplay = document.getElementById('durationDisplay');
+    
+    // 1. Initialisation de la date
+    function initializeDate() {
+        if (!dateInput.value) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            dateInput.value = `${yyyy}-${mm}-${dd}`;
+        }
+    }
+    
+    // 2. Calcul de la durée
+    function calculateDuration() {
+        if (heureDebutInput.value && heureFinInput.value) {
+            const [h1, m1] = heureDebutInput.value.split(':').map(Number);
+            const [h2, m2] = heureFinInput.value.split(':').map(Number);
+            
+            const start = new Date(2000, 0, 1, h1, m1);
+            const end = new Date(2000, 0, 1, h2, m2);
+            
+            // Si l'heure de fin est avant l'heure de début, on suppose que c'est le lendemain
+            if (end <= start) {
+                end.setDate(end.getDate() + 1);
+            }
+            
+            const diffMs = end - start;
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            durationDisplay.textContent = `${diffHours}h${diffMinutes.toString().padStart(2, '0')}`;
+            
+            // Changer la couleur selon la durée
+            if (diffHours > 3) {
+                durationDisplay.className = 'badge bg-danger';
+            } else if (diffHours > 2) {
+                durationDisplay.className = 'badge bg-warning text-dark';
+            } else {
+                durationDisplay.className = 'badge bg-success';
+            }
+        }
+    }
+    
+    // 3. Mise à jour des informations du cours
+    function updateCoursInfo() {
+        const selectedOption = coursSelect.options[coursSelect.selectedIndex];
+        
+        if (coursSelect.value) {
+            const coursText = selectedOption.textContent.split(' - ');
+            const code = coursText[0];
+            const libelle = coursText[1];
+            
+            coursInfo.innerHTML = `
+                <div class="text-start">
+                    <h6 class="fw-bold text-primary mb-1">${code}</h6>
+                    <p class="mb-2">${libelle}</p>
+                    <small class="text-muted">
+                        <i class="fas fa-user-graduate me-1"></i>
+                        ${selectedOption.dataset.professeurNom || 'Professeur non assigné'}
+                    </small>
+                </div>
+            `;
+        } else {
+            coursInfo.innerHTML = `
+                <i class="fas fa-book-open fa-2x text-muted mb-2"></i>
+                <p class="text-muted mb-0">Aucun cours sélectionné</p>
+            `;
+        }
+    }
+    
+    // 4. Filtrage des groupes
+    function filterGroups() {
+        const filiereId = filiereFilter.value;
+        const promotionId = promotionFilter.value;
+        
+        for (let i = 0; i < groupeSelect.options.length; i++) {
+            const option = groupeSelect.options[i];
+            if (option.value === '') continue;
+            
+            const optionFiliereId = option.dataset.filiereId;
+            const optionPromotionId = option.dataset.promotionId;
+            
+            const showFiliere = !filiereId || optionFiliereId === filiereId;
+            const showPromotion = !promotionId || optionPromotionId === promotionId;
+            
+            if (showFiliere && showPromotion) {
+                option.style.display = '';
+                option.disabled = false;
+            } else {
+                option.style.display = 'none';
+                option.disabled = true;
+            }
+        }
+        
+        // Réinitialiser la sélection si l'option actuelle est cachée
+        if (groupeSelect.value) {
+            const selectedOption = groupeSelect.options[groupeSelect.selectedIndex];
+            if (selectedOption.style.display === 'none') {
+                groupeSelect.value = '';
+            }
+        }
+    }
+    
+    // 5. Validation du formulaire
+    function validateForm(event) {
+        let isValid = true;
+        const errorMessages = [];
+        
+        // Vérification des champs obligatoires
+        const requiredFields = [
+            {id: 'date', name: 'Date'},
+            {id: 'heure_debut', name: 'Heure de début'},
+            {id: 'heure_fin', name: 'Heure de fin'},
+            {id: 'salle', name: 'Salle'},
+            {id: 'cours_id', name: 'Cours'},
+            {id: 'groupe_id', name: 'Groupe'}
+        ];
+        
+        requiredFields.forEach(field => {
+            const element = document.getElementById(field.id);
+            if (!element.value.trim()) {
+                element.classList.add('is-invalid');
+                errorMessages.push(`<strong>${field.name}</strong> est obligatoire`);
+                isValid = false;
+            }
+        });
+        
+        // Validation des heures
+        if (heureDebutInput.value && heureFinInput.value) {
+            if (heureDebutInput.value >= heureFinInput.value) {
+                heureDebutInput.classList.add('is-invalid');
+                heureFinInput.classList.add('is-invalid');
+                errorMessages.push("<strong>L'heure de début</strong> doit être antérieure à <strong>l'heure de fin</strong>");
+                isValid = false;
+            }
+            
+            // Vérifier que la durée n'est pas trop longue (> 6h)
+            const [h1, m1] = heureDebutInput.value.split(':').map(Number);
+            const [h2, m2] = heureFinInput.value.split(':').map(Number);
+            let hoursDiff = h2 - h1;
+            if (hoursDiff < 0) hoursDiff += 24;
+            
+            if (hoursDiff > 6) {
+                heureDebutInput.classList.add('is-invalid');
+                heureFinInput.classList.add('is-invalid');
+                errorMessages.push("<strong>La durée</strong> ne peut pas dépasser 6 heures");
+                isValid = false;
+            }
+        }
+        
+        if (!isValid) {
+            event.preventDefault();
+            
+            // Afficher les erreurs
+            showErrorMessages(errorMessages);
+            
+            // Scroll vers la première erreur
+            const firstError = document.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+        }
+    }
+    
+    // 6. Affichage des messages d'erreur
+    function showErrorMessages(messages) {
+        // Supprimer l'ancienne alerte
+        const oldAlert = document.querySelector('.alert.alert-danger:not(.alert-dismissible)');
+        if (oldAlert) oldAlert.remove();
+        
+        // Créer la nouvelle alerte
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'alert alert-danger alert-dismissible fade show rounded-lg shadow-sm mt-3';
+        errorDiv.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                <div class="flex-grow-1">
+                    <h6 class="fw-bold mb-2"><i class="fas fa-times-circle me-1"></i>Impossible de créer la séance</h6>
+                    <div class="mb-0">
+                        <p class="mb-1">Veuillez corriger les erreurs suivantes :</p>
+                        <ul class="mb-0 ps-3">
+                            ${messages.map(msg => `<li>${msg}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        // Ajouter l'alerte
+        const cardBody = document.querySelector('.card-body');
+        cardBody.insertBefore(errorDiv, cardBody.firstChild);
+    }
+    
+    // 7. Réinitialisation du formulaire
+    function resetForm() {
+        if (confirm('Êtes-vous sûr de vouloir réinitialiser le formulaire ? Toutes les données seront perdues.')) {
+            form.reset();
+            initializeDate();
+            updateCoursInfo();
+            calculateDuration();
+            
+            // Réinitialiser les classes de validation
+            form.querySelectorAll('.is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
+            
+            // Réinitialiser les filtres
+            filiereFilter.value = '';
+            promotionFilter.value = '';
+            filterGroups();
+            
+            // Scroll vers le haut
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Afficher un message de succès
+            showSuccessMessage('Formulaire réinitialisé avec succès');
+        }
+    }
+    
+    // 8. Message de succès
+    function showSuccessMessage(message) {
+        const successDiv = document.createElement('div');
+        successDiv.className = 'alert alert-success alert-dismissible fade show rounded-lg shadow-sm mt-3';
+        successDiv.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas fa-check-circle fa-2x me-3"></i>
+                <div class="flex-grow-1">
+                    <h6 class="fw-bold mb-0"><i class="fas fa-check me-1"></i>${message}</h6>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        const cardBody = document.querySelector('.card-body');
+        cardBody.insertBefore(successDiv, cardBody.firstChild);
+        
+        // Supprimer automatiquement après 3 secondes
+        setTimeout(() => {
+            if (successDiv.parentNode) {
+                successDiv.remove();
+            }
+        }, 3000);
+    }
+    
+    // Événements
+    heureDebutInput.addEventListener('change', calculateDuration);
+    heureFinInput.addEventListener('change', calculateDuration);
+    coursSelect.addEventListener('change', updateCoursInfo);
+    filiereFilter.addEventListener('change', filterGroups);
+    promotionFilter.addEventListener('change', filterGroups);
+    resetFormBtn.addEventListener('click', resetForm);
+    resetFiltersBtn.addEventListener('click', function() {
+        filiereFilter.value = '';
+        promotionFilter.value = '';
+        filterGroups();
+    });
+    form.addEventListener('submit', validateForm);
+    
+    // Initialisation
+    initializeDate();
+    calculateDuration();
+    updateCoursInfo();
+    
+    // Validation en temps réel
+    form.querySelectorAll('input, select').forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+});
+</script>
+
+<style>
+/* Styles personnalisés */
+:root {
+    --success-gradient: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    --primary-gradient: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+    --warning-gradient: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    --danger-gradient: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+}
+
+.card {
+    border-radius: 15px;
+    border: none;
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+}
+
+.card-header.bg-gradient-success {
+    background: var(--success-gradient) !important;
+}
+
+.form-section {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.form-section:hover {
+    border-color: #dee2e6;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.section-header {
+    position: relative;
+}
+
+.section-icon {
+    width: 60px;
+    height: 60px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section-divider {
+    height: 3px;
+    background: linear-gradient(90deg, #e9ecef 0%, transparent 100%);
+    border-radius: 2px;
+}
+
+.form-floating > label {
+    padding-left: 2.5rem;
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-control.is-invalid, .form-select.is-invalid {
+    border-color: #dc3545;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+}
+
+.form-check-input:checked {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn {
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-success.btn-gradient {
+    background: var(--success-gradient);
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+.duration-indicator .card {
+    border-left: 4px solid #17a2b8;
+}
+
+.action-buttons {
+    background: #f8f9fa;
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    margin-bottom: -1.5rem;
+    padding: 1.5rem;
+}
+
+.step-number {
+    width: 32px;
+    height: 32px;
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.option-with-details {
+    padding: 12px 16px !important;
+}
+
+.option-with-details:hover {
+    background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.badge {
+    border-radius: 20px;
+    padding: 0.5em 0.8em;
+    font-weight: 600;
+}
+
+.list-group-item {
+    padding: 1rem 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .form-section {
+        padding: 1rem;
+    }
+    
+    .section-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* Animation pour les erreurs */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.is-invalid {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Style pour les selects avec options longues */
+.select2-container--default .select2-selection--single {
+    height: 58px !important;
+    border-radius: 10px !important;
+    border: 2px solid #e9ecef !important;
+    padding: 0.75rem 1rem !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 1.5 !important;
+    padding: 0 !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 56px !important;
+}
+
+/* Style pour les tooltips */
+.tooltip {
+    border-radius: 8px;
+}
+
+.tooltip-inner {
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+/* Loading state */
+.loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    margin: -12px 0 0 -12px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion des justifications</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Boxicons -->
+    <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 80px;
+            background-color: #eee;
+            padding: 0.4rem 0.8rem;
+            transition: width 0.5s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.active {
+            width: 250px;
+        }
+
+        .sidebar #btn {
+            position: absolute;
+            color: #4a5568;
+            top: .4rem;
+            left: 50%;
+            font-size: 1.2rem;
+            line-height: 50px;
+            transform: translateX(-50%);
+            cursor: pointer;
+        }
+
+        .sidebar.active #btn {
+            left: 90%;
+        }
+
+        .sidebar .top .logo {
+            color: #12171e;
+            display: flex;
+            height: 50px;
+            width: 100%;
+            align-items: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.active .top .logo {
+            opacity: 1;
+        }
+
+        .top .logo i {
+            font-size: 2rem;
+            margin-right: 5px;
+            color: #4CAF50;
+        }
+
+        .user {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .user-img {
+            width: 50px;
+            border-radius: 100%;
+            border: 1px solid #eee;
+        }
+
+        .user p {
+            color: #12171e;
+            margin-left: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.active .user p {
+            opacity: 1;
+        }
+
+        .bold {
+            font-weight: 900;
+        }
+
+        .sidebar ul li {
+            position: relative;
+            list-style-type: none;
+            height: 50px;
+            width: 90%;
+            margin: 1.3rem auto;
+            line-height: 50px;
+        }
+
+        .sidebar ul li a {
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            border-radius: 2rem;
+            transition: all 0.3s;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: #e2e8f0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .sidebar ul li a.active {
+            background-color: #d4edda;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .sidebar ul li a i {
+            min-width: 50px;
+            text-align: center;
+            height: 50px;
+            border-radius: 12px;
+            line-height: 50px;
+            font-size: 1.5rem;
+        }
+
+        .nav_item {
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-size: large;
+        }
+
+        .sidebar.active .nav_item {
+            opacity: 1;
+        }
+
+        .sidebar ul li .tooltip {
+            position: absolute;
+            left: 125px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #fff;
+            box-shadow: 0 0.5rem 0.8rem rgba(0,0,0,0.2);
+            border-radius: .6rem;
+            padding: .4rem 1.2rem;
+            line-height: 1.8rem;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar ul li:hover .tooltip {
+            opacity: 1;
+        }
+
+        .sidebar.active ul li .tooltip {
+            display: none;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff5722;
+            color: white;
+            font-size: 0.7em;
+            padding: 2px 6px;
+            border-radius: 50%;
+            min-width: 18px;
+            text-align: center;
+        }
+        
+        .main-content {
+            position: relative;
+            background-color: #eee;
+            min-height: 100vh;
+            top: 0;
+            left: 80px;
+            transition: all 0.5s ease;
+            width: calc(100% - 80px);
+            padding: 1rem;
+        }
+        
+        .sidebar.active ~ .main-content {
+            left: 250px;
+            width: calc(100% - 250px);
+        }
+        
+        /* Header */
+        header {
+            display: flex;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .welcome-section h1 {
+            font-style: italic;
+            font-size: 32px;
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        
+        .professor-id {
+            background: #4CAF50;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: bold;
+        }
+        
+        .date-display {
+            text-align: right;
+        }
+        
+        .date-display .today {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .date-display .time {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        /* Content Styling */
+        .container-fluid {
+            background: transparent;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .card-header {
+            border-top-left-radius: 10px !important;
+            border-top-right-radius: 10px !important;
+            border-bottom: none;
+        }
+        
+        .card-header.bg-warning {
+            background: linear-gradient(90deg, #ff9800, #ffb74d) !important;
+        }
+        
+        .breadcrumb {
+            background: transparent;
+            padding: 0.75rem 0;
+        }
+        
+        .breadcrumb-item a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        
+        .breadcrumb-item.active {
+            color: #666;
+        }
+        
+        /* Filtres */
+        .btn-group .btn {
+            border-radius: 20px !important;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .btn-warning {
+            background: #ff9800;
+            border-color: #ff9800;
+            color: white;
+        }
+        
+        .btn-outline-warning {
+            border-color: #ff9800;
+            color: #ff9800;
+        }
+        
+        .btn-outline-warning:hover {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .btn-success, .btn-outline-success:hover {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+        
+        .btn-outline-success {
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+        
+        .btn-danger, .btn-outline-danger:hover {
+            background: #f44336;
+            border-color: #f44336;
+        }
+        
+        .btn-outline-danger {
+            border-color: #f44336;
+            color: #f44336;
+        }
+        
+        .btn-info, .btn-outline-info:hover {
+            background: #2196F3;
+            border-color: #2196F3;
+        }
+        
+        .btn-outline-info {
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+        
+        /* Table Styling */
+        .table-hover tbody tr:hover {
+            background-color: rgba(76, 175, 80, 0.05) !important;
+        }
+        
+        .table thead th {
+            background-color: #f8f9fa;
+            color: #333;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .table td, .table th {
+            vertical-align: middle;
+            padding: 12px 15px;
+        }
+        
+        .badge {
+            font-weight: 500;
+            padding: 4px 12px;
+            border-radius: 15px;
+        }
+        
+        .badge.bg-warning {
+            background: #ff9800 !important;
+        }
+        
+        .badge.bg-success {
+            background: #4CAF50 !important;
+        }
+        
+        .badge.bg-danger {
+            background: #f44336 !important;
+        }
+        
+        /* Justification Text */
+        .justification-text {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-style: italic;
+            color: #555;
+            margin-bottom: 10px;
+            border-left: 3px solid #ff9800;
+        }
+        
+        /* Modal Styling */
+        .modal-header {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        .modal-header.bg-info {
+            background: linear-gradient(90deg, #2196F3, #64b5f6) !important;
+        }
+        
+        .modal-header.bg-success {
+            background: linear-gradient(90deg, #4CAF50, #81c784) !important;
+        }
+        
+        .modal-header.bg-danger {
+            background: linear-gradient(90deg, #f44336, #e57373) !important;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state i {
+            font-size: 72px;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+        
+        .empty-state h4 {
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        
+        /* Pagination */
+        .pagination .page-item.active .page-link {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+        
+        .pagination .page-link {
+            color: #4CAF50;
+            border-radius: 5px;
+            margin: 0 3px;
+        }
+        
+        .pagination .page-link:hover {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar.active {
+                width: 100%;
+            }
+            
+            .sidebar.active ~ .main-content {
+                left: 0;
+                width: 100%;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .date-display {
+                text-align: center;
+            }
+            
+            .btn-group {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .btn-group .btn {
+                flex: 1;
+                min-width: 120px;
+                margin-bottom: 5px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .table-responsive {
+                font-size: 0.9em;
+            }
+            
+            .btn-group .btn {
+                min-width: 100px;
+                font-size: 0.85em;
+                padding: 5px 10px;
+            }
+        }
+        
+        /* Custom Icons */
+        .bxr {
+            color: #4CAF50;
+        }
+        
+        .bxr:hover {
+            color: #12171e;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="top">
+            <div class="logo">
+                <i class='bx bxl-codepen'></i>
+                <span>Gestion Des Absences</span>
+            </div>
+            <i class='bx bx-menu' id="btn"></i>
+        </div>
+        
+        <div class="user">
+            <img src="/static/utilisateur.png" alt="user" class="user-img">
+            <div>
+                <a href="{% url 'professeurs:profil_professeur' %}" style="text-decoration: none; color: inherit;">
+                    <p class="bold">{{ utilisateur.prenom }} {{ utilisateur.nom }}</p>
+                </a>
+                <p>{{ utilisateur.email }}</p>
+            </div>
+        </div>
+        
+        <ul>
+            <li>
+                <a href="{% url 'professeurs:dashboard_professeur' %}">
+                    <i class='bxr bx-dashboard'></i> 
+                    <span class="nav_item">Panorama</span>
+                </a>
+                <span class="tooltip">Panorama</span>
+            </li>
+            
+            <li>
+                <a href="{% url 'professeurs:mes_cours' %}">
+                    <i class='bxr bx-book-bookmark'></i> 
+                    <span class="nav_item">Cours</span>
+                </a>
+                <span class="tooltip">Cours</span>
+            </li>
+            
+            <li>
+                <a href="{% url 'professeurs:mes_seances' %}">
+                    <i class='bxr bx-calendar-alt'></i> 
+                    <span class="nav_item">Séances</span>
+                </a>
+                <span class="tooltip">Séances</span>
+            </li>
+            
+            <li>
+                <a href="{% url 'professeurs:justifications_attente' %}" class="active">
+                    <i class='bxr bx-file'></i> 
+                    <span class="nav_item">Justifications</span>
+                    {% if total_justifications_attente and total_justifications_attente > 0 %}
+                    <span class="notification-badge">{{ total_justifications_attente }}</span>
+                    {% endif %}
+                </a>
+                <span class="tooltip">
+                    Justifications
+                    {% if total_justifications_attente > 0 %}
+                    <span style="background: #ff5722; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 5px;">
+                        {{ total_justifications_attente }}
+                    </span>
+                    {% endif %}
+                </span>
+            </li>
+            
+            <li>
+                <a href="{% url 'logout' %}" onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?');">
+                    <i class='bxr bx-arrow-out-left-square-half'></i> 
+                    <span class="nav_item">Déconnexion</span>
+                </a>
+                <span class="tooltip">Déconnexion</span>
+            </li>
+        </ul>
+        
+        <div style="position: absolute; bottom: 20px; left: 0; right: 0; text-align: center; opacity: 0.7;">
+            <small class="text-muted">
+                <i class='bx bx-calendar'></i> {% now "d/m/Y" %}
+            </small>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header>
+            <div class="welcome-section">
+                <h1>Gestion des Justifications</h1>
+                <div class="professor-id">
+                    <i class="fas fa-file-alt"></i> Validation des absences
+                </div>
+            </div>
+            
+            <div class="date-display">
+                <div class="time" id="currentTime">--:--:--</div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="container-fluid py-4">
+            
+
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-0">
+                                <i class="fas fa-file-alt me-2"></i>
+                                {{ titre }}
+                            </h4>
+                            <p class="mb-0 mt-1 small opacity-75">
+                                Validez ou refusez les justifications d'absence des étudiants
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-danger fs-6">{{ total_en_attente }} en attente</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Filtres -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-3">
+                                        <i class="fas fa-filter"></i> Filtrer les justifications
+                                    </h5>
+                                    <div class="btn-group" role="group">
+                                        <a href="?statut=EN_ATTENTE" 
+                                           class="btn {% if statut_filter == 'EN_ATTENTE' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                                            <i class="fas fa-clock"></i> En attente
+                                            <span class="badge bg-dark ms-1">{{ total_en_attente }}</span>
+                                        </a>
+                                        <a href="?statut=ACCEPTEE" 
+                                           class="btn {% if statut_filter == 'ACCEPTEE' %}btn-success{% else %}btn-outline-success{% endif %}">
+                                            <i class="fas fa-check-circle"></i> Acceptées
+                                        </a>
+                                        <a href="?statut=REFUSEE" 
+                                           class="btn {% if statut_filter == 'REFUSEE' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                                            <i class="fas fa-times-circle"></i> Refusées
+                                        </a>
+                                        <a href="?statut=TRAITEES" 
+                                           class="btn {% if statut_filter == 'TRAITEES' %}btn-info{% else %}btn-outline-info{% endif %}">
+                                            <i class="fas fa-check-double"></i> Traitées
+                                            <span class="badge bg-dark ms-1">{{ total_traitees }}</span>
+                                        </a>
+                                        <a href="?statut=TOUS" 
+                                           class="btn {% if statut_filter == 'TOUS' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
+                                            <i class="fas fa-list"></i> Toutes
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Liste des justifications -->
+                    {% if justifications %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="20%">Étudiant</th>
+                                    <th width="20%">Cours</th>
+                                    <th width="15%">Date séance</th>
+                                    <th width="20%">Justification</th>
+                                    <th width="10%">Statut</th>
+                                    <th width="10%">Fichier</th>
+                                    <th width="10%">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in justifications %}
+                                {% with presence=item.presence %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <strong>{{ presence.etudiant.utilisateur.prenom }} {{ presence.etudiant.utilisateur.nom }}</strong><br>
+                                        <small class="text-muted">{{ presence.etudiant.code_etudiant }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ presence.seance.cours.libelle }}</strong><br>
+                                        <small class="text-muted">
+                                            {{ presence.seance.cours.code }} • {{ presence.seance.groupe.nom }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ presence.seance.date|date:"d/m/Y" }}</strong><br>
+                                        <small class="text-muted">{{ presence.seance.heure_debut|time:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if presence.justification %}
+                                        <div class="justification-text">
+                                            {{ presence.justification|truncatechars:50 }}
+                                            {% if presence.justification|length > 50 %}
+                                            <a href="#" class="small text-warning" data-bs-toggle="modal" data-bs-target="#modalJustification{{ presence.id }}">
+                                                ...voir plus
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">Aucune justification textuelle</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if presence.statut_justification == 'EN_ATTENTE' %}
+                                        <span class="badge bg-warning">En attente</span>
+                                        {% elif presence.statut_justification == 'ACCEPTEE' %}
+                                        <span class="badge bg-success">Acceptée</span>
+                                        {% elif presence.statut_justification == 'REFUSEE' %}
+                                        <span class="badge bg-danger">Refusée</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.has_file %}
+                                        <div class="d-flex flex-column align-items-start">
+                                            <div class="btn-group mb-2">
+                                                <button class="btn btn-sm btn-outline-info btn-view-file" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#modalFichier{{ presence.id }}">
+                                                    <i class="fas fa-eye"></i> Voir
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary btn-preview" 
+                                                        data-presence-id="{{ presence.id }}">
+                                                    <i class="fas fa-expand-alt"></i> Aperçu
+                                                </button>
+                                                <a href="{% url 'professeurs:telecharger_fichier_justificatif' presence.id %}" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-download"></i> Télécharger
+                                                </a>
+                                            </div>
+                                            <div id="previewContainer{{ presence.id }}" class="w-100" style="display:none;">
+                                                <!-- Aperçu chargé ici -->
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'professeurs:voir_justification' presence.id %}" 
+                                               class="btn btn-sm btn-outline-primary" title="Voir les détails">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if presence.statut_justification == 'EN_ATTENTE' %}
+                                            <button class="btn btn-sm btn-outline-success" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#modalAccepter{{ presence.id }}"
+                                                    title="Accepter">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#modalRefuser{{ presence.id }}"
+                                                    title="Refuser">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Modal pour voir la justification complète -->
+                                <div class="modal fade" id="modalJustification{{ presence.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">
+                                                    <i class="fas fa-comment-alt"></i> Justification complète
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p><strong>Étudiant :</strong> {{ presence.etudiant.utilisateur.prenom }} {{ presence.etudiant.utilisateur.nom }}</p>
+                                                <p><strong>Cours :</strong> {{ presence.seance.cours.libelle }}</p>
+                                                <p><strong>Date :</strong> {{ presence.seance.date|date:"d/m/Y" }} à {{ presence.seance.heure_debut|time:"H:i" }}</p>
+                                                <hr>
+                                                <h6>Justification :</h6>
+                                                <div class="alert alert-light border">
+                                                    {{ presence.justification|linebreaks }}
+                                                </div>
+                                                <p class="text-muted small">
+                                                    <i class="fas fa-clock"></i> Soumis le : {{ presence.date_saisie|date:"d/m/Y H:i" }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Modal pour le fichier justificatif -->
+                                <div class="modal fade" id="modalFichier{{ presence.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-xl">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-info text-white">
+                                                <h5 class="modal-title">
+                                                    <i class="fas fa-file"></i> Fichier justificatif
+                                                    <small class="ms-2 opacity-75">
+                                                        {{ presence.etudiant.utilisateur.prenom }} {{ presence.etudiant.utilisateur.nom }}
+                                                    </small>
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body p-0">
+                                                <div id="fileContent{{ presence.id }}" style="min-height: 300px;">
+                                                    <div class="text-center py-5">
+                                                        <div class="spinner-border text-primary" role="status">
+                                                            <span class="visually-hidden">Chargement...</span>
+                                                        </div>
+                                                        <p class="mt-2">Chargement du fichier...</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                    <i class="fas fa-times-circle"></i> Fermer
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Modal pour accepter -->
+                                <div class="modal fade" id="modalAccepter{{ presence.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form method="POST" action="{% url 'professeurs:traiter_justification' presence.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-header bg-success text-white">
+                                                    <h5 class="modal-title">
+                                                        <i class="fas fa-check-circle"></i> Accepter la justification
+                                                    </h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Êtes-vous sûr de vouloir accepter la justification de :</p>
+                                                    <div class="alert alert-info">
+                                                        <strong>{{ presence.etudiant.utilisateur.prenom }} {{ presence.etudiant.utilisateur.nom }}</strong><br>
+                                                        <small>{{ presence.seance.cours.libelle }} - {{ presence.seance.date|date:"d/m/Y" }}</small>
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="commentaire_{{ presence.id }}" class="form-label">
+                                                            <i class="fas fa-comment-alt"></i> Commentaire (optionnel)
+                                                        </label>
+                                                        <textarea class="form-control" 
+                                                                  id="commentaire_{{ presence.id }}" 
+                                                                  name="commentaire_prof" 
+                                                                  rows="3"
+                                                                  placeholder="Ajoutez un commentaire si nécessaire..."></textarea>
+                                                    </div>
+                                                    
+                                                    <input type="hidden" name="action" value="accepter">
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                        <i class="fas fa-times-circle"></i> Annuler
+                                                    </button>
+                                                    <button type="submit" class="btn btn-success">
+                                                        <i class="fas fa-check"></i> Accepter
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Modal pour refuser -->
+                                <div class="modal fade" id="modalRefuser{{ presence.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form method="POST" action="{% url 'professeurs:traiter_justification' presence.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-header bg-danger text-white">
+                                                    <h5 class="modal-title">
+                                                        <i class="fas fa-times-circle"></i> Refuser la justification
+                                                    </h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Êtes-vous sûr de vouloir refuser la justification de :</p>
+                                                    <div class="alert alert-warning">
+                                                        <strong>{{ presence.etudiant.utilisateur.prenom }} {{ presence.etudiant.utilisateur.nom }}</strong><br>
+                                                        <small>{{ presence.seance.cours.libelle }} - {{ presence.seance.date|date:"d/m/Y" }}</small>
+                                                    </div>
+                                                    
+                                                    <p class="text-danger">
+                                                        <i class="fas fa-exclamation-triangle"></i>
+                                                        Attention : En refusant, l'absence sera marquée comme "Non justifiée".
+                                                    </p>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="commentaire_refus_{{ presence.id }}" class="form-label">
+                                                            <i class="fas fa-comment-alt"></i> Commentaire (recommandé)
+                                                        </label>
+                                                        <textarea class="form-control" 
+                                                                  id="commentaire_refus_{{ presence.id }}" 
+                                                                  name="commentaire_prof" 
+                                                                  rows="3"
+                                                                  placeholder="Expliquez pourquoi vous refusez cette justification..."
+                                                                  required></textarea>
+                                                        <div class="form-text">
+                                                            Ce commentaire sera visible par l'étudiant.
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <input type="hidden" name="action" value="refuser">
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                        <i class="fas fa-times-circle"></i> Annuler
+                                                    </button>
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="fas fa-times"></i> Refuser
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="text-muted">
+                            Affichage de {{ justifications|length }} justification{{ justifications|pluralize }}
+                        </div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-sm">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1">Précédent</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#">Suivant</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                        <h4 class="mt-4 text-success">Aucune justification en attente</h4>
+                        <p class="text-muted">Toutes les justifications ont été traitées.</p>
+                        <a href="?statut=TRAITEES" class="btn btn-outline-info mt-2">
+                            <i class="fas fa-clock-history"></i> Voir les justifications traitées
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar toggle
+            const btn = document.querySelector('#btn');
+            const sidebar = document.querySelector('.sidebar');
+
+            btn.onclick = function () {
+                sidebar.classList.toggle('active');
+            };
+
+            // Update time
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('fr-FR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                const timeElement = document.getElementById('currentTime');
+                if (timeElement) {
+                    timeElement.textContent = timeString;
+                }
+            }
+            
+            setInterval(updateTime, 1000);
+            updateTime();
+
+            // Charger le contenu du fichier quand la modal s'ouvre
+            document.querySelectorAll('.modal[id^="modalFichier"]').forEach(function(modal) {
+                modal.addEventListener('show.bs.modal', function(event) {
+                    var modalId = this.id;
+                    var presenceId = modalId.replace('modalFichier', '');
+                    var contentDiv = document.getElementById('fileContent' + presenceId);
+
+                    // Afficher le loader
+                    contentDiv.innerHTML = `
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                            <p class="mt-2">Chargement du fichier...</p>
+                        </div>
+                    `;
+
+                    var telechargerUrl = `/professeurs/justifications/${presenceId}/telecharger/?inline=1`;
+                    var fallbackUrl = "{% url 'professeurs:afficher_fichier_modal' 0 %}".replace('0', presenceId);
+
+                    // Check the telecharger endpoint headers before embedding
+                    fetch(telechargerUrl, { method: 'GET' })
+                        .then(r => {
+                            if (!r.ok) throw new Error('HTTP ' + r.status);
+                            var ct = (r.headers.get('content-type') || '').toLowerCase();
+                            var detected = (r.headers.get('x-detected-type') || '').toLowerCase();
+                            if (ct.includes('application/pdf') || detected.includes('application/pdf')) {
+                                // Embed PDF via iframe
+                                contentDiv.innerHTML = `<div class="border rounded" style="height: 70vh;"><iframe src="${telechargerUrl}" width="100%" height="100%" frameborder="0" style="border: none;">Votre navigateur ne supporte pas l'affichage des PDF.</iframe></div>`;
+                            } else if (ct.startsWith('image/') || detected.startsWith('image/')) {
+                                // Embed image
+                                contentDiv.innerHTML = `<div class="text-center"><img src="${telechargerUrl}" class="img-fluid rounded border" style="max-height: 70vh;"></div>`;
+                            } else {
+                                // Fallback to server-rendered HTML (afficher_fichier_modal)
+                                return fetch(fallbackUrl).then(resp => {
+                                    if (!resp.ok) throw new Error('Erreur fallback ' + resp.status);
+                                    return resp.text();
+                                }).then(html => contentDiv.innerHTML = html);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors du chargement du fichier (telecharger):', error);
+                            // Fallback : essayer le rendu serveur
+                            fetch(fallbackUrl)
+                                .then(resp => resp.text())
+                                .then(html => {
+                                    contentDiv.innerHTML = html;
+                                })
+                                .catch(err2 => {
+                                    contentDiv.innerHTML = `
+                                        <div class="alert alert-danger text-center">
+                                            <i class="fas fa-exclamation-triangle fs-1"></i>
+                                            <h5>Erreur lors du chargement du fichier</h5>
+                                            <p>Détails: ${err2.message}</p>
+                                            <p><a href="${telechargerUrl}" class="btn btn-primary">Télécharger le fichier</a></p>
+                                        </div>
+                                    `;
+                                });
+                        });
+                });
+            });
+            
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 300);
+                });
+            }, 5000);
+
+            // Handler for inline preview buttons (Aperçu)
+            document.querySelectorAll('.btn-preview').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const presenceId = this.getAttribute('data-presence-id');
+                    const container = document.getElementById('previewContainer' + presenceId);
+                    if (!container) return;
+
+                    // Toggle hide/show
+                    if (container.style.display && container.style.display !== 'none') {
+                        container.style.display = 'none';
+                        container.innerHTML = '';
+                        return;
+                    }
+
+                    // Show loader
+                    container.style.display = 'block';
+                    container.innerHTML = `
+                        <div class="text-center py-3">
+                            <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Chargement...</span></div>
+                            <p class="mt-2">Chargement de l'aperçu...</p>
+                        </div>
+                    `;
+
+                    const telechargerUrl = `/professeurs/justifications/${presenceId}/telecharger/?inline=1`;
+                    const fallbackUrl = `/professeurs/justifications/${presenceId}/afficher-modal/?embed=1`;
+
+                    fetch(telechargerUrl, { method: 'GET' })
+                        .then(r => {
+                            if (!r.ok) throw new Error('HTTP ' + r.status);
+                            const ct = (r.headers.get('content-type') || '').toLowerCase();
+                            const detected = (r.headers.get('x-detected-type') || '').toLowerCase();
+                            if (ct.includes('application/pdf') || detected.includes('application/pdf')) {
+                                container.innerHTML = `<div class="pdf-embed" style="height: 30vh;"><iframe src="${telechargerUrl}" width="100%" height="100%" frameborder="0" style="border: none;">Votre navigateur ne supporte pas l'affichage des PDF.</iframe></div>`;
+                            } else if (ct.startsWith('image/') || detected.startsWith('image/')) {
+                                container.innerHTML = `<div class="text-center"><img src="${telechargerUrl}" class="img-fluid rounded border" style="max-height: 300px;"></div>`;
+                            } else {
+                                // Fallback to server-generated embed
+                                return fetch(fallbackUrl).then(resp => {
+                                    if (!resp.ok) throw new Error('Erreur fallback ' + resp.status);
+                                    return resp.text();
+                                }).then(html => container.innerHTML = html);
+                            }
+                            // Scroll into view
+                            container.scrollIntoView({behavior: 'smooth', block: 'center'});
+                        })
+                        .catch(err => {
+                            console.error('Erreur chargement aperçu:', err);
+                            // Attempt fallback embed
+                            fetch(fallbackUrl)
+                                .then(resp => resp.text())
+                                .then(html => container.innerHTML = html)
+                                .catch(err2 => {
+                                    container.innerHTML = `
+                                        <div class="alert alert-danger">Erreur lors du chargement de l'aperçu: ${err2.message}</div>
+                                        <p><a href="${telechargerUrl}" class="btn btn-primary">Télécharger le fichier</a></p>
+                                    `;
+                                });
+                        });
+                });
+            });
+            
+            // Raccourcis clavier
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+Enter pour accepter dans un modal ouvert
+                if (e.ctrlKey && e.key === 'Enter') {
+                    const modal = document.querySelector('.modal.show');
+                    if (modal) {
+                        const submitBtn = modal.querySelector('button[type="submit"]');
+                        if (submitBtn) submitBtn.click();
+                    }
+                }
+                // Échap pour fermer les modals
+                if (e.key === 'Escape') {
+                    const modals = document.querySelectorAll('.modal.show');
+                    modals.forEach(modal => {
+                        const closeBtn = modal.querySelector('.btn-close');
+                        if (closeBtn) closeBtn.click();
+                    });
+                }
+            });
+            
+            // Auto-focus sur les textarea des modals
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.addEventListener('shown.bs.modal', function() {
+                    const textarea = this.querySelector('textarea');
+                    if (textarea) textarea.focus();
+                });
+            });
+            
+            // Close sidebar on mobile when clicking outside
+            document.addEventListener('click', function(event) {
+                const isClickInsideSidebar = sidebar.contains(event.target);
+                const isClickOnBtn = btn.contains(event.target);
+                
+                if (!isClickInsideSidebar && !isClickOnBtn && window.innerWidth <= 768) {
+                    sidebar.classList.remove('active');
+                }
+            });
+            
+            // Adjust sidebar on resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('active');
+                }
+            });
+            
+            // Highlight active sidebar link
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.sidebar a').forEach(link => {
+                if (link.href.includes(currentPath)) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

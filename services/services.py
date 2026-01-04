@@ -1,4 +1,4 @@
-from .rpc_client import marquer_presence, get_presences, valider_seance
+from services.rpc_client import marquer_presence, get_presences, valider_seance
 
 def marquer_presence_etudiant(etudiant_id, seance_id, statut):
     return marquer_presence(etudiant_id, seance_id, statut)

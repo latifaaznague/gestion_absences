@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ cours.libelle }} - Détails</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { padding-top: 70px; background-color: #f8f9fa; font-family: 'Segoe UI'; }
+        .sidebar { height: 100vh; position: fixed; top: 0; left: 0; width: 220px; background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%); padding-top: 70px; }
+        .content { margin-left: 240px; padding: 20px; }
+        .navbar { background: linear-gradient(90deg, #1a2980 0%, #26d0ce 100%); }
+        .course-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; }
+        .stat-card { border-left: 4px solid; padding: 15px; margin-bottom: 15px; }
+        .stat-present { border-left-color: #28a745; }
+        .stat-absent { border-left-color: #dc3545; }
+        .stat-warning { border-left-color: #ffc107; }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'professeurs:dashboard_professeur' %}">
+                <i class="bi bi-person-workspace"></i> Espace Professeur
+            </a>
+            <div class="dropdown ms-auto">
+                <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle"></i> {{ utilisateur.prenom }} {{ utilisateur.nom }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{% url 'professeurs:dashboard_professeur' %}">Dashboard</a></li>
+                    <li><a class="dropdown-item" href="{% url 'professeurs:profil_professeur' %}">Mon Profil</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'logout' %}">Déconnexion</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <nav>
+            <ul class="list-unstyled px-3 text-white">
+                <li class="mb-2"><a href="{% url 'professeurs:dashboard_professeur' %}" class="text-white text-decoration-none"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                <li class="mb-2"><a href="{% url 'professeurs:mes_cours' %}" class="text-white text-decoration-none"><i class="bi bi-journal-text"></i> Mes Cours</a></li>
+                <li class="mb-2"><a href="{% url 'professeurs:mes_seances' %}" class="text-white text-decoration-none"><i class="bi bi-calendar-week"></i> Mes Séances</a></li>
+                <li class="mb-2"><a href="{% url 'professeurs:justifications_attente' %}" class="text-white text-decoration-none"><i class="bi bi-file-earmark-check"></i> Justifications</a></li>
+                <li class="mb-2"><a href="{% url 'professeurs:profil_professeur' %}" class="text-white text-decoration-none"><i class="bi bi-person-gear"></i> Mon Profil</a></li>
+                <li><hr class="text-white-50 my-3"></li>
+                <li><a href="{% url 'logout' %}" class="text-white text-decoration-none"><i class="bi bi-box-arrow-right"></i> Déconnexion</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <div class="container-fluid">
+            <!-- Bouton retour -->
+            <div class="mb-4">
+                <a href="{% url 'professeurs:mes_cours' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Retour aux cours
+                </a>
+            </div>
+
+            <!-- En-tête du cours -->
+            <div class="card mb-4">
+                <div class="course-header">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="rounded-circle bg-white d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="bi bi-book" style="font-size: 36px; color: #667eea;"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h1 class="h3 mb-2">{{ cours.libelle }}</h1>
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <span class="badge bg-light text-dark fs-6">{{ cours.code }}</span>
+                                <span class="badge bg-info fs-6">{{ cours.volume_horaire }} heures</span>
+                                <span class="badge bg-success fs-6">Actif</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="text-center">
+                                <div class="display-6 fw-bold">{{ statistiques.taux_presence }}%</div>
+                                <small>Taux de présence</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Informations générales -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-info-circle me-2"></i> Informations du cours</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td width="40%"><strong>Code :</strong></td>
+                                    <td>{{ cours.code }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Libellé :</strong></td>
+                                    <td>{{ cours.libelle }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Volume horaire :</strong></td>
+                                    <td>{{ cours.volume_horaire }} heures</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Professeur :</strong></td>
+                                    <td>{{ utilisateur.prenom }} {{ utilisateur.nom }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Spécialité :</strong></td>
+                                    <td>{{ prof.specialite|default:"Non spécifiée" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5><i class="bi bi-graph-up me-2"></i> Statistiques</h5>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <div class="stat-card stat-present">
+                                        <div class="text-muted small">Séances totales</div>
+                                        <div class="h4 fw-bold">{{ total_seances }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="stat-card stat-warning">
+                                        <div class="text-muted small">Étudiants inscrits</div>
+                                        <div class="h4 fw-bold">{{ total_etudiants }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="stat-card stat-present">
+                                        <div class="text-muted small">Présences</div>
+                                        <div class="h4 fw-bold text-success">{{ statistiques.presents }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="stat-card stat-absent">
+                                        <div class="text-muted small">Absences</div>
+                                        <div class="h4 fw-bold text-danger">
+                                            {{ statistiques.absents_justifies|add:statistiques.absents_non_justifies }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Prochaines séances -->
+                    <div class="mb-4">
+                        <h5><i class="bi bi-calendar-event me-2"></i> Prochaines séances</h5>
+                        {% if prochaines_seances %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Heure</th>
+                                        <th>Groupe</th>
+                                        <th>Salle</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for seance in prochaines_seances %}
+                                    <tr>
+                                        <td>{{ seance.date|date:"d/m/Y" }}</td>
+                                        <td>{{ seance.heure_debut|time:"H:i" }} - {{ seance.heure_fin|time:"H:i" }}</td>
+                                        <td><span class="badge bg-info">{{ seance.groupe.nom }}</span></td>
+                                        <td>
+                                            {% if seance.salle %}
+                                            <span class="badge bg-secondary">{{ seance.salle }}</span>
+                                            {% else %}
+                                            <span class="text-muted">Non définie</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-clipboard-check"></i> Présences
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Aucune séance programmée
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Détail des présences -->
+                    <div>
+                        <h5><i class="bi bi-clipboard-data me-2"></i> Détail des présences</h5>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="card text-white bg-success mb-3">
+                                    <div class="card-body text-center">
+                                        <div class="h1">{{ statistiques.presents }}</div>
+                                        <div>Présents</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-white bg-warning mb-3">
+                                    <div class="card-body text-center">
+                                        <div class="h1">{{ statistiques.absents_justifies }}</div>
+                                        <div>Absents justifiés</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-white bg-danger mb-3">
+                                    <div class="card-body text-center">
+                                        <div class="h1">{{ statistiques.absents_non_justifies }}</div>
+                                        <div>Absents non justifiés</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card text-white bg-info mb-3">
+                                    <div class="card-body text-center">
+                                        <div class="h1">{{ statistiques.taux_presence }}%</div>
+                                        <div>Taux de présence</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i> Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2 d-md-flex">
+                        <a href="{% url 'professeurs:gerer_presences' seance.id %}" class="btn btn-primary me-2">
+                            <i class="bi bi-clipboard-check"></i> Prendre les présences
+                        </a>
+                        <button class="btn btn-outline-secondary me-2">
+                            <i class="bi bi-calendar-plus"></i> Ajouter une séance
+                        </button>
+                        <button class="btn btn-outline-info me-2">
+                            <i class="bi bi-download"></i> Exporter les statistiques
+                        </button>
+                        <button class="btn btn-outline-warning">
+                            <i class="bi bi-pencil-square"></i> Modifier le cours
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="mt-5 pt-4 border-top text-center text-muted">
+                <p>Système de Gestion des Absences - Espace Professeur</p>
+                <p class="small">© {% now "Y" %} Université. Connecté en tant que {{ utilisateur.prenom }} {{ utilisateur.nom }}</p>
+            </footer>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

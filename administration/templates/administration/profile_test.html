@@ -1,0 +1,51 @@
+<!-- administration/templates/administration/profile_test.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Profil</title>
+    <style>
+        body { padding: 20px; font-family: Arial, sans-serif; }
+        .debug { background: #f0f0f0; padding: 15px; margin: 10px 0; border-left: 4px solid #007bff; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de Profil</h1>
+    
+    <div class="debug">
+        <h3>Données reçues :</h3>
+        <p><strong>user.id:</strong> {{ user.id|default:"NON DÉFINI" }}</p>
+        <p><strong>user.nom:</strong> {{ user.nom|default:"NON DÉFINI" }}</p>
+        <p><strong>user.prenom:</strong> {{ user.prenom|default:"NON DÉFINI" }}</p>
+        <p><strong>user.email:</strong> {{ user.email|default:"NON DÉFINI" }}</p>
+        
+        <h3>Type des données :</h3>
+        <p><strong>Type de 'user':</strong> {{ user|default:"None"|stringformat:"r"|slice:":50" }}</p>
+        
+        <h3>Session :</h3>
+        <p><strong>session.user_id:</strong> {{ request.session.user_id|default:"NON DÉFINI" }}</p>
+        <p><strong>session.user_nom:</strong> {{ request.session.user_nom|default:"NON DÉFINI" }}</p>
+    </div>
+    
+    <hr>
+    
+    <h2>Formulaire de test :</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div>
+            <label>Nom :</label>
+            <input type="text" name="nom" value="{{ user.nom|default_if_none:'' }}">
+        </div>
+        <div>
+            <label>Prénom :</label>
+            <input type="text" name="prenom" value="{{ user.prenom|default_if_none:'' }}">
+        </div>
+        <button type="submit">Tester l'update</button>
+    </form>
+    
+    <hr>
+    
+    <a href="{% url 'administration:admin_dashboard' %}">← Retour au dashboard</a>
+</body>
+</html>

@@ -1,0 +1,1068 @@
+{% extends 'professeurs/base_professeur.html' %}
+
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails de la justification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .main-content {
+            position: relative;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        /* Header */
+        header {
+            display: flex;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .welcome-section h1 {
+            font-style: italic;
+            font-size: 32px;
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        
+        .professor-id {
+            background: #4CAF50;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: bold;
+        }
+        
+        .date-display {
+            text-align: right;
+        }
+        
+        .date-display .today {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .date-display .time {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        /* Breadcrumb */
+        .breadcrumb-container {
+            margin-bottom: 25px;
+        }
+        
+        .breadcrumb {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e0e0e0;
+        }
+        
+        .breadcrumb-item a {
+            color: #666;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: color 0.3s;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #4CAF50;
+        }
+        
+        .breadcrumb-item.active {
+            color: #4CAF50;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Main Card */
+        .main-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            overflow: hidden;
+            background: white;
+            margin-bottom: 30px;
+        }
+        
+        .card-header-gradient {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 1.8rem;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .card-title {
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Info Cards */
+        .info-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            background: white;
+            margin-bottom: 25px;
+            transition: all 0.3s;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        .card-header-light {
+            background: #f8f9fa;
+            border-bottom: 2px solid #f0f0f0;
+            padding: 1.5rem;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .card-header-light h5 {
+            color: #333;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+        
+        /* Student Avatar */
+        .student-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        
+        /* Status Badge */
+        .custom-badge {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .badge-waiting {
+            background: rgba(255, 152, 0, 0.9);
+            color: white;
+        }
+        
+        .badge-accepted {
+            background: rgba(40, 167, 69, 0.9);
+            color: white;
+        }
+        
+        .badge-rejected {
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+        }
+        
+        .badge-count {
+            background: #4CAF50;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+        
+        /* Info Item */
+        .info-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: transform 0.3s;
+        }
+        
+        .info-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .info-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        /* Alert Styles */
+        .custom-alert {
+            background: #fff8e1;
+            border-left: 4px solid #ff9800;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 25px;
+        }
+        
+        .alert-success-custom {
+            background: rgba(40, 167, 69, 0.1);
+            border-left: 4px solid #28a745;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 25px;
+        }
+        
+        .alert-warning-custom {
+            background: rgba(255, 152, 0, 0.1);
+            border-left: 4px solid #ff9800;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 25px;
+        }
+        
+        .alert-light-custom {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 25px;
+        }
+        
+        /* Table Styles */
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        .custom-table thead {
+            background: #f8f9fa;
+        }
+        
+        .custom-table th {
+            border: none;
+            padding: 1.2rem 1.5rem;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .custom-table td {
+            padding: 1.2rem 1.5rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .custom-table tbody tr {
+            transition: background 0.3s;
+        }
+        
+        .custom-table tbody tr:hover {
+            background-color: rgba(76, 175, 80, 0.05) !important;
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-back {
+            background: white;
+            border: 2px solid #6c757d;
+            color: #333;
+        }
+        
+        .btn-accept {
+            background: white;
+            border: 2px solid #28a745;
+            color: #28a745;
+        }
+        
+        .btn-reject {
+            background: white;
+            border: 2px solid #dc3545;
+            color: #dc3545;
+        }
+        
+        .btn-view {
+            background: white;
+            border: 2px solid #2196F3;
+            color: #2196F3;
+        }
+        
+        .btn-download {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .btn-back:hover {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-accept:hover {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-reject:hover {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-view:hover {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-download:hover {
+            background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+            color: white;
+        }
+        
+        /* Modal Styles */
+        .modal-header-gradient {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .modal-accept .modal-header {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+            color: white;
+        }
+        
+        .modal-reject .modal-header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+        
+        .modal-file .modal-header {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+        
+        /* File Preview */
+        .file-preview-container {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1rem;
+            background: #f8f9fa;
+        }
+        
+        .file-preview-image {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .file-preview-pdf {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 8px;
+        }
+        
+        /* Text Muted Small */
+        .text-muted-small {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        /* Progress Bar */
+        .progress {
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 6px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .action-buttons > div {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .action-buttons .d-flex {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .date-display {
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .btn-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn-group .btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .main-card, .info-card {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="">
+       
+
+        
+
+        <!-- Main Card -->
+        <div class="main-card">
+            <!-- Card Header -->
+            <div class="card-header-gradient">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 class="card-title">
+                            <i class="fas fa-eye me-3"></i>
+                            Détails de la justification
+                        </h1>
+                    </div>
+                    <div class="text-end">
+                        <span class="custom-badge 
+                            {% if presence.statut_justification == 'EN_ATTENTE' %}badge-waiting
+                            {% elif presence.statut_justification == 'ACCEPTEE' %}badge-accepted
+                            {% else %}badge-rejected{% endif %}">
+                            <i class="fas 
+                                {% if presence.statut_justification == 'EN_ATTENTE' %}fa-clock
+                                {% elif presence.statut_justification == 'ACCEPTEE' %}fa-check-circle
+                                {% else %}fa-times-circle{% endif %} me-2"></i>
+                            {{ presence.get_statut_justification_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card Body -->
+            <div style="background: #f8f9fa; padding: 2rem;">
+                <!-- Informations étudiant et séance -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <div class="card-header-light">
+                                <h5>
+                                    <i class="fas fa-user me-2"></i>
+                                    Informations étudiant
+                                </h5>
+                            </div>
+                            <div style="padding: 1.5rem;">
+                                <div class="info-item" style="background: rgba(33, 150, 243, 0.1); border-left: 4px solid #2196F3;">
+                                    <div class="student-avatar">
+                                        {{ presence.etudiant.utilisateur.prenom|first|upper }}{{ presence.etudiant.utilisateur.nom|first|upper }}
+                                    </div>
+                                    <div>
+                                        <h4 style="color: #333; font-size: 1.3rem; margin-bottom: 5px;">
+                                            {{ presence.etudiant.utilisateur.prenom }} {{ presence.etudiant.utilisateur.nom }}
+                                        </h4>
+                                        <p style="color: #666; margin-bottom: 5px;">
+                                            <i class="fas fa-id-card me-1"></i>
+                                            {{ presence.etudiant.code_etudiant }}
+                                        </p>
+                                        <p style="color: #666; margin-bottom: 0;">
+                                            <i class="fas fa-envelope me-1"></i>
+                                            {{ presence.etudiant.utilisateur.email }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <div class="card-header-light">
+                                <h5>
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    Informations séance
+                                </h5>
+                            </div>
+                            <div style="padding: 1.5rem;">
+                                <div class="info-item" style="background: rgba(255, 152, 0, 0.1); border-left: 4px solid #ff9800;">
+                                    <i class="fas fa-book info-icon" style="color: #ff9800;"></i>
+                                    <div>
+                                        <small style="font-weight: 600; color: #666;">COURS</small>
+                                        <strong style="color: #333; font-size: 1.1rem; display: block;">{{ presence.seance.cours.libelle }}</strong>
+                                        <span style="color: #666; font-size: 0.9rem;">{{ presence.seance.cours.code }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="info-item" style="background: rgba(76, 175, 80, 0.1); border-left: 4px solid #4CAF50;">
+                                            <i class="fas fa-calendar-day info-icon" style="color: #4CAF50;"></i>
+                                            <div>
+                                                <small style="font-weight: 600; color: #666;">DATE</small>
+                                                <strong style="color: #333; font-size: 1.1rem; display: block;">{{ presence.seance.date|date:"d/m/Y" }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-item" style="background: rgba(156, 39, 176, 0.1); border-left: 4px solid #9C27B0;">
+                                            <i class="fas fa-clock info-icon" style="color: #9C27B0;"></i>
+                                            <div>
+                                                <small style="font-weight: 600; color: #666;">HORAIRE</small>
+                                                <strong style="color: #333; font-size: 1.1rem; display: block;">
+                                                    {{ presence.seance.heure_debut|time:"H:i" }} - {{ presence.seance.heure_fin|time:"H:i" }}
+                                                </strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-item" style="background: rgba(108, 117, 125, 0.1); border-left: 4px solid #6c757d;">
+                                    <i class="fas fa-users info-icon" style="color: #6c757d;"></i>
+                                    <div>
+                                        <small style="font-weight: 600; color: #666;">GROUPE</small>
+                                        <strong style="color: #333; font-size: 1.1rem; display: block;">{{ presence.seance.groupe.nom }}</strong>
+                                    </div>
+                                </div>
+                                
+                                {% if presence.seance.salle %}
+                                <div class="info-item" style="background: rgba(244, 67, 54, 0.1); border-left: 4px solid #f44336;">
+                                    <i class="fas fa-door-closed info-icon" style="color: #f44336;"></i>
+                                    <div>
+                                        <small style="font-weight: 600; color: #666;">SALLE</small>
+                                        <strong style="color: #333; font-size: 1.1rem; display: block;">{{ presence.seance.salle }}</strong>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Justification textuelle -->
+                <div class="info-card">
+                    <div class="card-header-light">
+                        <h5>
+                            <i class="fas fa-comment-dots me-2"></i>
+                            Justification textuelle
+                        </h5>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        {% if presence.justification %}
+                        <div class="alert-light-custom">
+                            {{ presence.justification|linebreaks }}
+                        </div>
+                        <p class="text-muted-small">
+                            <i class="fas fa-clock me-1"></i>
+                            Soumis le : {{ presence.date_saisie|date:"d/m/Y à H:i" }}
+                        </p>
+                        {% else %}
+                        <div class="alert-warning-custom">
+                            <div style="display: flex; align-items: center;">
+                                <i class="fas fa-exclamation-triangle" style="color: #ff9800; font-size: 1.5rem; margin-right: 15px;"></i>
+                                <div>
+                                    <h5 style="color: #333; font-weight: 600; margin-bottom: 0.5rem;">
+                                        Aucune justification textuelle
+                                    </h5>
+                                    <p style="color: #666; margin-bottom: 0;">
+                                        L'étudiant n'a pas fourni de justification textuelle.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Fichier justificatif -->
+                {% if fichier_justificatif.has_file %}
+                <div class="info-card">
+                    <div class="card-header-light">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h5>
+                                <i class="fas fa-file-alt me-2"></i>
+                                Fichier justificatif
+                            </h5>
+                            <div class="btn-group">
+                                <button class="action-btn btn-view" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#modalFichier">
+                                    <i class="fas fa-eye me-2"></i> Voir
+                                </button>
+                                <a href="{% url 'professeurs:telecharger_fichier_justificatif' presence.id %}" 
+                                   class="action-btn btn-download" 
+                                   download="justificatif_{{ presence.etudiant.code_etudiant }}">
+                                    <i class="fas fa-download me-2"></i> Télécharger
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div class="file-preview-container text-center">
+                            {% if fichier_justificatif.type == 'image/png' or fichier_justificatif.type == 'image/jpeg' %}
+                            <img src="{% url 'professeurs:telecharger_fichier_justificatif' presence.id %}?inline=1" 
+                                 class="file-preview-image" 
+                                 alt="Fichier justificatif">
+                            <p class="text-muted-small mt-3">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Cliquez sur "Voir" pour une meilleure visualisation ou "Télécharger" pour sauvegarder.
+                            </p>
+                            {% elif fichier_justificatif.type == 'application/pdf' %}
+                            <iframe 
+                                src="{% url 'professeurs:telecharger_fichier_justificatif' presence.id %}?inline=1" 
+                                class="file-preview-pdf">
+                                Votre navigateur ne supporte pas l'affichage des PDF.
+                            </iframe>
+                            <div class="mt-3">
+                                <p class="text-muted-small">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Utilisez le bouton "Voir" pour une meilleure visualisation.
+                                </p>
+                            </div>
+                            {% else %}
+                            <div class="alert-warning-custom">
+                                <i class="fas fa-file-alt" style="font-size: 3rem; color: #ff9800; margin-bottom: 15px;"></i>
+                                <h5>Fichier justificatif</h5>
+                                <p class="mb-2">Type: {{ fichier_justificatif.type }}</p>
+                                <p class="text-muted-small">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Utilisez les boutons ci-dessus pour visualiser ou télécharger le fichier.
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Commentaire du professeur -->
+                {% if presence.commentaire_professeur %}
+                <div class="info-card">
+                    <div class="card-header-light" style="background: rgba(40, 167, 69, 0.1); border-bottom: 2px solid rgba(40, 167, 69, 0.3);">
+                        <h5 style="color: #28a745;">
+                            <i class="fas fa-comment-medical me-2"></i>
+                            Votre commentaire
+                        </h5>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div class="alert-success-custom">
+                            {{ presence.commentaire_professeur|linebreaks }}
+                        </div>
+                        {% if presence.date_traitement %}
+                        <p class="text-muted-small">
+                            <i class="fas fa-clock me-1"></i>
+                            Traité le : {{ presence.date_traitement|date:"d/m/Y à H:i" }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Actions -->
+                <div class="action-buttons">
+                    <div>
+                        <a href="{% url 'professeurs:justifications_attente' %}" class="action-btn btn-back">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Retour aux justifications
+                        </a>
+                    </div>
+                    <div>
+                        {% if presence.statut_justification == 'EN_ATTENTE' %}
+                        <button class="action-btn btn-accept me-2" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modalAccepter">
+                            <i class="fas fa-check-circle me-2"></i> Accepter
+                        </button>
+                        <button class="action-btn btn-reject" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modalRefuser">
+                            <i class="fas fa-times-circle me-2"></i> Refuser
+                        </button>
+                        {% else %}
+                        <div style="background: #f8f9fa; border-radius: 10px; padding: 10px 20px;">
+                            <span class="text-muted">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Cette justification a déjà été traitée.
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour le fichier justificatif -->
+    <div class="modal fade modal-file" id="modalFichier" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header modal-header-gradient">
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Fichier justificatif
+                        <small style="font-size: 0.9rem; opacity: 0.9; margin-left: 10px;">
+                            {{ presence.etudiant.utilisateur.prenom }} {{ presence.etudiant.utilisateur.nom }}
+                        </small>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="fileContent" style="min-height: 300px; background: #f8f9fa;">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                            <p class="mt-2">Chargement du fichier...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="action-btn btn-back" data-bs-dismiss="modal">
+                        <i class="fas fa-times-circle me-2"></i> Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Accepter -->
+    <div class="modal fade modal-accept" id="modalAccepter" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'professeurs:traiter_justification' presence.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Accepter la justification
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert-light-custom mb-3">
+                            <div style="display: flex; align-items: center;">
+                                <i class="fas fa-question-circle" style="color: #28a745; font-size: 1.5rem; margin-right: 15px;"></i>
+                                <div>
+                                    <h5 style="color: #333; font-weight: 600; margin-bottom: 0.5rem;">
+                                        Confirmer l'acceptation
+                                    </h5>
+                                    <p style="color: #666; margin-bottom: 0;">
+                                        Êtes-vous sûr de vouloir accepter cette justification ?
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="commentaire_accepter" class="form-label">
+                                <i class="fas fa-comment-medical me-2"></i>
+                                Commentaire (optionnel)
+                            </label>
+                            <textarea class="form-control" 
+                                      id="commentaire_accepter" 
+                                      name="commentaire_prof" 
+                                      rows="3"
+                                      placeholder="Ajoutez un commentaire si nécessaire..."></textarea>
+                            <div class="form-text text-muted-small">
+                                Ce commentaire sera visible par l'étudiant.
+                            </div>
+                        </div>
+                        <input type="hidden" name="action" value="accepter">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="action-btn btn-back" data-bs-dismiss="modal">
+                            <i class="fas fa-times-circle me-2"></i> Annuler
+                        </button>
+                        <button type="submit" class="action-btn btn-accept">
+                            <i class="fas fa-check-circle me-2"></i> Accepter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Refuser -->
+    <div class="modal fade modal-reject" id="modalRefuser" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'professeurs:traiter_justification' presence.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-times-circle me-2"></i>
+                            Refuser la justification
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert-warning-custom mb-3">
+                            <div style="display: flex; align-items: center;">
+                                <i class="fas fa-exclamation-triangle" style="color: #dc3545; font-size: 1.5rem; margin-right: 15px;"></i>
+                                <div>
+                                    <h5 style="color: #333; font-weight: 600; margin-bottom: 0.5rem;">
+                                        Attention
+                                    </h5>
+                                    <p style="color: #666; margin-bottom: 0;">
+                                        En refusant, l'absence sera marquée comme "Non justifiée".
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="commentaire_refuser" class="form-label">
+                                <i class="fas fa-comment-medical me-2"></i>
+                                Commentaire (recommandé)
+                            </label>
+                            <textarea class="form-control" 
+                                      id="commentaire_refuser" 
+                                      name="commentaire_prof" 
+                                      rows="3"
+                                      placeholder="Expliquez pourquoi vous refusez cette justification..."
+                                      required></textarea>
+                            <div class="form-text text-muted-small">
+                                Ce commentaire sera visible par l'étudiant.
+                            </div>
+                        </div>
+                        <input type="hidden" name="action" value="refuser">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="action-btn btn-back" data-bs-dismiss="modal">
+                            <i class="fas fa-times-circle me-2"></i> Annuler
+                        </button>
+                        <button type="submit" class="action-btn btn-reject">
+                            <i class="fas fa-times-circle me-2"></i> Refuser
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mise à jour de l'heure
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('fr-FR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                const timeElement = document.getElementById('currentTime');
+                if (timeElement) {
+                    timeElement.textContent = timeString;
+                }
+            }
+            
+            setInterval(updateTime, 1000);
+            updateTime();
+            
+            // Charger le contenu du fichier quand la modal s'ouvre
+            const modalFichier = document.getElementById('modalFichier');
+            if (modalFichier) {
+                modalFichier.addEventListener('show.bs.modal', function(event) {
+                    const contentDiv = document.getElementById('fileContent');
+                    
+                    // Afficher le loader
+                    contentDiv.innerHTML = `
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                            <p class="mt-2">Chargement du fichier...</p>
+                        </div>
+                    `;
+                    
+                    // Utiliser l'URL Django avec le template tag
+                    var url = "{% url 'professeurs:afficher_fichier_modal' presence.id %}";
+                    
+                    // Charger le contenu via AJAX
+                    fetch(url)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Erreur HTTP ' + response.status);
+                            }
+                            return response.text();
+                        })
+                        .then(data => {
+                            contentDiv.innerHTML = data;
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors du chargement du fichier:', error);
+                            contentDiv.innerHTML = `
+                                <div class="alert-warning-custom text-center">
+                                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #dc3545;"></i>
+                                    <h5>Erreur lors du chargement du fichier</h5>
+                                    <p>Détails: ${error.message}</p>
+                                </div>
+                            `;
+                        });
+                });
+            }
+            
+            // Raccourcis clavier
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+Enter pour soumettre dans un modal ouvert
+                if (e.ctrlKey && e.key === 'Enter') {
+                    const modal = document.querySelector('.modal.show');
+                    if (modal) {
+                        const submitBtn = modal.querySelector('button[type="submit"]');
+                        if (submitBtn) submitBtn.click();
+                    }
+                }
+                // Échap pour fermer les modals
+                if (e.key === 'Escape') {
+                    const modals = document.querySelectorAll('.modal.show');
+                    modals.forEach(modal => {
+                        const closeBtn = modal.querySelector('.btn-close');
+                        if (closeBtn) closeBtn.click();
+                    });
+                }
+            });
+            
+            // Auto-focus sur les textarea des modals
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.addEventListener('shown.bs.modal', function() {
+                    const textarea = this.querySelector('textarea');
+                    if (textarea) {
+                        textarea.focus();
+                        // Placer le curseur à la fin du texte
+                        textarea.selectionStart = textarea.value.length;
+                        textarea.selectionEnd = textarea.value.length;
+                    }
+                });
+            });
+            
+            // Animation des cartes au scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            // Observer les cartes
+            document.querySelectorAll('.info-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                observer.observe(card);
+            });
+            
+            // Confirmation avant soumission
+            const forms = document.querySelectorAll('form[method="POST"]');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const action = this.querySelector('input[name="action"]')?.value;
+                    if (action === 'refuser') {
+                        const commentaire = this.querySelector('textarea[name="commentaire_prof"]').value;
+                        if (!commentaire.trim()) {
+                            e.preventDefault();
+                            alert('Veuillez ajouter un commentaire pour expliquer le refus.');
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+            });
+            
+            // Tooltips pour les boutons
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

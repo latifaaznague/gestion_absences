@@ -1,0 +1,674 @@
+<!-- dashboard.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Administration</title>
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+    <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
+ 
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+   <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding-top: 0 !important; /* Retirer le padding-top */
+    }
+    
+    /* Menu horizontal en haut */
+    .user p, .sidebar .top .logo {
+        color: #2d3748;
+    }
+    
+    .tooltip {
+        background: #ffffff;
+        color: #2d3748;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .bxr {
+        color: #2e7d32;
+    }
+    
+    .bxr:hover {
+        color: #12171e;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 80px;
+        background-color: #eee;
+        padding: 0.4rem 0.8rem;
+        transition: width 0.5s ease;
+        z-index: 1000;
+    }
+    
+    .sidebar.active {
+        width: 250px;
+    }
+    
+    .sidebar #btn {
+        position: absolute;
+        color: #4a5568;
+        top: .4rem;
+        left: 50%;
+        font-size: 1.2rem;
+        line-height: 50px;
+        transform: translateX(-50%);
+        cursor: pointer;
+    }
+    
+    .sidebar.active #btn {
+        left: 90%;
+    }
+    
+    .sidebar .top .logo {
+        color: #12171e;
+        display: flex;
+        height: 50px;
+        width: 100%;
+        align-items: center;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .sidebar.active .top .logo {
+        opacity: 1;
+    }
+    
+    .top .logo i {
+        font-size: 2rem;
+        margin-right: 5px;
+        color: #2e7d32;
+    }
+    
+    .user {
+        display: flex;
+        align-items: center;
+        margin: 1rem 0;
+    }
+    
+    .user-img {
+        width: 50px;
+        border-radius: 100%;
+        border: 1px solid #eee;
+    }
+    
+    .user p {
+        color: #12171e;
+        margin-left: 1rem;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .sidebar.active .user p {
+        opacity: 1;
+    }
+    
+    .bold {
+        font-weight: 900;
+    }
+    
+    .sidebar ul li {
+        position: relative;
+        list-style-type: none;
+        height: 50px;
+        width: 90%;
+        margin: 1.3rem auto;
+        line-height: 50px;
+    }
+    
+    .sidebar ul li a {
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        border-radius: 2rem;
+        transition: all 0.3s;
+    }
+    
+    .sidebar ul li a:hover {
+        background-color: #e2e8f0;
+        color: #4CAF50;
+        font-weight: bold;
+    }
+    
+    .sidebar ul li a i {
+        min-width: 50px;
+        text-align: center;
+        height: 50px;
+        border-radius: 12px;
+        line-height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .nav_item {
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        font-size: large;
+    }
+    
+    .sidebar.active .nav_item {
+        opacity: 1;
+    }
+    
+    .sidebar ul li .tooltip {
+        position: absolute;
+        left: 125px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #fff;
+        box-shadow: 0 0.5rem 0.8rem rgba(0,0,0,0.2);
+        border-radius: .6rem;
+        padding: .4rem 1.2rem;
+        line-height: 1.8rem;
+        z-index: 20;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .sidebar ul li:hover .tooltip {
+        opacity: 1;
+    }
+    
+    .sidebar.active ul li .tooltip {
+        display: none;
+    }
+    
+    /* Main content */
+    .main-content {
+        position: relative;
+        background-color: #eee;
+        min-height: 100vh;
+        top: 0;
+        left: 80px;
+        transition: all 0.5s ease;
+        width: calc(100% - 80px);
+        padding: 2rem; /* Augmenter le padding */
+    }
+    
+    .sidebar.active ~ .main-content {
+        left: 250px;
+        width: calc(100% - 250px);
+    }
+    
+    /* Titre principal */
+    .main-content h1 {
+        font-style: italic;
+        font-size: 32px;
+        color: #2e7d32;
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        margin-top: 0; /* S'assurer qu'il n'y a pas de marge en haut */
+    }
+    
+    /* Cards */
+    .card {
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    /* Badge */
+    .badge-stat {
+        display: inline-block !important;
+        background-color: #dc3545 !important;
+        color: white !important;
+        padding: 3px 6px !important;
+        border-radius: 10px !important;
+        font-size: 0.8em !important;
+        font-weight: bold !important;
+    }
+    
+    /* Dropdown Planning */
+    .dropdown-right {
+        position: relative;
+        width: 100%;
+        cursor: pointer;
+    }
+    
+    .dropdown-right .dropdown-content {
+        display: none;
+        position: absolute;
+        left: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 140px;
+        background-color: #eee;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        padding: 12px 0;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s;
+        z-index: 1000;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        font-size: large;
+    }
+    
+    /* Quand sidebar ouverte → dropdown collé au bord droit */
+    .sidebar.active .dropdown-right .dropdown-content {
+        left: 230px;
+    }
+    
+    /* Quand ouvert (classe .open ajoutée par JS) */
+    .dropdown-right.open .dropdown-content {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .dropdown-right .dropdown-content a {
+        display: block;
+        padding: 12px 20px;
+        text-align: center;
+        color: #333;
+        text-decoration: none;
+        font-size: 14px;
+        transition: background 0.3s;
+    }
+    
+    .dropdown-right .dropdown-content a:hover {
+        background-color: #e2e8f0;
+        color: #4CAF50;
+    }
+    
+    /* Flèche vers la gauche */
+    .dropdown-right .dropdown-content::before {
+        content: '';
+        position: absolute;
+        left: -8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0;
+        height: 0;
+        border-top: 8px solid transparent;
+        border-bottom: 8px solid transparent;
+        border-right: 8px solid #eee;
+    }
+</style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="sidebar">
+        <div class="top">
+             <div class="logo">
+                <i class="bx bxl-codepen"></i>
+                <span>Gestion Des Abscences</span>
+            </div>
+            <i class="bx bx-menu" id="btn"></i>
+        </div>
+             <div class="user">
+            <img src="/static/utilisateur.png" alt="user" class="user-img">
+    
+    <a href="{% url 'administration:admin_profile' %}"
+       class="d-flex flex-column justify-content-center text-decoration-none"
+       {% if request.resolver_match.url_name == 'admin_profile' %}style="color: #4CAF50; font-weight: bold;"{% endif %}>
+        <p class="bold mb-0">
+            {% if request.session.user_nom %}
+                {{ request.session.user_prenom }} {{ request.session.user_nom }}
+            {% else %}
+                Administrateur
+            {% endif %}
+        </p>
+    </a>
+</div>
+            <ul>
+            <li>
+                <a href="{% url 'administration:admin_dashboard' %}"
+                  {% if request.resolver_match.url_name == 'admin_dashboard' %}class="active"{% endif %}>
+                    <i class='bxr  bx-dashboard'></i> 
+                    <span class="nav_item">Panorama</span>
+                </a>
+                <span class="tooltip">Panorama</span>
+            </li> 
+             
+           <li>
+    <div class="dropdown-right" id="planningDropdown">
+        <a href="javascript:void(0)" id="planningLink"
+           {% if 'planning' in request.resolver_match.url_name %}class="active"{% endif %}>
+            <i class='bxr bx-calendar-alt'></i> 
+            <span class="nav_item">Planning</span>
+        </a>
+        <span class="tooltip">Planning</span>
+
+        <div class="dropdown-content">
+            <a href="{% url 'administration:planning_day' %}?date=2025-12-05">Jour</a>
+            <a href="{% url 'administration:planning_week' %}?week=1&year=2025">Semaine</a>
+        </div>
+    </div>
+</li>
+             <li>
+                <a href="{% url 'administration:cours_list' %}"
+                {% if 'cours' in request.resolver_match.url_name %}class="active"{% endif %}>
+                    <i class='bxr  bx-book-bookmark'></i> 
+                    <span class="nav_item">Cours</span>
+                </a>
+                <span class="tooltip">Cours</span>
+            </li>
+             <li>
+                <a href="{% url 'administration:student_list' %}"
+                       {% if 'student' in request.resolver_match.url_name %}class="active"{% endif %}>
+                    <i class='bxr  bx-user-id-card'></i> 
+                    <span class="nav_item">Etudiants</span>
+                </a>
+                <span class="tooltip">Etudiants</span>
+            </li>
+           <li>
+            <a href="{% url 'administration:students_absences' %}"
+               {% if 'absences' in request.resolver_match.url_name %}class="active"{% endif %}>
+                <i class='bxr bx-user-minus'></i>
+                <span class="nav_item">Absences</span>
+            </a>
+            <span class="tooltip">
+                {% if stats.absences_nj > 0 %}
+                    <span class="badge bg-danger badge-stat">{{ stats.absences_nj }}</span>
+                {% endif %}
+                Absences
+            </span>
+            
+        </li>
+               
+               <li>
+    <a href="{% url 'administration:logout' %}">
+        <i class='bxr bx-arrow-out-left-square-half'></i> 
+        <span class="nav_item">Déconnexion</span>
+    </a>
+    <span class="tooltip">Déconnexion</span>
+</li>
+            </ul>
+            </div>
+            
+    <div class="main-content">
+        <h1 class="mb-4" style="
+    font-style: italic;
+    font-size: 32px;
+    color: #2e7d32;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+">
+    {% if request.resolver_match.url_name == 'admin_dashboard' %}
+        <i class="bi bi-speedometer2 text-primary"></i> Dashboard Administration
+    {% elif request.resolver_match.url_name == 'student_list' %}
+        <i class="bi bi-people text-primary"></i> Gestion des Étudiants
+    {% elif request.resolver_match.url_name == 'cours_list' %}
+        <i class="bi bi-book text-primary"></i> Gestion des Cours
+    {% elif 'planning' in request.resolver_match.url_name %}
+        <i class="bi bi-calendar-week text-primary"></i> Planning
+    {% elif 'absences' in request.resolver_match.url_name %}
+        <i class="bi bi-clipboard-x text-primary"></i> Gestion des Absences
+    {% elif request.resolver_match.url_name == 'admin_profile' %}
+        <i class="bi bi-person-gear text-primary"></i> Mon Profil Administrateur
+    {% else %}
+        Administration
+    {% endif %}
+</h1>
+
+        <!-- Stats Cards -->
+        <div class="row">
+            <!-- Total Étudiants -->
+            <div class="col-md-3 col-sm-6">
+                <a href="{% url 'administration:student_list' %}" style="text-decoration: none;">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Total Étudiants</h5>
+                                    <h2 class="card-text">{{ stats.students }}</h2>
+                                </div>
+                                <i class="bi bi-people fs-1 opacity-50"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="bi bi-arrow-up-circle"></i> Enregistrés dans le système
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Total Cours -->
+            <div class="col-md-3 col-sm-6">
+                <a href="{% url 'administration:cours_list' %}" style="text-decoration: none;">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Total Cours</h5>
+                                    <h2 class="card-text">{{ stats.courses }}</h2>
+                                </div>
+                                <i class="bi bi-book fs-1 opacity-50"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="bi bi-journal-text"></i> Disponibles
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Absences non justifiées -->
+            <div class="col-md-3 col-sm-6">
+                <a href="{% url 'administration:students_absences' %}" style="text-decoration: none;">
+                    <div class="card text-white bg-danger">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Absences non justifiées</h5>
+                                    <h2 class="card-text">{{ stats.absences_nj }}</h2>
+                                </div>
+                                <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="bi bi-clock"></i> À traiter
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Semaines suivies -->
+            <div class="col-md-3 col-sm-6">
+                <a href="{% url 'administration:planning_home' %}" style="text-decoration: none;">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Semaines suivies</h5>
+                                    <h2 class="card-text">{{ stats.weekly|length }}</h2>
+                                </div>
+                                <i class="bi bi-calendar-week fs-1 opacity-50"></i>
+                            </div>
+                            <div class="small mt-2">
+                                <i class="bi bi-calendar-check"></i> Planning actif
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        {% if request.resolver_match.url_name == 'admin_dashboard' %}
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up"></i> Tendances des absences par semaine
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="absencesChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-pie-chart"></i> Répartition par filière
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="absencesFiliereChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+       
+        {% endif %}
+        
+        <!-- Block content from child templates -->
+        {% block content %}{% endblock %}
+    </div>
+    
+
+    <!-- Bootstrap JS & Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Charts Script -->
+    {% if request.resolver_match.url_name == 'admin_dashboard' %}
+    <script>
+        // Chart 1: Absences par semaine
+        const weeklyData = {{ stats.weekly|safe }};
+        const labels = weeklyData.map(item => "S" + item.week);
+        const data = weeklyData.map(item => item.total);
+
+        const ctx1 = document.getElementById('absencesChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Absences non justifiées',
+                    data: data,
+                    borderWidth: 3,
+                    borderColor: '#0dcaf0',
+                    backgroundColor: 'rgba(13, 202, 240, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
+            }
+        });
+
+        // Chart 2: Répartition par filière
+        const filiereLabels = {{ stats.absences_par_filiere.labels|safe }};
+        const filiereData = {{ stats.absences_par_filiere.data|safe }};
+
+        const ctx2 = document.getElementById('absencesFiliereChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: filiereLabels,
+                datasets: [{
+                    data: filiereData,
+                    borderWidth: 1,
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                        '#9966FF', '#FF9F40', '#8AC926', '#1982C4'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+    </script>
+    {% endif %}
+    
+    <!-- Auto-refresh stats every 60 seconds -->
+    <script>
+        setTimeout(function() {
+            window.location.reload();
+        }, 60000); // 60 seconds
+    </script>
+
+    <!-- sidebar--> 
+       <script>
+    const btn = document.querySelector('#btn');
+    const sidebar = document.querySelector('.sidebar');
+    const planningDropdown = document.querySelector('#planningDropdown');
+    const planningLink = document.querySelector('#planningLink');
+
+    // Ouvre/ferme le dropdown au clic sur "Planning"
+    planningLink.addEventListener('click', function(e) {
+        e.preventDefault(); // Empêche le lien de recharger la page
+
+        // Seulement si la sidebar est ouverte
+        if (sidebar.classList.contains('active')) {
+            planningDropdown.classList.toggle('open');
+        } else {
+            // Si la sidebar est fermée, on l'ouvre d'abord
+            sidebar.classList.add('active');
+            // Puis on ouvre le dropdown après un petit délai
+            setTimeout(() => {
+                planningDropdown.classList.add('open');
+            }, 500); // Temps de la transition de la sidebar
+        }
+    });
+
+    // Ferme le dropdown si on clique ailleurs dans la page
+    document.addEventListener('click', function(e) {
+        if (!planningDropdown.contains(e.target)) {
+            planningDropdown.classList.remove('open');
+        }
+    });
+
+    // Gestion de l'ouverture/fermeture de la sidebar
+    btn.onclick = function () {
+        sidebar.classList.toggle('active');
+        
+        // Si on ferme la sidebar, on ferme aussi le dropdown
+        if (!sidebar.classList.contains('active')) {
+            planningDropdown.classList.remove('open');
+        }
+    };
+</script>
+     
+</body>
+</html>

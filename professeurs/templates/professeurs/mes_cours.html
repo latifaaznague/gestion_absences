@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mes Cours - Espace Professeur</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .user p, .sidebar .top .logo {
+            color: #2d3748;
+        }
+
+        .tooltip {
+            background: #ffffff;
+            color: #2d3748;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .bxr {
+            color: #2e7d32;
+        }
+        .bxr:hover {
+            color: #12171e;
+        }
+        
+        /* Sidebar identique à la page étudiant */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 80px;
+            background-color: #eee;
+            padding: 0.4rem 0.8rem;
+            transition: width 0.5s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.active {
+            width: 250px;
+        }
+
+        .sidebar #btn {
+            position: absolute;
+            color: #4a5568;
+            top: .4rem;
+            left: 50%;
+            font-size: 1.2rem;
+            line-height: 50px;
+            transform: translateX(-50%);
+            cursor: pointer;
+        }
+
+        .sidebar.active #btn {
+            left: 90%;
+        }
+
+        .sidebar .top .logo {
+            color: #12171e;
+            display: flex;
+            height: 50px;
+            width: 100%;
+            align-items: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.active .top .logo {
+            opacity: 1;
+        }
+
+        .top .logo i {
+            font-size: 2rem;
+            margin-right: 5px;
+            color: #2e7d32;
+        }
+
+        .user {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .user-img {
+            width: 50px;
+            border-radius: 100%;
+            border: 1px solid #eee;
+        }
+
+        .user p {
+            color: #12171e;
+            margin-left: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.active .user p {
+            opacity: 1;
+        }
+
+        .bold {
+            font-weight: 900;
+        }
+
+        .sidebar ul li {
+            position: relative;
+            list-style-type: none;
+            height: 50px;
+            width: 90%;
+            margin: 1.3rem auto;
+            line-height: 50px;
+        }
+
+        .sidebar ul li a {
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            border-radius: 2rem;
+            transition: all 0.3s;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: #e2e8f0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .sidebar ul li a.active {
+            background-color: #d4edda;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .sidebar ul li a i {
+            min-width: 50px;
+            text-align: center;
+            height: 50px;
+            border-radius: 12px;
+            line-height: 50px;
+            font-size: 1.5rem;
+        }
+
+        .nav_item {
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-size: large;
+        }
+
+        .sidebar.active .nav_item {
+            opacity: 1;
+        }
+
+        .sidebar ul li .tooltip {
+            position: absolute;
+            left: 125px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #fff;
+            box-shadow: 0 0.5rem 0.8rem rgba(0,0,0,0.2);
+            border-radius: .6rem;
+            padding: .4rem 1.2rem;
+            line-height: 1.8rem;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar ul li:hover .tooltip {
+            opacity: 1;
+        }
+
+        .sidebar.active ul li .tooltip {
+            display: none;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff5722;
+            color: white;
+            font-size: 0.7em;
+            padding: 2px 6px;
+            border-radius: 50%;
+            min-width: 18px;
+            text-align: center;
+        }
+        
+        /* Main content style de la page étudiant */
+        .main-content {
+            position: relative;
+            background-color: #eee;
+            min-height: 100vh;
+            top: 0;
+            left: 80px;
+            transition: all 0.5s ease;
+            width: calc(100% - 80px);
+            padding: 1rem;
+        }
+        
+        .sidebar.active ~ .main-content {
+            left: 250px;
+            width: calc(100% - 250px);
+        }
+        
+        /* Header style étudiant */
+        header {
+            display: flex;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .about-professeur h1 {
+            font-style: italic;
+            font-size: 32px;
+            color: #2e7d32;
+        }
+        
+        .about-professeur {
+            flex-grow: 1;
+            font-family: "Arial", sans-serif;
+            color: #333;
+        }
+        
+        .professor-id {
+            background: #4CAF50;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        
+        /* Style des cartes de cours - adapté au style étudiant */
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .course-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-top: 4px solid #2196F3;
+            transition: transform 0.3s;
+        }
+        
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        
+        .course-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .course-title {
+            color: #333;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .course-code {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .course-badges {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+        }
+        
+        .badge {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .badge-hours {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #4CAF50;
+        }
+        
+        .badge-sessions {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #2196F3;
+        }
+        
+        /* Détails du cours */
+        .course-details {
+            margin-bottom: 20px;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            color: #555;
+            font-size: 0.95em;
+        }
+        
+        .detail-item i {
+            width: 20px;
+            color: #4CAF50;
+            margin-right: 12px;
+        }
+        
+        .detail-label {
+            color: #666;
+            font-weight: 500;
+            min-width: 100px;
+        }
+        
+        .detail-value {
+            color: #333;
+            font-weight: 600;
+            flex-grow: 1;
+        }
+        
+        .badge-filiere {
+            background: #e0f2f1;
+            color: #00695c;
+            border: 1px solid #4DB6AC;
+        }
+        
+        .badge-groupe {
+            background: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ff9800;
+        }
+        
+        .badge-salle {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            border: 1px solid #9C27B0;
+        }
+        
+        .badge-periode {
+            background: #e8eaf6;
+            color: #283593;
+            border: 1px solid #3F51B5;
+        }
+        
+        .badge-statut {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #4CAF50;
+        }
+        
+        /* Groupes list */
+        .groupes-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        
+        .group-badge {
+            background: #fff3e0;
+            color: #e65100;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            border: 1px solid #ff9800;
+        }
+        
+        /* Description */
+        .course-description {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #666;
+            border-left: 3px solid #4CAF50;
+        }
+        
+        .course-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            grid-column: 1 / -1;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            color: #dee2e6;
+            margin-bottom: 15px;
+        }
+        
+        .empty-state h3 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .empty-state p {
+            color: #999;
+        }
+        
+        /* Stats card */
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            border-top: 4px solid #4CAF50;
+        }
+        
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .stats-header h2 {
+            color: #333;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+        }
+        
+        .stats-header h2 i {
+            margin-right: 10px;
+            color: #4CAF50;
+        }
+        
+        .stats-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .total-courses {
+            text-align: center;
+        }
+        
+        .total-courses .number {
+            font-size: 3em;
+            font-weight: bold;
+            color: #2196F3;
+            margin-bottom: 5px;
+        }
+        
+        .total-courses .label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .courses-summary {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-item .count {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .summary-item .text {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .summary-seances .count { color: #4CAF50; }
+        .summary-groupes .count { color: #ff9800; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .courses-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .course-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .course-badges {
+                flex-direction: row;
+                align-items: center;
+                justify-content: flex-start;
+                gap: 10px;
+            }
+            
+            .stats-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .courses-summary {
+                width: 100%;
+                justify-content: space-around;
+            }
+            
+            .sidebar.active {
+                width: 100%;
+            }
+            
+            .sidebar.active ~ .main-content {
+                left: 0;
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .detail-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .detail-label {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar identique à la page étudiant -->
+    <div class="sidebar">
+        <div class="top">
+            <div class="logo">
+                <i class='bx bxl-codepen'></i>
+                <span>Gestion Des Absences</span>
+            </div>
+            <i class='bx bx-menu' id="btn"></i>
+        </div>
+        
+        <div class="user">
+            <img src="/static/utilisateur.png" alt="user" class="user-img">
+            <div>
+                <a href="{% url 'professeurs:profil_professeur' %}" style="text-decoration: none; color: inherit;">
+                    <p class="bold">{{ utilisateur.prenom }} {{ utilisateur.nom }}</p>
+                </a>
+                  <p>{{ utilisateur.email }}</p>
+
+            </div>
+        </div>
+        
+        <ul>
+            <li>
+                <a href="{% url 'professeurs:dashboard_professeur' %}">
+                    <i class='bxr bx-dashboard'></i> 
+                    <span class="nav_item">Panorama</span>
+                </a>
+                <span class="tooltip">Panorama</span>
+            </li>
+            
+            <li>
+                <a href="{% url 'professeurs:mes_cours' %}" class="active">
+                    <i class='bxr bx-book-bookmark'></i> 
+                    <span class="nav_item">Cours</span>
+                </a>
+                <span class="tooltip">Cours</span>
+            </li>
+            
+            <li>
+                <a href="{% url 'professeurs:mes_seances' %}">
+                    <i class='bxr bx-calendar-alt'></i> 
+                    <span class="nav_item">Séances</span>
+                </a>
+                <span class="tooltip">Séances</span>
+            </li>
+            
+            <li>
+                <a href="{% url 'professeurs:justifications_attente' %}">
+                    <i class='bxr bx-file'></i> 
+                    <span class="nav_item">Justifications</span>
+                    
+                </a>
+                <span class="tooltip">
+                    Justifications
+                    {% if total_justifications_attente > 0 %}
+                    <span style="background: #ff5722; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-left: 5px;">
+                        {{ total_justifications_attente }}
+                    </span>
+                    {% endif %}
+                </span>
+            <li>
+                <a href="{% url 'logout' %}" onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?');">
+                    <i class='bxr bx-arrow-out-left-square-half'></i> 
+                    <span class="nav_item">Déconnexion</span>
+                </a>
+                <span class="tooltip">Déconnexion</span>
+            </li>
+        </ul>
+        
+        
+    </div>
+
+    <!-- Main Content - Style de la page étudiant -->
+    <div class="main-content">
+        <!-- Header style étudiant -->
+        <header>
+            <div class="about-professeur">
+                <h1>Cours - {{ utilisateur.prenom }} {{ utilisateur.nom }}</h1>
+                <div class="professor-id">
+                    <i class="fas fa-chalkboard-teacher"></i> Professeur
+                    {% if prof.specialite %}
+                    • {{ prof.specialite }}
+                    {% endif %}
+                </div>
+                
+            </div>
+        </header>
+
+        <!-- Carte statistiques -->
+        <div class="stats-card">
+            <div class="stats-header">
+                <h2><i class="fas fa-chart-bar"></i> Aperçu des cours</h2>
+                <a href="{% url 'professeurs:dashboard_professeur' %}" style="color: #666; text-decoration: none; font-size: 0.9em;">
+                </a>
+            </div>
+            
+            <div class="stats-content">
+                <div class="total-courses">
+                    <div class="number">{{ total_cours }}</div>
+                    <div class="label">Total des cours</div>
+                </div>
+                
+                <div class="courses-summary">
+                    <div class="summary-item summary-seances">
+                        <div class="count">
+                            {% if total_seances %}
+                                {{ total_seances }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </div>
+                        <div class="text">Séances totales</div>
+                    </div>
+                    
+                    <div class="summary-item summary-groupes">
+                        <div class="count">
+                            {% if total_groupes %}
+                                {{ total_groupes }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </div>
+                        <div class="text">Groupes enseignés</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grille des cours -->
+        <div class="courses-grid">
+            {% if cours_professeur %}
+                {% for cours in cours_professeur %}
+                <div class="course-card">
+                    <div class="course-header">
+                        <div>
+                            <div class="course-title">{{ cours.libelle }}</div>
+                            <div class="course-code">{{ cours.code }}</div>
+                        </div>
+                        <div class="course-badges">
+                            <span class="badge badge-hours">{{ cours.volume_horaire }}h</span>
+                            {% if cours.statistiques.nombre_seances > 0 %}
+                            <span class="badge badge-sessions">
+                                <i class="fas fa-calendar-check"></i> {{ cours.statistiques.nombre_seances }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="course-details">
+                        <!-- Filière -->
+                        {% if cours.filiere %}
+                        <div class="detail-item">
+                            <i class="fas fa-project-diagram"></i>
+                            <span class="detail-label">Filière:</span>
+                            <span class="detail-value">
+                                <span class="badge badge-filiere">{{ cours.filiere }}</span>
+                            </span>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Groupes enseignés -->
+                        {% if cours.statistiques.nombre_groupes > 0 %}
+                        <div class="detail-item">
+                            <i class="fas fa-users"></i>
+                            <span class="detail-label">Groupes:</span>
+                            <span class="detail-value">
+                                <span class="badge badge-groupe">{{ cours.statistiques.nombre_groupes }} groupe(s)</span>
+                            </span>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Liste des groupes -->
+                        {% if cours.groupes %}
+                        <div class="detail-item">
+                            <i class="fas fa-user-tag"></i>
+                            <span class="detail-label">Liste:</span>
+                            <div class="groupes-list">
+                                {% for groupe in cours.groupes %}
+                                <span class="group-badge">{{ groupe }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Salles -->
+                        {% if cours.salles %}
+                        <div class="detail-item">
+                            <i class="fas fa-building"></i>
+                            <span class="detail-label">Salle(s):</span>
+                            <span class="detail-value">
+                                {% for salle in cours.salles %}
+                                <span class="badge badge-salle me-1">{{ salle }}</span>
+                                {% endfor %}
+                            </span>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Période -->
+                        {% if cours.periode %}
+                        <div class="detail-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span class="detail-label">Période:</span>
+                            <span class="detail-value">
+                                <span class="badge badge-periode">{{ cours.periode }}</span>
+                            </span>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Statut -->
+                        <div class="detail-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span class="detail-label">Statut:</span>
+                            <span class="detail-value">
+                                <span class="badge badge-statut">Actif</span>
+                            </span>
+                        </div>
+                        
+                        <!-- Professeur -->
+                        <div class="detail-item">
+                            <i class="fas fa-user"></i>
+                            <span class="detail-label">Enseignant:</span>
+                            <span class="detail-value fw-semibold">{{ utilisateur.prenom }} {{ utilisateur.nom }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    {% if cours.description %}
+                    <div class="course-description">
+                        <i class="fas fa-comment me-2"></i>
+                        {{ cours.description|truncatechars:120 }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="course-footer">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar-week"></i> Cours actif
+                        </small>
+                        {% if cours.statistiques.nombre_seances > 0 %}
+                        <small class="text-success">
+                            <i class="fas fa-check"></i> Séances programmées
+                        </small>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Message quand il n'y a pas de cours -->
+                <div class="empty-state">
+                    <i class="fas fa-book-open"></i>
+                    <h3>Aucun cours assigné</h3>
+                    <p>Vous n'avez pas encore de cours à enseigner.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const btn = document.querySelector('#btn');
+        const sidebar = document.querySelector('.sidebar');
+
+        // Gestion de l'ouverture/fermeture de la sidebar
+        btn.onclick = function () {
+            sidebar.classList.toggle('active');
+        };
+
+        // Fermer la sidebar au clic en dehors (sur mobile)
+        document.addEventListener('click', function(event) {
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isClickOnBtn = btn.contains(event.target);
+            
+            if (!isClickInsideSidebar && !isClickOnBtn && window.innerWidth <= 768) {
+                sidebar.classList.remove('active');
+            }
+        });
+
+        // Ajuster la sidebar sur resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('active');
+            }
+        });
+
+        // Highlight active sidebar link
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.sidebar a').forEach(link => {
+                if (link.href.includes(currentPath)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

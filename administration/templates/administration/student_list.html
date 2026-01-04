@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des étudiants</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        /* Palette de couleurs VERT comme dans la page cours */
+        .user p, .sidebar .top .logo {
+            color: #2d3748;
+        }
+        .bxr {
+            color: #2e7d32;
+        }
+        .bxr:hover {
+            color: #12171e;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 80px;
+            background-color: #eee;
+            padding: 0.4rem 0.8rem;
+            transition: width 0.5s ease;
+            z-index: 1000;
+        }
+        .sidebar.active {
+            width: 250px;
+        }
+        .sidebar #btn {
+            position: absolute;
+            color: #4a5568;
+            top: .4rem;
+            left: 50%;
+            font-size: 1.2rem;
+            line-height: 50px;
+            transform: translateX(-50%);
+            cursor: pointer;
+        }
+        .sidebar.active #btn {
+            left: 90%;
+        }
+        .sidebar .top .logo {
+            color: #12171e;
+            display: flex;
+            height: 50px;
+            width: 100%;
+            align-items: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .sidebar.active .top .logo {
+            opacity: 1;
+        }
+        .top .logo i {
+            font-size: 2rem;
+            margin-right: 5px;
+            color: #2e7d32;
+        }
+        .user {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+        }
+        .user-img {
+            width: 50px;
+            border-radius: 100%;
+            border: 1px solid #eee;
+        }
+        .user p {
+            color: #12171e;
+            margin-left: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .sidebar.active .user p {
+            opacity: 1;
+        }
+        .bold {
+            font-weight: 900;
+        }
+        .sidebar ul li {
+            position: relative;
+            list-style-type: none;
+            height: 50px;
+            width: 90%;
+            margin: 1.3rem auto;
+            line-height: 50px;
+        }
+        .sidebar ul li a {
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            border-radius: 2rem;
+            transition: all 0.3s;
+        }
+        .sidebar ul li a:hover {
+            background-color: #e2e8f0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .sidebar ul li a i {
+            min-width: 50px;
+            text-align: center;
+            height: 50px;
+            border-radius: 12px;
+            line-height: 50px;
+            font-size: 1.5rem;
+        }
+        .nav_item {
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-size: large;
+        }
+        .sidebar.active .nav_item {
+            opacity: 1;
+        }
+        .sidebar ul li .tooltip {
+            position: absolute;
+            left: 125px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #fff;
+            box-shadow: 0 0.5rem 0.8rem rgba(0,0,0,0.2);
+            border-radius: .6rem;
+            padding: .4rem 1.2rem;
+            line-height: 1.8rem;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .sidebar ul li:hover .tooltip {
+            opacity: 1;
+        }
+        .sidebar.active ul li .tooltip {
+            display: none;
+        }
+        .main-content {
+            position: relative;
+            background-color: #eee;
+            min-height: 100vh;
+            top: 0;
+            left: 80px;
+            transition: all 0.5s ease;
+            width: calc(100% - 80px);
+            padding: 1rem;
+        }
+        body {
+            min-width: 100px;
+            min-height: 100vh;
+            justify-content: center;
+            align-items: center;
+        }
+        h1 {
+            margin-top: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+        .table__header {
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: flex-end;
+            max-width: 95vw;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        #sidebar {
+            margin-top: 10px;
+        }
+        .cours {
+            display: flex;
+            justify-content: left;
+            align-items: left;
+            margin-top: -10px;
+        }
+        .Nouveau_Cours-button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .Nouveau_Cours-button:hover {
+            background-color: #388E3C;
+        }
+        section .table__body {
+            width: 95%;
+            max-height: calc(89% - 1.6rem);
+            background-color: #fffb;
+            border-radius: .6rem;
+            margin-top: 90px;
+            overflow: auto;
+            overflow: overlay;
+            position: absolute;
+        }
+        .table__body::-webkit-scrollbar {
+            width: 0.5rem;
+            height: 0.5rem;
+        }
+        .table__body::-webkit-scrollbar-thumb {
+            border-radius: .5rem;
+            background-color: #0004;
+            visibility: hidden;
+        }
+        .table__body:hover::-webkit-scrollbar-thumb {
+            visibility: visible;
+        }
+        table {
+            width: 100%;
+        }
+        td img {
+            width: 80px;
+            height: 80px;
+            margin-right: .5rem;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+        table, th, td {
+            border-collapse: collapse;
+            padding: 1rem;
+            text-align: left;
+        }
+        thead th {
+            position: sticky;
+            top: 0;
+            left: 0;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            text-transform: capitalize;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        tbody tr {
+            --delay: .1s;
+            transition: .5s ease-in-out var(--delay), background-color 0s;
+        }
+        tbody tr.hide {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        tbody tr:hover {
+            background-color: #e8f5e9 !important;
+        }
+        tbody tr td,
+        tbody tr td p,
+        tbody tr td img {
+            transition: .2s ease-in-out;
+        }
+        tbody tr.hide td,
+        tbody tr.hide td p {
+            padding: 0;
+            font: 0 / 0 sans-serif;
+            transition: .2s ease-in-out .5s;
+        }
+        tbody tr.hide td img {
+            width: 0;
+            height: 0;
+            transition: .2s ease-in-out .5s;
+        }
+        @media (max-width: 1000px) {
+            td:not(:first-of-type) {
+                min-width: 12.1rem;
+            }
+        }
+        .supprimer-button, .edit-button {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 0 5px;
+            font-size: 14px;
+            width: auto;
+            min-width: 80px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .supprimer-button {
+            color: white;
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .supprimer-button:hover, .supprimer-button:focus {
+            color: #fff;
+            background-color: #c82333;
+            border-color: #bd2130;
+            transform: translateY(-2px);
+        }
+        .edit-button {
+            color: white;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .edit-button:hover, .edit-button:focus {
+            color: #fff;
+            background-color: #0056b3;
+            border-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        header {
+            display: flex;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .about-etudiant h1 {
+            font-style: italic;
+            font-size: 32px;
+            color: #2e7d32;
+        }
+        .about-etudiant {
+            flex-grow: 1;
+            font-family: "Arial", sans-serif;
+            color: #333;
+            padding: 20px;
+        }
+        .sidebar.active ~ .main-content {
+            left: 250px;
+            width: calc(100% - 250px);
+        }
+        .dropdown-right {
+            position: relative;
+            width: 100%;
+            cursor: pointer;
+        }
+        .dropdown-right .dropdown-content {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 140px;
+            background-color: #eee;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            padding: 12px 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s;
+            z-index: 1000;
+            transition: opacity 0.3s;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-size: large;
+        }
+        .sidebar.active .dropdown-right .dropdown-content {
+            left: 230px;
+        }
+        .dropdown-right.open .dropdown-content {
+            display: block;
+            opacity: 1;
+            visibility: visible;
+        }
+        .dropdown-right .dropdown-content a {
+            display: block;
+            padding: 12px 20px;
+            text-align: center;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .dropdown-right .dropdown-content a:hover {
+            background-color: #e2e8f0;
+            color: #4CAF50;
+        }
+        .dropdown-right .dropdown-content::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid #eee;
+        }
+        .filiere-button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .filiere-button:hover {
+            background-color: #388E3C;
+        }
+        
+        /* FORMULAIRES ÉTUDIANTS - Affichage en haut de page */
+        #addetud, #modEtud {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+            display: none;
+            margin-bottom: 30px;
+        }
+        
+        #addetud h2, #modEtud h2 {
+            text-align: center;
+            color: #2e7d32;
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            font-weight: 600;
+            font-style: italic;
+        }
+        
+        #addetud .form-group, #modEtud .form-group {
+            margin-bottom: 20px;
+        }
+        
+        #addetud label, #modEtud label {
+            display: block;
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        
+        #addetud input[type="text"], #modEtud input[type="text"],
+        #addetud input[type="email"], #modEtud input[type="email"],
+        #addetud input[type="password"], #modEtud input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        #addetud input[type="text"]:focus, #modEtud input[type="text"]:focus,
+        #addetud input[type="email"]:focus, #modEtud input[type="email"]:focus,
+        #addetud input[type="password"]:focus, #modEtud input[type="password"]:focus {
+            outline: none;
+            border-color: #2e7d32;
+            box-shadow: 0 0 8px rgba(46, 125, 50, 0.3);
+        }
+        
+        #addetud button, #modEtud button {
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        #addetud #p1.button, #modEtud #p1.button {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        #addetud #p1.button:hover, #modEtud #p1.button:hover {
+            background-color: #2e7d32;
+            transform: translateY(-2px);
+        }
+        
+        #addetud .b2#p2, #modEtud .b2#p2 {
+            background-color: #6c757d;
+            color: white;
+            margin-right: 15px;
+        }
+        
+        #addetud .b2#p2:hover, #modEtud .b2#p2:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        /* Style spécifique pour le bouton de suppression */
+        .delete-btn {
+            background-color: #dc3545 !important;
+            color: white !important;
+        }
+        .delete-btn:hover {
+            background-color: #c82333 !important;
+            transform: translateY(-2px);
+        }
+        
+        /* Bouton Annuler spécifique */
+        .b2:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+        
+        .button:hover {
+            background-color: #2e7d32;
+            border-color: #2e7d32;
+        }
+        
+        @media (max-width: 768px) {
+            #addetud, #modEtud {
+                width: 95%;
+                padding: 20px;
+            }
+        }
+        
+        /* Grille des formulaires */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            column-gap: 40px;
+            row-gap: 25px;
+        }
+        
+        .form-col {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #addetud select, #modEtud select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .password-center {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            grid-column: 1 / -1;
+        }
+        
+        .password-center input {
+            width: 60%;
+            min-width: 250px;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+            grid-column: 1 / -1;
+        }
+        
+        /* Messages */
+        .error-message {
+            color: #721c24;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            background-color: #f8d7da;
+        }
+        
+        .success-message {
+            color: #155724;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            background-color: #d4edda;
+        }
+        
+        /* Responsive pour formulaire */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .password-center input {
+                width: 100%;
+            }
+        }
+        
+        /* Boutons dans la table header */
+        .table__header .action-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .table__header .nouveau-button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .table__header .nouveau-button:hover {
+            background-color: #388E3C;
+        }
+        
+        .table__header .dashboard-link {
+            padding: 12px 24px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+        
+        .table__header .dashboard-link:hover {
+            background-color: #5a6268;
+        }
+        
+        /* Formulaire de filtrage */
+        .filtre-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filtre-form select {
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 2px solid #4CAF50;
+            background-color: white;
+            min-width: 150px;
+        }
+        
+        .filtre-form button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .filtre-form button:hover {
+            background-color: #388E3C;
+        }
+        
+        /* Styles pour les boutons d'action dans le tableau */
+        .table-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .badge-stat {
+            font-size: 0.8em;
+            margin-left: 5px;
+       
+    display: inline-block !important;
+    background-color: #dc3545 !important;
+    color: white !important;
+    padding: 3px 6px !important;
+    border-radius: 10px !important;
+    font-size: 0.8em !important;
+    font-weight: bold !important;
+}
+    </style>
+</head>
+<body>
+    <!-- Barre latérale -->
+    <div class="sidebar">
+    <div class="top">
+        <div class="logo">
+            <i class="bx bxl-codepen"></i>
+            <span>Gestion Des Absences</span>
+        </div>
+        <i class="bx bx-menu" id="btn"></i>
+    </div>
+    
+    <div class="user">
+            <img src="/static/utilisateur.png" alt="user" class="user-img">
+        <div>
+            <a href="{% url 'administration:admin_profile' %}" 
+               {% if request.resolver_match.url_name == 'admin_profile' %}class="active"{% endif %}>
+                <p class="bold">
+                    {% if request.session.user_nom %}
+                        {{ request.session.user_prenom }} {{ request.session.user_nom }}
+                    {% else %}
+                        Admin Principal
+                    {% endif %}
+                </p>
+            </a>
+        </div>
+    </div>
+    
+    <ul>
+        <li>
+            <a href="{% url 'administration:admin_dashboard' %}"
+               {% if request.resolver_match.url_name == 'admin_dashboard' %}class="active"{% endif %}>
+                <i class='bxr bx-dashboard'></i>
+                <span class="nav_item">Panorama</span>
+            </a>
+            <span class="tooltip">Panorama</span>
+        </li>
+        
+        <li>
+            <div class="dropdown-right" id="planningDropdown">
+                <a href="javascript:void(0)" id="planningLink"
+                   {% if 'planning' in request.resolver_match.url_name %}class="active"{% endif %}>
+                    <i class='bxr bx-calendar-alt'></i>
+                    <span class="nav_item">Planning</span>
+                </a>
+                <span class="tooltip">Planning</span>
+                <div class="dropdown-content">
+                    <a href="{% url 'administration:planning_day' %}?date=2025-12-05">Jour</a>
+                    <a href="{% url 'administration:planning_week' %}?week=1&year=2025">Semaine</a>
+                </div>
+            </div>
+        </li>
+        
+        <li>
+            <a href="{% url 'administration:cours_list' %}"
+               {% if 'cours' in request.resolver_match.url_name %}class="active"{% endif %}>
+                <i class='bxr bx-book-bookmark'></i>
+                <span class="nav_item">Cours</span>
+            </a>
+            <span class="tooltip">Cours</span>
+        </li>
+        
+        <li>
+            <a href="{% url 'administration:student_list' %}"
+               {% if 'student' in request.resolver_match.url_name %}class="active"{% endif %}>
+                <i class='bxr bx-user-id-card'></i>
+                <span class="nav_item">Étudiants</span>
+            </a>
+            <span class="tooltip">Étudiants</span>
+        </li>
+        
+        <li>
+            <a href="{% url 'administration:students_absences' %}"
+               {% if 'absences' in request.resolver_match.url_name %}class="active"{% endif %}>
+                <i class='bxr bx-user-minus'></i>
+                <span class="nav_item">Absences</span>
+            </a>
+            <span class="tooltip">
+                {% if stats.absences_nj > 0 %}
+                    <span class="badge bg-danger badge-stat">{{ stats.absences_nj }}</span>
+                {% endif %}
+                Absences
+            </span>
+            
+        </li>
+        
+        <li>
+    <a href="{% url 'administration:logout' %}">
+        <i class='bxr bx-arrow-out-left-square-half'></i> 
+        <span class="nav_item">Déconnexion</span>
+    </a>
+    <span class="tooltip">Déconnexion</span>
+</li>
+    </ul>
+</div>
+
+    <!-- Contenu principal -->
+    <div class="main-content">
+        <!-- En-tête -->
+        <header>
+            <div class="about-etudiant">
+                <h1>Liste des étudiants</h1>
+            </div>
+        </header>
+        
+        <!-- Formulaire de création d'étudiant (caché par défaut) -->
+        <div id="addetud" style="display: none;">
+            <h2>Créer Étudiant</h2>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    {% if 'etudiant' in message.tags %}
+                        <div class="{% if message.tags == 'etudiant_success' %}success-message{% else %}error-message{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            
+            <form method="POST" action="{% url 'administration:student_create' %}">
+                {% csrf_token %}
+                
+                <div class="form-grid">
+                    <!-- Colonne gauche -->
+                    <div class="form-col">
+                        <label>Nom :</label>
+                        <input type="text" name="nom" required>
+                        
+                        <label>Prénom :</label>
+                        <input type="text" name="prenom" required>
+                        
+                        <label>Email :</label>
+                        <input type="email" name="email" required>
+                    </div>
+                    
+                    <!-- Colonne droite -->
+                    <div class="form-col">
+                        <label>Promotion :</label>
+                        <select name="promotion_id" required>
+                            <option value="">Sélectionner une promotion</option>
+                            {% for p in promotions %}
+                                <option value="{{ p.id }}">{{ p.libelle }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                        <label>Filière :</label>
+                        <select name="filiere_id" required>
+                            <option value="">Sélectionner une filière</option>
+                            {% for f in filieres %}
+                                <option value="{{ f.id }}">{{ f.nom }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                        <label>Code Étudiant :</label>
+                        <input type="text" name="code_etudiant" required>
+                    </div>
+                    
+                    <!-- Mot de passe au centre -->
+                    <div class="password-center">
+                        <label>Mot de Passe :</label>
+                        <input type="password" name="password" required>
+                    </div>
+                    
+                    <!-- Boutons d'action -->
+                    <div class="form-actions">
+                        <button type="submit" class="button">Enregistrer</button>
+                        <button type="reset" class="b2" id="cancelAdd">Annuler</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Formulaire de modification d'étudiant (caché par défaut) -->
+        <div id="modEtud" style="display: none;">
+            <h2>Modifier un Étudiant</h2>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    {% if 'etudiant_modif' in message.tags %}
+                        <div class="{% if message.tags == 'etudiant_modif_success' %}success-message{% else %}error-message{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            
+            <form method="POST" id="modify-form">
+                {% csrf_token %}
+                <input type="hidden" id="edit_student_id" name="student_id">
+                
+                <div class="form-grid">
+                    <!-- Colonne gauche -->
+                    <div class="form-col">
+                        <label>Nom :</label>
+                        <input type="text" name="nom" id="edit_nom" required>
+                        
+                        <label>Prénom :</label>
+                        <input type="text" name="prenom" id="edit_prenom" required>
+                        
+                        <label>Email :</label>
+                        <input type="email" name="email" id="edit_email" required>
+                    </div>
+                    
+                    <!-- Colonne droite -->
+                    <div class="form-col">
+                        <label>Promotion :</label>
+                        <select name="promotion_id" id="edit_promotion" required>
+                            <option value="">Sélectionner une promotion</option>
+                            {% for p in promotions %}
+                                <option value="{{ p.id }}">{{ p.libelle }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                        <label>Filière :</label>
+                        <select name="filiere_id" id="edit_filiere" required>
+                            <option value="">Sélectionner une filière</option>
+                            {% for f in filieres %}
+                                <option value="{{ f.id }}">{{ f.nom }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                        <label>Code Étudiant :</label>
+                        <input type="text" name="code_etudiant" id="edit_code" required>
+                    </div>
+                    
+                    <!-- Mot de passe au centre -->
+                    <div class="password-center">
+                        <label>Mot de Passe (laisser vide pour ne pas modifier) :</label>
+                        <input type="password" name="motDePasse">
+                    </div>
+                    
+                    <!-- Boutons d'action -->
+                    <div class="form-actions">
+                        <button type="submit" class="button">Enregistrer</button>
+                        <button type="reset" class="b2" id="cancelMod">Annuler</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Barre d'outils avec boutons d'action -->
+        <section class="table__header">
+            <div class="action-buttons">
+                <button type="button" class="nouveau-button" id="ajout_btn">
+                    <i class='bx bx-plus-big'></i> Nouvel étudiant
+                </button>
+               
+            </div>
+        </section>
+        
+        <!-- Formulaire de filtrage -->
+        <section class="table__header">
+            <form method="get" class="filtre-form">
+                <div>
+                    <label>Filière:</label>
+                    <select name="filiereId">
+                        <option value="">Toutes</option>
+                        {% for f in filieres %}
+                            <option value="{{ f.id }}" {% if f.id == selected_filiere %}selected{% endif %}>
+                                {{ f.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label>Promotion:</label>
+                    <select name="promotionId">
+                        <option value="">Toutes</option>
+                        {% for p in promotions %}
+                            <option value="{{ p.id }}" {% if p.id == selected_promo %}selected{% endif %}>
+                                {{ p.libelle }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button type="submit">Filtrer</button>
+            </form>
+        </section>
+        
+        <!-- Tableau des étudiants -->
+        <section class="table__body">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Email</th>
+                        <th>Code</th>
+                        <th>Promotion</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in students %}
+                    <tr>
+                        <td>{{ s.id }}</td>
+                        <td>{{ s.nom }}</td>
+                        <td>{{ s.prenom }}</td>
+                        <td>{{ s.email }}</td>
+                        <td>{{ s.codeEtudiant }}</td>
+                        <td>{{ s.promotionLibelle }}</td>
+                        <td>
+                            <div class="table-actions">
+                                <button type="button" class="edit-button mod-link" 
+                                        data-id="{{ s.id }}"
+                                        data-nom="{{ s.nom }}"
+                                        data-prenom="{{ s.prenom }}"
+                                        data-email="{{ s.email }}"
+                                        data-code="{{ s.codeEtudiant }}"
+                                        data-promotion="{{ s.promotionId }}"
+                                        data-filiere="{{ s.filiereId }}">
+                                    Modifier
+                                </button>
+                                <form method="post" action="{% url 'administration:student_delete' s.id %}" style="display:inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="supprimer-button" onclick="return confirm('Supprimer cet étudiant ?');">Supprimer</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center;">Aucun étudiant trouvé</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script>
+        // Gestion de la sidebar
+        const btn = document.querySelector('#btn');
+        const sidebar = document.querySelector('.sidebar');
+        const planningDropdown = document.querySelector('#planningDropdown');
+        const planningLink = document.querySelector('#planningLink');
+
+        planningLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (sidebar.classList.contains('active')) {
+                planningDropdown.classList.toggle('open');
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!planningDropdown.contains(e.target)) {
+                planningDropdown.classList.remove('open');
+            }
+        });
+
+        btn.onclick = function() {
+            sidebar.classList.toggle('active');
+            if (!sidebar.classList.contains('active')) {
+                planningDropdown.classList.remove('open');
+            }
+        };
+
+        // Gestion des formulaires étudiants
+        const ajoutBtn = document.querySelector('#ajout_btn');
+        const addetudForm = document.querySelector('#addetud');
+        const modEtudForm = document.querySelector('#modEtud');
+        const cancelAdd = document.querySelector('#cancelAdd');
+        const cancelMod = document.querySelector('#cancelMod');
+        const modLinks = document.querySelectorAll('.mod-link');
+
+        // Afficher formulaire d'ajout
+        ajoutBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            addetudForm.style.display = 'block';
+            modEtudForm.style.display = 'none';
+            // Faire défiler vers le formulaire
+            addetudForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        // Cacher formulaire d'ajout
+        cancelAdd.addEventListener('click', function() {
+            addetudForm.style.display = 'none';
+        });
+
+        // Cacher formulaire de modification
+        cancelMod.addEventListener('click', function() {
+            modEtudForm.style.display = 'none';
+        });
+
+        // Gestion des liens de modification
+        modLinks.forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                
+                // Récupérer les données de l'étudiant
+                const studentId = this.getAttribute('data-id');
+                const nom = this.getAttribute('data-nom');
+                const prenom = this.getAttribute('data-prenom');
+                const email = this.getAttribute('data-email');
+                const code = this.getAttribute('data-code');
+                const promotionId = this.getAttribute('data-promotion');
+                const filiereId = this.getAttribute('data-filiere');
+                
+                // Remplir le formulaire
+                document.getElementById('edit_student_id').value = studentId;
+                document.getElementById('edit_nom').value = nom;
+                document.getElementById('edit_prenom').value = prenom;
+                document.getElementById('edit_email').value = email;
+                document.getElementById('edit_code').value = code;
+                document.getElementById('edit_promotion').value = promotionId;
+                document.getElementById('edit_filiere').value = filiereId;
+                
+                // Définir l'action du formulaire
+                document.getElementById('modify-form').action = "{% url 'administration:student_edit' 0 %}".replace('0', studentId);
+                
+                // Afficher le formulaire
+                modEtudForm.style.display = 'block';
+                addetudForm.style.display = 'none';
+                
+                // Faire défiler vers le formulaire
+                modEtudForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Fermer les formulaires en cliquant à l'extérieur
+        document.addEventListener('click', function(event) {
+            if (!addetudForm.contains(event.target) && !ajoutBtn.contains(event.target) && 
+                !modEtudForm.contains(event.target) && !Array.from(modLinks).some(link => link.contains(event.target))) {
+                
+                // Ne pas fermer si on clique sur un lien de modification
+                let isModLink = false;
+                modLinks.forEach(link => {
+                    if (link.contains(event.target)) {
+                        isModLink = true;
+                    }
+                });
+                
+                if (!isModLink && !event.target.classList.contains('mod-link')) {
+                    if (!ajoutBtn.contains(event.target)) {
+                        addetudForm.style.display = 'none';
+                    }
+                    if (!event.target.classList.contains('mod-link')) {
+                        modEtudForm.style.display = 'none';
+                    }
+                }
+            }
+        });
+
+        // Si des messages Django sont présents, afficher le formulaire approprié
+        document.addEventListener('DOMContentLoaded', function() {
+            // Vérifier si on vient de soumettre un formulaire de création
+            {% if messages %}
+                {% for message in messages %}
+                    {% if 'etudiant' in message.tags and 'success' in message.tags %}
+                        // Afficher le formulaire de création si succès
+                        addetudForm.style.display = 'block';
+                        addetudForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    {% elif 'etudiant_modif' in message.tags and 'success' in message.tags %}
+                        // Afficher le formulaire de modification si succès
+                        modEtudForm.style.display = 'block';
+                        modEtudForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            
+            // Vérifier si l'URL contient un paramètre pour ouvrir le formulaire de création
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('show_form') === 'add') {
+                addetudForm.style.display = 'block';
+                addetudForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    </script>
+</body>
+</html>

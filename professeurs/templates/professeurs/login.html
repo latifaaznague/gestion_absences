@@ -1,0 +1,301 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width,initial-scale=1.0">
+      <title>Connexion Professeur - Gestion des Absences</title> 
+     <style>
+        
+        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing:border-box;
+    font-family:"Poppins",sans-serif;
+
+}
+
+body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-image: url('{% static "login.jpg" %}');
+    background-repeat: no-repeat;
+            background-size: cover;
+    background-position: center;
+}
+body::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-position: right;
+    filter: brightness(40%);
+    /* background-repeat: no-repeat;
+    background-size: cover; */
+    z-index:-1;
+
+}
+
+.wrapper{
+    width:420px;
+    background: transparent;
+    border: 2px solid rgba(255, 255,255, .2);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 10px rgb(0, 0, 0, .2);
+    color:#fff;
+    border-radius: 10px;
+    padding: 30px 40px;
+}
+
+.wrapper h1 {
+    font-size: 36px;
+    text-align: center;
+}
+
+.wrapper .input-box {
+    position: relative;
+    width:100%;
+    height: 50px;
+    margin:30px 0;
+}
+
+.input-box input{
+    width:100%;
+    height: 100%;
+    background:transparent;
+    border: none;
+    outline: none;
+    border: 2px solid rgba(255, 255,255, .2);
+    border-radius: 40px; 
+    font-size: 16px;
+    color: #fff;
+    padding: 20px 45px 20px 20px;
+}
+
+.input-box input::placeholder{
+    color: #fff;
+}
+
+.input-box i{
+    position: absolute;
+    right: 20px;
+    top:50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+
+}
+
+.wrapper .remember-forgot {
+    accent-color: #fff;
+    margin-right: 3px;
+} 
+
+.remember-forgot a{
+    color: #fff;
+    text-decoration: none;
+}
+
+.remember-forgot a:hover{
+    text-decoration: underline;
+}
+
+.wrapper .btn{
+    width: 100%;
+    height: 45px;
+    background: #fff;
+    border:none;
+    outline: none;
+    border-radius: 40px;
+    box-shadow: 0 0 10px rgb(0, 0, 0, .1);
+    cursor: pointer;
+    font-size: 16px;
+    color: #333;
+    font-weight: 600;
+}
+
+.remember-forgot {
+    margin-bottom: 20px; 
+}
+
+.btn {
+    margin-top: 10px; 
+}
+
+/* 1. Animation douce sur le voile sombre */
+body::before {
+    transition: filter 0.5s ease;   /* ← indispensable */
+}
+
+/* 2. Quand on survole LE BOUTON → fond plus sombre */
+.btn:hover ~ body::before,
+body:has(.btn:hover)::before {     /* cette ligne magique marche dans tous les navigateurs modernes */
+    filter: brightness(20%) !important;   /* passe de 40% → 20% = bien plus sombre */
+}
+
+/* Bonus : petit effet sur le bouton lui-même */
+.btn {
+    transition: all 0.3s ease;
+}
+.btn:hover {
+    background: #e0e0e0;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+
+.remember-forgot {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14.5px;
+    margin: 15px 0 25px;
+}
+
+.remember-forgot label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+.remember-forgot input[type="checkbox"] {
+    accent-color: #fff;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.remember-forgot a {
+    color:rgba(255, 234, 167, 0.7);           /* couleur douce et moderne (violet clair) */
+    font-size: 13.5px;        /* plus petit que le reste */
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.remember-forgot a:hover {
+    color:  #e0e0e0;              /* devient blanc au survol */
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* Messages Django */
+.alert-message {
+    background-color: rgba(244, 67, 54, 0.2);
+    color: #ffcdd2;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    text-align: center;
+    border-left: 4px solid #f44336;
+    font-size: 14px;
+}
+
+.alert-success {
+    background-color: rgba(76, 175, 80, 0.2);
+    color: #c8e6c9;
+    border-left: 4px solid #4caf50;
+}
+
+
+     </style>
+      
+    </head>
+<body>
+    <div class="wrapper">
+        <h1>Connexion</h1>
+
+        <!-- Messages Django -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-message {% if message.tags == 'success' %}alert-success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+       <form name="LoginForm" action="{% url '' %}" method="POST">
+            {% csrf_token %}
+
+            <div class="input-box">
+                <input type="email" id="email" name="email" placeholder="Adresse email" required>
+                <i class="fas fa-envelope"></i>
+            </div>
+            <div class="input-box">
+                <input type="password" id="password" name="password" placeholder="Mot de passe" required>
+                <i class="fas fa-lock"></i>
+            </div>
+
+            <div class="remember-forgot">
+                <label>
+                    <input type="checkbox" name="remember_me">
+                    Se souvenir de moi
+                </label>
+                <a href="#" onclick="forgotPassword()">Mot de passe oublié ?</a>
+            </div>
+                
+            <button type="submit" class="btn">Connexion</button>
+        </form>
+    </div>
+
+    <!-- Font Awesome pour les icônes -->
+    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
+    <script>
+        // Fonction pour mot de passe oublié
+        function forgotPassword() {
+            const email = document.getElementById('email').value;
+            if (email && email.includes('@')) {
+                alert('Un lien de réinitialisation sera envoyé à ' + email);
+            } else {
+                alert('Veuillez d\'abord saisir votre adresse email');
+                document.getElementById('email').focus();
+            }
+        }
+        
+        // Gestion de la soumission du formulaire
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const btn = document.querySelector('.btn');
+            const originalText = btn.innerHTML;
+            
+            // Désactiver le bouton et changer le texte
+            btn.disabled = true;
+            btn.innerHTML = 'Connexion en cours...';
+            btn.style.opacity = '0.7';
+            
+            // Validation côté client
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                e.preventDefault();
+                alert('Veuillez remplir tous les champs');
+                
+                // Réactiver le bouton
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+            }
+        });
+        
+        // Animation d'entrée
+        document.addEventListener('DOMContentLoaded', function() {
+            const wrapper = document.querySelector('.wrapper');
+            wrapper.style.opacity = '0';
+            wrapper.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                wrapper.style.transition = 'all 0.5s ease';
+                wrapper.style.opacity = '1';
+                wrapper.style.transform = 'translateY(0)';
+            }, 100);
+            
+            // Focus sur le champ email
+            document.getElementById('email').focus();
+        });
+    </script>
+</body>
+</html>

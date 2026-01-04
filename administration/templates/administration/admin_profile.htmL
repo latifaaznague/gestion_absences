@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon Profil Administrateur</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding-top: 0 !important;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 80px;
+            background-color: #eee;
+            padding: 0.4rem 0.8rem;
+            transition: width 0.5s ease;
+            z-index: 1000;
+        }
+        
+        .sidebar.active {
+            width: 250px;
+        }
+        
+        .sidebar #btn {
+            position: absolute;
+            color: #4a5568;
+            top: .4rem;
+            left: 50%;
+            font-size: 1.2rem;
+            line-height: 50px;
+            transform: translateX(-50%);
+            cursor: pointer;
+        }
+        
+        .sidebar.active #btn {
+            left: 90%;
+        }
+        
+        .sidebar .top .logo {
+            color: #12171e;
+            display: flex;
+            height: 50px;
+            width: 100%;
+            align-items: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .sidebar.active .top .logo {
+            opacity: 1;
+        }
+        
+        .top .logo i {
+            font-size: 2rem;
+            margin-right: 5px;
+            color: #2e7d32;
+        }
+        
+        .user {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+        }
+        
+        .user-img {
+            width: 50px;
+            border-radius: 100%;
+            border: 1px solid #eee;
+        }
+        
+        .user p {
+            color: #12171e;
+            margin-left: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .sidebar.active .user p {
+            opacity: 1;
+        }
+        
+        .bold {
+            font-weight: 900;
+        }
+        
+        .sidebar ul li {
+            position: relative;
+            list-style-type: none;
+            height: 50px;
+            width: 90%;
+            margin: 1.3rem auto;
+            line-height: 50px;
+        }
+        
+        .sidebar ul li a {
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            border-radius: 2rem;
+            transition: all 0.3s;
+        }
+        
+        .sidebar ul li a:hover {
+            background-color: #e2e8f0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        .sidebar ul li a i {
+            min-width: 50px;
+            text-align: center;
+            height: 50px;
+            border-radius: 12px;
+            line-height: 50px;
+            font-size: 1.5rem;
+        }
+        
+        .nav_item {
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-size: large;
+        }
+        
+        .sidebar.active .nav_item {
+            opacity: 1;
+        }
+        
+        .sidebar ul li .tooltip {
+            position: absolute;
+            left: 125px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #fff;
+            box-shadow: 0 0.5rem 0.8rem rgba(0,0,0,0.2);
+            border-radius: .6rem;
+            padding: .4rem 1.2rem;
+            line-height: 1.8rem;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .sidebar ul li:hover .tooltip {
+            opacity: 1;
+        }
+        
+        .sidebar.active ul li .tooltip {
+            display: none;
+        }
+        
+        /* Main content */
+        .main-content {
+            position: relative;
+            background-color: #eee;
+            min-height: 100vh;
+            top: 0;
+            left: 80px;
+            transition: all 0.5s ease;
+            width: calc(100% - 80px);
+            padding: 2rem;
+        }
+        
+        .sidebar.active ~ .main-content {
+            left: 250px;
+            width: calc(100% - 250px);
+        }
+        
+        /* Header principal */
+        .main-content .header h1 {
+            font-style: italic;
+            font-size: 32px;
+            color: #2e7d32;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        /* Badge */
+        .badge-stat {
+            display: inline-block !important;
+            background-color: #dc3545 !important;
+            color: white !important;
+            padding: 3px 6px !important;
+            border-radius: 10px !important;
+            font-size: 0.8em !important;
+            font-weight: bold !important;
+        }
+        
+        /* Dropdown Planning */
+        .dropdown-right {
+            position: relative;
+            width: 100%;
+            cursor: pointer;
+        }
+        
+        .dropdown-right .dropdown-content {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 140px;
+            background-color: #eee;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            padding: 12px 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s;
+            z-index: 1000;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-size: large;
+        }
+        
+        /* Quand sidebar ouverte → dropdown collé au bord droit */
+        .sidebar.active .dropdown-right .dropdown-content {
+            left: 230px;
+        }
+        
+        /* Quand ouvert (classe .open ajoutée par JS) */
+        .dropdown-right.open .dropdown-content {
+            display: block;
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .dropdown-right .dropdown-content a {
+            display: block;
+            padding: 12px 20px;
+            text-align: center;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .dropdown-right .dropdown-content a:hover {
+            background-color: #e2e8f0;
+            color: #4CAF50;
+        }
+        
+        /* Flèche vers la gauche */
+        .dropdown-right .dropdown-content::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid #eee;
+        }
+        
+        /* Styles spécifiques au profil */
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 24px;
+            border: none;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+        }
+        
+        .card-header {
+            border-bottom: none;
+            padding: 20px 24px;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .card-header.bg-primary {
+            background: linear-gradient(135deg, #2e7d32 0%, #4CAF50 100%) !important;
+            color: white;
+        }
+        
+        .card-header.bg-warning {
+            background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%) !important;
+            color: white;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2e7d32 0%, #4CAF50 100%);
+            border: none;
+            padding: 12px 28px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #276629 0%, #3d8b40 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(46, 125, 50, 0.3);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+            border: none;
+            padding: 12px 28px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #b36205 0%, #d97706 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(217, 119, 6, 0.3);
+            color: white;
+        }
+        
+        .btn-outline-primary {
+            color: #2e7d32;
+            border: 2px solid #2e7d32;
+            padding: 10px 26px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s;
+            background-color: transparent;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: #2e7d32;
+            border-color: #2e7d32;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
+        }
+        
+        .alert {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 16px 20px;
+            margin-bottom: 24px;
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-left: 4px solid #2e7d32;
+            color: #155724;
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .alert-warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+        
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            padding: 12px 16px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background-color: #f8fafc;
+        }
+        
+        .form-control:focus {
+            border-color: #2e7d32;
+            box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.25);
+            background-color: white;
+            transform: translateY(-1px);
+        }
+        
+        .form-control:read-only {
+            background-color: #f1f5f9;
+            cursor: not-allowed;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        
+        .form-text {
+            color: #64748b;
+            font-size: 13px;
+        }
+        
+        .input-group-text {
+            background-color: white;
+            border: 2px solid #e2e8f0;
+            border-left: none;
+            color: #64748b;
+            transition: all 0.3s;
+        }
+        
+        .input-group .form-control {
+            border-right: none;
+        }
+        
+        .input-group .form-control:focus + .input-group-text {
+            border-color: #2e7d32;
+            color: #2e7d32;
+        }
+        
+        .toggle-password {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .toggle-password:hover {
+            background-color: #f1f5f9;
+            color: #2e7d32;
+        }
+        
+        .password-strength .progress {
+            height: 6px;
+            border-radius: 3px;
+            background-color: #e2e8f0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            border-radius: 3px;
+            transition: width 0.5s ease, background-color 0.5s ease;
+        }
+        
+        .password-strength {
+            margin-top: 8px;
+        }
+        
+        .border-top {
+            border-top: 1px solid #e2e8f0 !important;
+        }
+        
+        .row.g-3 {
+            --bs-gutter-x: 1.5rem;
+            --bs-gutter-y: 1.5rem;
+        }
+        
+        .security-tip i {
+            color: #059669;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        /* Animation pour les cartes */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .card {
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        /* Animation pour les badges */
+        .badge-stat {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Menu -->
+    <div class="sidebar">
+        <div class="top">
+            <div class="logo">
+                <i class="bx bxl-codepen"></i>
+                <span>Gestion Des Absences</span>
+            </div>
+            <i class="bx bx-menu" id="btn"></i>
+        </div>
+        
+        <div class="user">
+            <img src="/static/utilisateur.png" alt="user" class="user-img">
+            <div>
+                <a href="{% url 'administration:admin_profile' %}" 
+                   {% if request.resolver_match.url_name == 'admin_profile' %}class="active"{% endif %}>
+                    <p class="bold">
+                        {% if request.session.user_nom %}
+                            {{ request.session.user_prenom }} {{ request.session.user_nom }}
+                        {% else %}
+                            Admin Principal
+                        {% endif %}
+                    </p>
+                    <p>admin@ecole.com</p>
+                </a>
+            </div>
+        </div>
+        
+        <ul>
+            <li>
+                <a href="{% url 'administration:admin_dashboard' %}"
+                   {% if request.resolver_match.url_name == 'admin_dashboard' %}class="active"{% endif %}>
+                    <i class='bxr bx-dashboard'></i>
+                    <span class="nav_item">Panorama</span>
+                </a>
+                <span class="tooltip">Panorama</span>
+            </li>
+            
+            <li>
+                <div class="dropdown-right" id="planningDropdown">
+                    <a href="javascript:void(0)" id="planningLink"
+                       {% if 'planning' in request.resolver_match.url_name %}class="active"{% endif %}>
+                        <i class='bxr bx-calendar-alt'></i>
+                        <span class="nav_item">Planning</span>
+                    </a>
+                    <span class="tooltip">Planning</span>
+                    <div class="dropdown-content">
+                        <a href="{% url 'administration:planning_day' %}?date=2025-12-05">Jour</a>
+                        <a href="{% url 'administration:planning_week' %}?week=1&year=2025">Semaine</a>
+                    </div>
+                </div>
+            </li>
+            
+            <li>
+                <a href="{% url 'administration:cours_list' %}"
+                   {% if 'cours' in request.resolver_match.url_name %}class="active"{% endif %}>
+                    <i class='bxr bx-book-bookmark'></i>
+                    <span class="nav_item">Cours</span>
+                </a>
+                <span class="tooltip">Cours</span>
+            </li>
+            
+            <li>
+                <a href="{% url 'administration:student_list' %}"
+                   {% if 'student' in request.resolver_match.url_name %}class="active"{% endif %}>
+                    <i class='bxr bx-user-id-card'></i>
+                    <span class="nav_item">Étudiants</span>
+                </a>
+                <span class="tooltip">Étudiants</span>
+            </li>
+            
+            <li>
+                <a href="{% url 'administration:students_absences' %}"
+                   {% if 'absences' in request.resolver_match.url_name %}class="active"{% endif %}>
+                    <i class='bxr bx-user-minus'></i>
+                    <span class="nav_item">Absences</span>
+                </a>
+                <span class="tooltip">
+                    {% if stats.absences_nj > 0 %}
+                        <span class="badge bg-danger badge-stat">{{ stats.absences_nj }}</span>
+                    {% endif %}
+                    Absences
+                </span>
+            </li>
+            
+            <li>
+    <a href="{% url 'logout' %}">
+                    <i class='bxr bx-arrow-out-left-square-half'></i>
+                    <span class="nav_item">Déconnexion</span>
+                </a>
+                <span class="tooltip">Déconnexion</span>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content avec ajustement pour le sidebar -->
+    <div class="main-content">
+        <!-- En-tête -->
+        <div class="header">
+            <h1 class="mb-4">
+                <i class="bi bi-person-gear me-2"></i> Mon Profil 
+            </h1>
+        </div>
+
+        <!-- Messages d'alerte -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        {% if message.tags == 'success' %}
+                            <i class="bi bi-check-circle-fill me-3 fs-5"></i>
+                        {% elif message.tags == 'error' or message.tags == 'danger' %}
+                            <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
+                        {% elif message.tags == 'warning' %}
+                            <i class="bi bi-exclamation-circle-fill me-3 fs-5"></i>
+                        {% elif message.tags == 'info' %}
+                            <i class="bi bi-info-circle-fill me-3 fs-5"></i>
+                        {% endif %}
+                        <div class="flex-grow-1">{{ message }}</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
+                    <div class="flex-grow-1">{{ error }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if success %}
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill me-3 fs-5"></i>
+                    <div class="flex-grow-1">{{ success }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="row">
+            <!-- Colonne gauche : Informations personnelles -->
+            <div class="col-lg-12">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person-badge me-2"></i>Informations Personnelles
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" id="profileForm">
+                            {% csrf_token %}
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="nom" class="form-label fw-semibold">
+                                            <i class="bi bi-person me-2"></i>Nom
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="nom" 
+                                               name="nom" 
+                                               value="{{ user.nom|default_if_none:'' }}" 
+                                               required
+                                               placeholder="Votre nom">
+                                        <div class="form-text text-muted mt-1">
+                                            Votre nom de famille
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="prenom" class="form-label fw-semibold">
+                                            <i class="bi bi-person me-2"></i>Prénom
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="prenom" 
+                                               name="prenom" 
+                                               value="{{ user.prenom|default_if_none:'' }}" 
+                                               required
+                                               placeholder="Votre prénom">
+                                        <div class="form-text text-muted mt-1">
+                                            Votre prénom
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="email" class="form-label fw-semibold">
+                                            <i class="bi bi-envelope me-2"></i>Adresse Email
+                                        </label>
+                                        <input type="email" 
+                                               class="form-control" 
+                                               id="email" 
+                                               name="email" 
+                                               value="{{ user.email|default_if_none:'' }}" 
+                                               required
+                                               placeholder="votre.email@exemple.com">
+                                        <div class="form-text text-muted mt-1">
+                                            Adresse email utilisée pour la connexion
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Champ rôle (lecture seule) -->
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="form-label fw-semibold">
+                                            <i class="bi bi-award me-2"></i>Rôle Administrateur
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   value="{{ user.type_utilisatur|default:'ADMINISTRATEUR' }}" 
+                                                   readonly
+                                                   style="background-color: #f8f9fa;">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-lock-fill"></i>
+                                            </span>
+                                        </div>
+                                        <div class="form-text text-muted mt-1">
+                                            Votre rôle dans le système (non modifiable)
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Date de création (si disponible) -->
+                                {% if user.date_creation %}
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="form-label fw-semibold">
+                                            <i class="bi bi-calendar-check me-2"></i>Date de création du compte
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   value="{{ user.date_creation }}" 
+                                                   readonly
+                                                   style="background-color: #f8f9fa;">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-clock-history"></i>
+                                            </span>
+                                        </div>
+                                        <div class="form-text text-muted mt-1">
+                                            Date d'inscription dans le système
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Bouton de soumission -->
+                                <div class="col-12 mt-4 pt-3 border-top">
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <button type="submit" class="btn btn-primary px-4">
+                                            <i class="bi bi-save me-2"></i>Enregistrer les modifications
+                                        </button>
+                                       
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Script pour le sidebar
+        const btn = document.querySelector('#btn');
+        const sidebar = document.querySelector('.sidebar');
+        const planningDropdown = document.querySelector('#planningDropdown');
+        const planningLink = document.querySelector('#planningLink');
+
+        // Ouvre/ferme le dropdown au clic sur "Planning"
+        if (planningLink) {
+            planningLink.addEventListener('click', function(e) {
+                e.preventDefault(); // Empêche le lien de recharger la page
+
+                // Seulement si la sidebar est ouverte
+                if (sidebar.classList.contains('active')) {
+                    planningDropdown.classList.toggle('open');
+                } else {
+                    // Si la sidebar est fermée, on l'ouvre d'abord
+                    sidebar.classList.add('active');
+                    // Puis on ouvre le dropdown après un petit délai
+                    setTimeout(() => {
+                        planningDropdown.classList.add('open');
+                    }, 500); // Temps de la transition de la sidebar
+                }
+            });
+        }
+
+        // Ferme le dropdown si on clique ailleurs dans la page
+        document.addEventListener('click', function(e) {
+            if (planningDropdown && !planningDropdown.contains(e.target)) {
+                planningDropdown.classList.remove('open');
+            }
+        });
+
+        // Gestion de l'ouverture/fermeture de la sidebar
+        if (btn) {
+            btn.onclick = function () {
+                sidebar.classList.toggle('active');
+                
+                // Si on ferme la sidebar, on ferme aussi le dropdown
+                if (!sidebar.classList.contains('active')) {
+                    planningDropdown.classList.remove('open');
+                }
+            };
+        }
+
+        // Script de validation des formulaires
+        document.addEventListener('DOMContentLoaded', function() {
+            // Validation du formulaire de mot de passe
+            const passwordForm = document.getElementById('passwordForm');
+            if (passwordForm) {
+                passwordForm.addEventListener('submit', function(e) {
+                    const ancien = document.getElementById('ancien_motdepasse').value;
+                    const nouveau = document.getElementById('nouveau_motdepasse').value;
+                    const confirm = document.getElementById('confirmation_motdepasse').value;
+                    
+                    // Validation basique
+                    if (!ancien) {
+                        e.preventDefault();
+                        showToast('❌ Veuillez saisir votre ancien mot de passe !', 'error');
+                        return false;
+                    }
+                    
+                    if (nouveau !== confirm) {
+                        e.preventDefault();
+                        showToast('❌ Les nouveaux mots de passe ne correspondent pas !', 'error');
+                        return false;
+                    }
+                    
+                    if (nouveau.length < 8) {
+                        e.preventDefault();
+                        showToast('⚠️ Le mot de passe doit contenir au moins 8 caractères !', 'warning');
+                        return false;
+                    }
+                    
+                    // Vérification que l'ancien et le nouveau sont différents
+                    if (ancien === nouveau) {
+                        e.preventDefault();
+                        showToast('⚠️ Le nouveau mot de passe doit être différent de l\'ancien !', 'warning');
+                        return false;
+                    }
+                    
+                    // Vérification de la force du mot de passe
+                    const strength = checkPasswordStrength(nouveau);
+                    if (strength < 3) {
+                        e.preventDefault();
+                        showToast('⚠️ Le mot de passe est trop faible. Utilisez des majuscules, chiffres et caractères spéciaux.', 'warning');
+                        return false;
+                    }
+                    
+                    return true;
+                });
+            }
+            
+            // Fonction pour vérifier la force du mot de passe
+            function checkPasswordStrength(password) {
+                let strength = 0;
+                
+                // Longueur minimale
+                if (password.length >= 8) strength += 1;
+                if (password.length >= 12) strength += 1;
+                
+                // Contient des majuscules
+                if (/[A-Z]/.test(password)) strength += 1;
+                
+                // Contient des minuscules
+                if (/[a-z]/.test(password)) strength += 1;
+                
+                // Contient des chiffres
+                if (/[0-9]/.test(password)) strength += 1;
+                
+                // Contient des caractères spéciaux
+                if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+                
+                return strength;
+            }
+            
+            // Mise à jour de la barre de force du mot de passe
+            const passwordInput = document.getElementById('nouveau_motdepasse');
+            const strengthBar = document.getElementById('passwordStrengthBar');
+            const strengthText = document.getElementById('passwordStrengthText');
+            
+            if (passwordInput && strengthBar && strengthText) {
+                passwordInput.addEventListener('input', function() {
+                    const password = this.value;
+                    const strength = checkPasswordStrength(password);
+                    
+                    let width = 0;
+                    let color = '#dc3545';
+                    let text = 'Faible';
+                    
+                    if (strength <= 2) {
+                        width = 33;
+                        color = '#dc3545';
+                        text = 'Faible';
+                    } else if (strength <= 4) {
+                        width = 66;
+                        color = '#ffc107';
+                        text = 'Moyen';
+                    } else {
+                        width = 100;
+                        color = '#28a745';
+                        text = 'Fort';
+                    }
+                    
+                    strengthBar.style.width = width + '%';
+                    strengthBar.style.backgroundColor = color;
+                    strengthText.textContent = text;
+                    strengthText.style.color = color;
+                });
+            }
+            
+            // Fonction pour voir les mots de passe
+            document.querySelectorAll('.toggle-password').forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const field = document.getElementById(targetId);
+                    const icon = this.querySelector('i');
+                    
+                    if (field.type === 'password') {
+                        field.type = 'text';
+                        icon.classList.remove('bi-eye');
+                        icon.classList.add('bi-eye-slash');
+                    } else {
+                        field.type = 'password';
+                        icon.classList.remove('bi-eye-slash');
+                        icon.classList.add('bi-eye');
+                    }
+                });
+            });
+            
+            // Fonction pour afficher des toasts
+            function showToast(message, type) {
+                // Créer le toast
+                const toast = document.createElement('div');
+                toast.className = `toast-${type}`;
+                toast.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 16px 24px;
+                    border-radius: 12px;
+                    color: white;
+                    font-weight: 600;
+                    z-index: 9999;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+                    animation: slideIn 0.3s ease-out;
+                    display: flex;
+                    align-items-center;
+                    gap: 12px;
+                `;
+                
+                // Couleur selon le type
+                if (type === 'success') {
+                    toast.style.background = 'linear-gradient(135deg, #2e7d32 0%, #4CAF50 100%)';
+                    toast.innerHTML = `<i class="bi bi-check-circle-fill fs-5"></i><span>${message}</span>`;
+                } else if (type === 'error') {
+                    toast.style.background = 'linear-gradient(135deg, #dc3545 0%, #e74c3c 100%)';
+                    toast.innerHTML = `<i class="bi bi-x-circle-fill fs-5"></i><span>${message}</span>`;
+                } else if (type === 'warning') {
+                    toast.style.background = 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)';
+                    toast.innerHTML = `<i class="bi bi-exclamation-triangle-fill fs-5"></i><span>${message}</span>`;
+                }
+                
+                document.body.appendChild(toast);
+                
+                // Supprimer après 5 secondes
+                setTimeout(() => {
+                    toast.style.animation = 'slideOut 0.3s ease-out';
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            toast.parentNode.removeChild(toast);
+                        }
+                    }, 300);
+                }, 5000);
+            }
+            
+            // Ajouter les styles d'animation pour les toasts
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                
+                @keyframes slideOut {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Ajouter un effet au survol des boutons
+            document.querySelectorAll('.btn').forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                });
+                
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+            
+            // Ajouter un effet au survol des cartes
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-6px)';
+                    this.style.boxShadow = '0 12px 24px rgba(0,0,0,0.12)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{% if success %}
+<div class="alert alert-success">
+    <h5>Succès !</h5>
+    <p>{{ success }}</p>
+    {% if success.alreadyExists %}
+    <div class="alert alert-warning mt-2">
+        ⚠️ Ce planning existe déjà. Vous pouvez :
+        <ul class="mb-0 mt-2">
+            <li><a href="{% url 'administration:planning_week' %}?week={{ week }}&year={{ year }}">
+                Voir ce planning
+            </a></li>
+            <li><a href="{% url 'administration:seance_add' %}?planning_id={{ success.planningId }}">
+                Ajouter des séances à ce planning
+            </a></li>
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endif %}

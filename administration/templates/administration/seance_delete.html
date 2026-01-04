@@ -1,0 +1,703 @@
+<!-- administration/seance_delete.html -->
+{% extends 'administration/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-gradient-danger text-white py-3">
+            <h4 class="mb-0"><i class="fas fa-trash-alt me-2"></i>Supprimer une séance</h4>
+        </div>
+        
+        <div class="card-body p-4">
+            <!-- Message d'alerte principal -->
+            <div class="alert alert-danger bg-gradient-danger border-0 shadow-sm rounded-lg" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                    <div class="flex-grow-1">
+                        <h5 class="fw-bold mb-2"><i class="fas fa-skull-crossbones me-1"></i>Attention ! Action irréversible</h5>
+                        <p class="mb-0">Vous êtes sur le point de supprimer définitivement cette séance. Cette action ne peut pas être annulée.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section : Détails de la séance -->
+            <div class="form-section mb-5">
+                <div class="section-header mb-4">
+                    <div class="d-flex align-items-center">
+                        <div class="section-icon me-3">
+                            <i class="fas fa-calendar-check fa-2x text-danger"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1 text-danger">Détails de la séance</h5>
+                            <p class="text-muted mb-0">Informations complètes sur la séance à supprimer</p>
+                        </div>
+                    </div>
+                    <div class="section-divider mt-3"></div>
+                </div>
+                
+                <!-- Grille des informations -->
+                <div class="row">
+                    <!-- Colonne 1 : Informations principales -->
+                    <div class="col-md-6">
+                        <div class="info-card mb-4">
+                            <div class="card border-light shadow-sm h-100">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-clock me-2 text-primary"></i>Horaires et localisation</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group list-group-flush">
+                                        <div class="list-group-item border-0 px-0 py-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="text-muted">
+                                                    <i class="far fa-calendar me-2"></i>Date
+                                                </span>
+                                                <span class="fw-bold text-primary">
+                                                    {{ seance.date|date:"d/m/Y" }}
+                                                    <small class="text-muted ms-1">
+                                                        ({{ seance.date|date:"l"|title }})
+                                                    </small>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item border-0 px-0 py-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="text-muted">
+                                                    <i class="far fa-clock me-2"></i>Horaires
+                                                </span>
+                                                <div>
+                                                    <span class="badge bg-success me-1">{{ seance.heureDebut }}</span>
+                                                    <i class="fas fa-arrow-right text-muted mx-1"></i>
+                                                    <span class="badge bg-danger">{{ seance.heureFin }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item border-0 px-0 py-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="text-muted">
+                                                    <i class="fas fa-door-open me-2"></i>Salle
+                                                </span>
+                                                <span class="badge bg-info fs-6">{{ seance.salle }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item border-0 px-0 py-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="text-muted">
+                                                    <i class="fas fa-hourglass-half me-2"></i>Durée
+                                                </span>
+                                                {% with seance.duration as duration %}
+                                                <span class="fw-bold {% if duration > 3 %}text-danger{% elif duration > 2 %}text-warning{% else %}text-success{% endif %}">
+                                                    {{ duration }}h
+                                                </span>
+                                                {% endwith %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Colonne 2 : Cours et professeur -->
+                    <div class="col-md-6">
+                        <div class="info-card mb-4">
+                            <div class="card border-light shadow-sm h-100">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-book me-2 text-warning"></i>Enseignement</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group list-group-flush">
+                                        <div class="list-group-item border-0 px-0 py-2">
+                                            <div class="d-flex align-items-start">
+                                                <i class="fas fa-graduation-cap text-warning me-2 mt-1"></i>
+                                                <div class="flex-grow-1">
+                                                    <small class="text-muted d-block">Cours</small>
+                                                    <div class="fw-bold text-dark">
+                                                        {% if seance.course_libelle %}
+                                                            {{ seance.course_code }} - {{ seance.course_libelle }}
+                                                        {% else %}
+                                                            Cours ID: {{ seance.cours }}
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item border-0 px-0 py-2">
+                                            <div class="d-flex align-items-start">
+                                                <i class="fas fa-chalkboard-teacher text-primary me-2 mt-1"></i>
+                                                <div class="flex-grow-1">
+                                                    <small class="text-muted d-block">Professeur</small>
+                                                    <div class="fw-bold text-dark">
+                                                        {% if seance.professeur %}
+                                                            {{ seance.professeur.nom }} {{ seance.professeur.prenom }}
+                                                        {% else %}
+                                                            <span class="text-danger">Non assigné</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Colonne 3 : Groupe d'étudiants -->
+                    <div class="col-12">
+                        <div class="info-card mb-4">
+                            <div class="card border-light shadow-sm">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-users me-2 text-success"></i>Groupe d'étudiants</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="icon-circle bg-success me-3">
+                                                    <i class="fas fa-user-friends text-white"></i>
+                                                </div>
+                                                <div>
+                                                    <small class="text-muted d-block">Filière</small>
+                                                    <div class="fw-bold">
+                                                        {% if seance.filiere %}
+                                                            {{ seance.filiere.nom }}
+                                                            <small class="text-muted">({{ seance.filiere.code }})</small>
+                                                        {% else %}
+                                                            <span class="text-danger">Non spécifiée</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="icon-circle bg-info me-3">
+                                                    <i class="fas fa-layer-group text-white"></i>
+                                                </div>
+                                                <div>
+                                                    <small class="text-muted d-block">Promotion</small>
+                                                    <div class="fw-bold">
+                                                        {% if seance.promotion %}
+                                                            {{ seance.promotion.libelle }}
+                                                            {% if seance.promotion.annee %}
+                                                                <small class="text-muted">({{ seance.promotion.annee }})</small>
+                                                            {% endif %}
+                                                        {% else %}
+                                                            <span class="text-danger">Non spécifiée</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="icon-circle bg-warning me-3">
+                                                    <i class="fas fa-calendar-alt text-white"></i>
+                                                </div>
+                                                <div>
+                                                    <small class="text-muted d-block">Semaine</small>
+                                                    <div class="fw-bold">
+                                                        <span class="badge bg-dark">
+                                                            S{{ seance.week_number }} - {{ seance.year }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section : Impact de la suppression -->
+            <div class="alert alert-warning bg-gradient-warning border-0 shadow-sm mb-4 rounded-lg">
+                <div class="d-flex">
+                    <i class="fas fa-radiation-alt fa-2x me-3 mt-1 text-warning"></i>
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-2"><i class="fas fa-exclamation-circle me-1"></i>Conséquences de la suppression</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="mb-0 ps-3">
+                                    <li><strong>Absences associées</strong> seront également supprimées</li>
+                                    <li><strong>Planning des étudiants</strong> sera mis à jour</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="mb-0 ps-3">
+                                    <li><strong>Disponibilité de la salle</strong> sera libérée</li>
+                                    <li><strong>Historique</strong> sera conservé dans les logs</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Formulaire de confirmation -->
+            <form method="POST" id="deleteForm">
+                {% csrf_token %}
+                
+                <!-- Champ de confirmation -->
+                <div class="confirmation-section mb-4">
+                    <div class="card border-danger">
+                        <div class="card-body">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="confirmDelete" 
+                                       style="width: 3rem; height: 1.5rem;" required>
+                                <label class="form-check-label fw-bold text-danger" for="confirmDelete">
+                                    Je comprends que cette action est irréversible et je confirme la suppression
+                                </label>
+                            </div>
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="confirmationText" 
+                                       placeholder="SUPPRIMER" pattern="SUPPRIMER" required>
+                                <label for="confirmationText" class="text-muted">
+                                    <i class="fas fa-keyboard me-1"></i>
+                                    Tapez "SUPPRIMER" pour confirmer
+                                </label>
+                                <div class="invalid-feedback fw-bold">
+                                    <i class="fas fa-exclamation-circle me-1"></i>
+                                    Vous devez taper "SUPPRIMER" pour confirmer la suppression
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Boutons d'action -->
+                <div class="action-buttons mt-5 pt-4 border-top">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2 d-md-block">
+                                <a href="{% url 'administration:planning_week' %}" 
+                                   class="btn btn-outline-secondary btn-lg px-4">
+                                    <i class="fas fa-arrow-left me-2"></i>Retour au planning
+                                </a>
+                                <a href="{% url 'administration:seance_edit' seance.id %}" 
+                                   class="btn btn-outline-primary btn-lg px-4">
+                                    <i class="fas fa-edit me-2"></i>Modifier à la place
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-grid">
+                                <button type="submit" id="deleteBtn" 
+                                        class="btn btn-danger btn-lg btn-gradient px-4" disabled>
+                                    <i class="fas fa-trash-alt me-2"></i>Supprimer définitivement
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Guide d'aide -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-light shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-life-ring me-2 text-info"></i>Alternatives à la suppression</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center p-3">
+                                <div class="icon-circle-lg bg-primary mb-3">
+                                    <i class="fas fa-edit fa-2x text-white"></i>
+                                </div>
+                                <h6 class="fw-bold">Modification</h6>
+                                <p class="text-muted small mb-0">
+                                    Modifiez la séance si seuls quelques détails sont incorrects
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3">
+                                <div class="icon-circle-lg bg-warning mb-3">
+                                    <i class="fas fa-ban fa-2x text-white"></i>
+                                </div>
+                                <h6 class="fw-bold">Annulation</h6>
+                                <p class="text-muted small mb-0">
+                                    Marquez comme "annulé" plutôt que de supprimer (conservation historique)
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3">
+                                <div class="icon-circle-lg bg-info mb-3">
+                                    <i class="fas fa-archive fa-2x text-white"></i>
+                                </div>
+                                <h6 class="fw-bold">Report</h6>
+                                <p class="text-muted small mb-0">
+                                    Créez une nouvelle séance et gardez celle-ci pour référence
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript pour la confirmation -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForm = document.getElementById('deleteForm');
+    const confirmCheckbox = document.getElementById('confirmDelete');
+    const confirmationText = document.getElementById('confirmationText');
+    const deleteBtn = document.getElementById('deleteBtn');
+    
+    // Fonction pour vérifier si la confirmation est valide
+    function validateConfirmation() {
+        const isChecked = confirmCheckbox.checked;
+        const isTextValid = confirmationText.value === 'SUPPRIMER';
+        
+        deleteBtn.disabled = !(isChecked && isTextValid);
+        
+        if (isTextValid) {
+            confirmationText.classList.remove('is-invalid');
+            confirmationText.classList.add('is-valid');
+        } else if (confirmationText.value) {
+            confirmationText.classList.remove('is-valid');
+            confirmationText.classList.add('is-invalid');
+        } else {
+            confirmationText.classList.remove('is-valid', 'is-invalid');
+        }
+    }
+    
+    // Fonction pour soumettre le formulaire avec confirmation
+    function submitForm(event) {
+        event.preventDefault();
+        
+        if (!confirmCheckbox.checked || confirmationText.value !== 'SUPPRIMER') {
+            showValidationError();
+            return;
+        }
+        
+        // Confirmation finale avec SweetAlert ou alert natif
+        if (confirm('⚠️ ACTION IRRÉVERSIBLE ⚠️\n\nÊtes-vous ABSOLUMENT certain de vouloir supprimer cette séance ?\n\nCette action supprimera également toutes les absences associées.')) {
+            // Afficher un indicateur de chargement
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Suppression en cours...';
+            deleteBtn.disabled = true;
+            
+            // Soumettre le formulaire
+            deleteForm.submit();
+        }
+    }
+    
+    // Fonction pour afficher les erreurs de validation
+    function showValidationError() {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'alert alert-danger alert-dismissible fade show rounded-lg shadow-sm mt-3';
+        errorDiv.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-circle fa-2x me-3"></i>
+                <div class="flex-grow-1">
+                    <h6 class="fw-bold mb-2"><i class="fas fa-times me-1"></i>Confirmation incomplète</h6>
+                    <p class="mb-0">Veuillez :</p>
+                    <ul class="mb-0 ps-3">
+                        ${!confirmCheckbox.checked ? '<li>Cocher la case de confirmation</li>' : ''}
+                        ${confirmationText.value !== 'SUPPRIMER' ? '<li>Taper "SUPPRIMER" dans le champ de texte</li>' : ''}
+                    </ul>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        // Ajouter l'alerte
+        const cardBody = document.querySelector('.card-body');
+        const existingAlert = document.querySelector('.alert.alert-danger.alert-dismissible');
+        if (existingAlert) {
+            existingAlert.remove();
+        }
+        cardBody.insertBefore(errorDiv, deleteForm);
+        
+        // Scroll vers l'erreur
+        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    // Événements
+    confirmCheckbox.addEventListener('change', validateConfirmation);
+    confirmationText.addEventListener('input', validateConfirmation);
+    deleteForm.addEventListener('submit', submitForm);
+    
+    // Animation pour le bouton de suppression
+    deleteBtn.addEventListener('mouseenter', function() {
+        if (!this.disabled) {
+            this.innerHTML = '<i class="fas fa-bomb me-2"></i>Supprimer définitivement';
+        }
+    });
+    
+    deleteBtn.addEventListener('mouseleave', function() {
+        if (!this.disabled) {
+            this.innerHTML = '<i class="fas fa-trash-alt me-2"></i>Supprimer définitivement';
+        }
+    });
+    
+    // Initialisation
+    validateConfirmation();
+});
+
+// Empêcher le copier-coller dans le champ de confirmation
+document.getElementById('confirmationText').addEventListener('paste', function(e) {
+    e.preventDefault();
+    return false;
+});
+</script>
+
+<style>
+/* Styles personnalisés */
+:root {
+    --danger-gradient: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+    --warning-gradient: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    --success-gradient: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.card {
+    border-radius: 15px;
+    border: none;
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+}
+
+.card-header.bg-gradient-danger {
+    background: var(--danger-gradient) !important;
+}
+
+.form-section {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.form-section:hover {
+    border-color: #dee2e6;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.section-header {
+    position: relative;
+}
+
+.section-icon {
+    width: 60px;
+    height: 60px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section-divider {
+    height: 3px;
+    background: linear-gradient(90deg, #e9ecef 0%, transparent 100%);
+    border-radius: 2px;
+}
+
+.icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-circle-lg {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.btn {
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-danger.btn-gradient {
+    background: var(--danger-gradient);
+}
+
+.btn-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+.action-buttons {
+    background: #f8f9fa;
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    margin-bottom: -1.5rem;
+    padding: 1.5rem;
+}
+
+.badge {
+    border-radius: 20px;
+    padding: 0.5em 0.8em;
+    font-weight: 600;
+}
+
+.list-group-item {
+    padding: 1rem 0;
+}
+
+.confirmation-section .card {
+    border-width: 2px;
+    border-style: dashed;
+}
+
+.form-check-input:checked {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.form-control.is-valid {
+    border-color: #198754;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+}
+
+/* Animation pour le bouton de suppression */
+@keyframes pulse-danger {
+    0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+.btn-danger:not(:disabled) {
+    animation: pulse-danger 2s infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .form-section {
+        padding: 1rem;
+    }
+    
+    .section-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .action-buttons .row {
+        gap: 1rem;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Style pour le texte "SUPPRIMER" */
+#confirmationText {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Loading state pour le bouton */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Animation pour les erreurs */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.is-invalid {
+    animation: shake 0.5s ease-in-out;
+}
+</style>
+{% endblock %}

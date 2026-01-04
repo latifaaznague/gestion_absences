@@ -1,7 +1,8 @@
-from django.shortcuts import render
-from services import rpc_client  
+from django.shortcuts import redirect
 
-def test_rpc(request):
- 
-    presences = rpc_client.get_presences(etudiant_id=1)
-    return render(request, "test.html", {"data": presences})
+def index(request):
+    # CORRECTION : Utilisez l'URL correcte
+    return redirect("/accounts/login/")  # URL directe
+    
+    # OU si vous avez bien configuré le namespace accounts :
+    # return redirect("accounts:login_page")

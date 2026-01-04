@@ -1,0 +1,472 @@
+<!-- administration/seance_edit.html -->
+{% extends 'administration/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">✏️ Modifier la séance #{{ seance.id }}</h4>
+        </div>
+        
+        <div class="card-body">
+            {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Erreur:</strong> {{ error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endif %}
+            
+            <!-- Informations actuelles -->
+            <div class="alert alert-info mb-4">
+                <h6>📋 Informations actuelles:</h6>
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Date:</strong> {{ seance.date|default:"-" }}<br>
+                        <strong>Heure:</strong> {{ seance.heureDebut|default:"-" }} - {{ seance.heureFin|default:"-" }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Salle:</strong> {{ seance.salle|default:"-" }}<br>
+                        <strong>Cours ID:</strong> {{ seance.cours_id|default:seance.cours|default:"-" }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Groupe ID:</strong> {{ seance.groupe_id|default:seance.groupe|default:"-" }}<br>
+                        <strong>Professeur:</strong> 
+                        {% if professeur_actuel_id %}
+                            {% for prof in professeurs %}
+                                {% if prof.id|stringformat:"s" == professeur_actuel_id|stringformat:"s" %}
+                                    {{ prof.nom_complet }}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            Non assigné
+                        {% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Semaine:</strong> {{ week }}<br>
+                        <strong>Année:</strong> {{ year }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Formulaire -->
+            <form method="POST" id="editSeanceForm" novalidate>
+                {% csrf_token %}
+                
+                <!-- Section 1: Date et Heure -->
+                <div class="row mb-3">
+                    <div class="col-md-12 mb-3">
+                        <h5 class="border-bottom pb-2">📅 Date et Heure</h5>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="date" class="form-label required">Date *</label>
+                        <input type="date" 
+                               class="form-control {% if error and 'date' in error %}is-invalid{% endif %}" 
+                               id="date" 
+                               name="date" 
+                               value="{{ form_data.date|default:'' }}" 
+                               required>
+                        <div class="invalid-feedback">
+                            La date est obligatoire
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="heure_debut" class="form-label required">Heure début *</label>
+                        <input type="time" 
+                               class="form-control {% if error and 'heure' in error %}is-invalid{% endif %}" 
+                               id="heure_debut" 
+                               name="heure_debut" 
+                               value="{{ form_data.heure_debut|default:'' }}" 
+                               required>
+                        <div class="invalid-feedback">
+                            L'heure de début est obligatoire
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="heure_fin" class="form-label required">Heure fin *</label>
+                        <input type="time" 
+                               class="form-control {% if error and 'heure' in error %}is-invalid{% endif %}" 
+                               id="heure_fin" 
+                               name="heure_fin" 
+                               value="{{ form_data.heure_fin|default:'' }}" 
+                               required>
+                        <div class="invalid-feedback">
+                            L'heure de fin est obligatoire
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section 2: Salle -->
+                <div class="row mb-3">
+                    <div class="col-md-12 mb-3">
+                        <h5 class="border-bottom pb-2">🏢 Salle</h5>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="salle" class="form-label required">Salle *</label>
+                        <input type="text" 
+                               class="form-control {% if error and 'salle' in error %}is-invalid{% endif %}" 
+                               id="salle" 
+                               name="salle" 
+                               value="{{ form_data.salle|default:'' }}" 
+                               placeholder="Ex: Ampli 3, Salle A55, etc."
+                               required>
+                        <div class="invalid-feedback">
+                            La salle est obligatoire
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section 3: Cours et Professeur -->
+                <div class="row mb-3">
+                    <div class="col-md-12 mb-3">
+                        <h5 class="border-bottom pb-2">📚 Cours et Professeur</h5>
+                    </div>
+                    
+                    <!-- Cours -->
+                    <div class="col-md-6 mb-3">
+                        <label for="cours_id" class="form-label required">Cours *</label>
+                        <select class="form-select {% if error and 'cours' in error %}is-invalid{% endif %}" 
+                                id="cours_id" 
+                                name="cours_id" 
+                                required>
+                            <option value="">Sélectionner un cours</option>
+                            {% for cours in cours_list %}
+                                <option value="{{ cours.id }}" 
+                                        data-professeur-id="{{ cours.professeur_id|default:'' }}"
+                                        {% if form_data.cours_id == cours.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ cours.code }} - {{ cours.libelle }}
+                                    {% if cours.professeur_nom %}
+                                        ({{ cours.professeur_nom }})
+                                    {% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">
+                            Le cours est obligatoire
+                        </div>
+                    </div>
+                    
+                    <!-- Professeur -->
+                    <div class="col-md-6 mb-3">
+                        <label for="professeur_id" class="form-label">Professeur</label>
+                        <select class="form-select" 
+                                id="professeur_id" 
+                                name="professeur_id">
+                            <option value="">Sélectionner un professeur</option>
+                            {% for prof in professeurs %}
+                                <option value="{{ prof.id }}" 
+                                        {% if form_data.professeur_id == prof.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ prof.nom_complet }}
+                                    {% if prof.email %}
+                                        ({{ prof.email }})
+                                    {% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">
+                            Optionnel : Modifier le professeur assigné à ce cours
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Section 4: Groupe -->
+                <div class="row mb-3">
+                    <div class="col-md-12 mb-3">
+                        <h5 class="border-bottom pb-2">👥 Groupe</h5>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="groupe_id" class="form-label required">Groupe *</label>
+                        <select class="form-select {% if error and 'groupe' in error %}is-invalid{% endif %}" 
+                                id="groupe_id" 
+                                name="groupe_id" 
+                                required>
+                            <option value="">Sélectionner un groupe</option>
+                            {% for groupe in groupes %}
+                                <option value="{{ groupe.id }}" 
+                                        data-promotion-id="{{ groupe.promotion_id|default:'' }}"
+                                        {% if form_data.groupe_id == groupe.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ groupe.nom_complet|default:groupe.nom }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">
+                            Le groupe est obligatoire
+                        </div>
+                        <small class="text-muted">
+                            Sélectionnez le groupe d'étudiants pour cette séance
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Section 5: Filière et Promotion (optionnels) -->
+                <div class="row mb-4">
+                    <div class="col-md-12 mb-3">
+                        <h5 class="border-bottom pb-2">🎓 Filière et Promotion</h5>
+                        <small class="text-muted">Ces champs sont optionnels et servent à filtrer les groupes</small>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="filiere_id" class="form-label">Filière</label>
+                        <select class="form-select" id="filiere_id" name="filiere_id">
+                            <option value="">Sélectionner une filière</option>
+                            {% for filiere in filieres %}
+                                <option value="{{ filiere.id }}"
+                                        {% if form_data.filiere_id == filiere.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ filiere.nom }} ({{ filiere.code }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="promotion_id" class="form-label">Promotion</label>
+                        <select class="form-select" id="promotion_id" name="promotion_id">
+                            <option value="">Sélectionner une promotion</option>
+                            {% for promotion in promotions %}
+                                <option value="{{ promotion.id }}"
+                                        {% if form_data.promotion_id == promotion.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ promotion.nom_complet|default:promotion.libelle }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Section 6: Semaine et Année (lecture seule) -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Semaine et année</label>
+                        <div class="form-control bg-light">
+                            Semaine {{ week }} - {{ year }}
+                        </div>
+                        <small class="text-muted">
+                            La semaine est déterminée automatiquement par la date sélectionnée
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Boutons d'action -->
+                <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                    <div>
+                        <a href="{% url 'administration:planning_week' %}?week={{ week }}&year={{ year }}" 
+                           class="btn btn-outline-secondary">
+                            ← Retour au planning
+                        </a>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Enregistrer les modifications
+                        </button>
+                        <a href="{% url 'administration:seance_delete' seance.id %}" 
+                           class="btn btn-outline-danger ms-2"
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette séance ? Cette action est irréversible.');">
+                            <i class="fas fa-trash-alt me-1"></i>Supprimer
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript pour la validation et interactions -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('editSeanceForm');
+    const coursSelect = document.getElementById('cours_id');
+    const professeurSelect = document.getElementById('professeur_id');
+    const groupeSelect = document.getElementById('groupe_id');
+    const promotionSelect = document.getElementById('promotion_id');
+    const filiereSelect = document.getElementById('filiere_id');
+    
+    // 1. Formater les champs de temps
+    function formatTime(timeStr) {
+        if (!timeStr) return '';
+        if (timeStr.includes(':')) {
+            const parts = timeStr.split(':');
+            return parts[0] + ':' + parts[1];
+        }
+        return timeStr;
+    }
+    
+    const heureDebut = document.getElementById('heure_debut');
+    const heureFin = document.getElementById('heure_fin');
+    
+    if (heureDebut.value) heureDebut.value = formatTime(heureDebut.value);
+    if (heureFin.value) heureFin.value = formatTime(heureFin.value);
+    
+    // 2. Mettre à jour le professeur quand le cours change
+    coursSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const professeurId = selectedOption.dataset.professeurId;
+        
+        if (professeurId) {
+            // Trouver et sélectionner le professeur correspondant
+            for (let i = 0; i < professeurSelect.options.length; i++) {
+                if (professeurSelect.options[i].value === professeurId) {
+                    professeurSelect.value = professeurId;
+                    break;
+                }
+            }
+        } else {
+            professeurSelect.value = '';
+        }
+    });
+    
+    // 3. Filtrer les groupes par promotion
+    promotionSelect.addEventListener('change', function() {
+        const promotionId = this.value;
+        
+        for (let i = 0; i < groupeSelect.options.length; i++) {
+            const option = groupeSelect.options[i];
+            if (option.value === '') continue; // Ne pas cacher l'option vide
+            
+            const optionPromotionId = option.dataset.promotionId;
+            
+            if (!promotionId || optionPromotionId === promotionId) {
+                option.style.display = '';
+                option.disabled = false;
+            } else {
+                option.style.display = 'none';
+                option.disabled = true;
+            }
+        }
+        
+        // Réinitialiser la sélection si l'option actuelle est cachée
+        if (groupeSelect.value) {
+            const selectedOption = groupeSelect.options[groupeSelect.selectedIndex];
+            if (selectedOption.style.display === 'none') {
+                groupeSelect.value = '';
+            }
+        }
+    });
+    
+    // 4. Validation du formulaire
+    form.addEventListener('submit', function(event) {
+        let isValid = true;
+        const errorMessages = [];
+        
+        // Vérifier les champs obligatoires
+        const requiredFields = [
+            {id: 'date', name: 'Date'},
+            {id: 'heure_debut', name: 'Heure de début'},
+            {id: 'heure_fin', name: 'Heure de fin'},
+            {id: 'salle', name: 'Salle'},
+            {id: 'cours_id', name: 'Cours'},
+            {id: 'groupe_id', name: 'Groupe'}
+        ];
+        
+        requiredFields.forEach(field => {
+            const element = document.getElementById(field.id);
+            if (!element.value.trim()) {
+                element.classList.add('is-invalid');
+                errorMessages.push(`${field.name} est obligatoire`);
+                isValid = false;
+            } else {
+                element.classList.remove('is-invalid');
+            }
+        });
+        
+        // Validation de l'heure
+        if (heureDebut.value && heureFin.value && heureDebut.value >= heureFin.value) {
+            heureDebut.classList.add('is-invalid');
+            heureFin.classList.add('is-invalid');
+            errorMessages.push("L'heure de début doit être antérieure à l'heure de fin");
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            event.preventDefault();
+            
+            // Afficher le message d'erreur
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger mt-3';
+            errorDiv.innerHTML = `
+                <h6><i class="fas fa-exclamation-triangle me-2"></i>Erreurs à corriger:</h6>
+                <ul class="mb-0">
+                    ${errorMessages.map(msg => `<li>${msg}</li>`).join('')}
+                </ul>
+            `;
+            
+            // Supprimer l'ancienne alerte si elle existe
+            const oldAlert = document.querySelector('.alert.alert-danger:not(.alert-dismissible)');
+            if (oldAlert) oldAlert.remove();
+            
+            // Ajouter la nouvelle alerte
+            form.prepend(errorDiv);
+            
+            // Scroll vers le haut
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    });
+    
+    // 5. Réinitialiser la validation sur la saisie
+    const inputs = form.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+    
+    // 6. Initialiser le professeur en fonction du cours sélectionné
+    if (coursSelect.value) {
+        const selectedOption = coursSelect.options[coursSelect.selectedIndex];
+        const professeurId = selectedOption.dataset.professeurId;
+        
+        if (professeurId && (!professeurSelect.value || professeurSelect.value !== professeurId)) {
+            professeurSelect.value = professeurId;
+        }
+    }
+});
+</script>
+
+<style>
+.required:after {
+    content: " *";
+    color: #dc3545;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+
+h5.border-bottom {
+    border-color: #dee2e6 !important;
+    color: #495057;
+    font-weight: 600;
+}
+
+.alert {
+    border-radius: 8px;
+}
+
+.btn {
+    border-radius: 6px;
+}
+
+.invalid-feedback {
+    display: block;
+}
+
+.form-control.bg-light {
+    background-color: #f8f9fa !important;
+    border: 1px solid #ced4da;
+    cursor: not-allowed;
+}
+
+.text-muted {
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %}

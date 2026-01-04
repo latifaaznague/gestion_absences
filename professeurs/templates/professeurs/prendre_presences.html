@@ -1,0 +1,1031 @@
+{% block content %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prise de Présences</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href='https://cdn.boxicons.com/3.0.6/fonts/basic/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 80px;
+            background-color: #eee;
+            padding: 0.4rem 0.8rem;
+            transition: width 0.5s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.active {
+            width: 250px;
+        }
+
+        .sidebar #btn {
+            position: absolute;
+            color: #4a5568;
+            top: .4rem;
+            left: 50%;
+            font-size: 1.2rem;
+            line-height: 50px;
+            transform: translateX(-50%);
+            cursor: pointer;
+        }
+
+        .sidebar.active #btn {
+            left: 90%;
+        }
+
+        .sidebar .top .logo {
+            color: #12171e;
+            display: flex;
+            height: 50px;
+            width: 100%;
+            align-items: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.active .top .logo {
+            opacity: 1;
+        }
+
+        .top .logo i {
+            font-size: 2rem;
+            margin-right: 5px;
+            color: #4CAF50;
+        }
+
+        .user {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .user-img {
+            width: 50px;
+            border-radius: 100%;
+            border: 1px solid #eee;
+        }
+
+        .user p {
+            color: #12171e;
+            margin-left: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.active .user p {
+            opacity: 1;
+        }
+
+        .bold {
+            font-weight: 900;
+        }
+
+        .sidebar ul li {
+            position: relative;
+            list-style-type: none;
+            height: 50px;
+            width: 90%;
+            margin: 1.3rem auto;
+            line-height: 50px;
+        }
+
+        .sidebar ul li a {
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            border-radius: 2rem;
+            transition: all 0.3s;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: #e2e8f0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .sidebar ul li a.active {
+            background-color: #d4edda;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .sidebar ul li a i {
+            min-width: 50px;
+            text-align: center;
+            height: 50px;
+            border-radius: 12px;
+            line-height: 50px;
+            font-size: 1.5rem;
+        }
+
+        .nav_item {
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-size: large;
+        }
+
+        .sidebar.active .nav_item {
+            opacity: 1;
+        }
+
+        .sidebar ul li .tooltip {
+            position: absolute;
+            left: 125px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #fff;
+            box-shadow: 0 0.5rem 0.8rem rgba(0,0,0,0.2);
+            border-radius: .6rem;
+            padding: .4rem 1.2rem;
+            line-height: 1.8rem;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar ul li:hover .tooltip {
+            opacity: 1;
+        }
+
+        .sidebar.active ul li .tooltip {
+            display: none;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff5722;
+            color: white;
+            font-size: 0.7em;
+            padding: 2px 6px;
+            border-radius: 50%;
+            min-width: 18px;
+            text-align: center;
+        }
+        
+        /* Main Content */
+        .main-content {
+            position: relative;
+            background-color: #eee;
+            min-height: 100vh;
+            top: 0;
+            left: 80px;
+            transition: all 0.5s ease;
+            width: calc(100% - 80px);
+            padding: 1rem;
+        }
+        
+        .sidebar.active ~ .main-content {
+            left: 250px;
+            width: calc(100% - 250px);
+        }
+        
+        /* Header */
+        header {
+            display: flex;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .welcome-section h1 {
+            font-style: italic;
+            font-size: 32px;
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        
+        .professor-id {
+            background: #4CAF50;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: bold;
+        }
+        
+        .date-display {
+            text-align: right;
+        }
+        
+        .date-display .today {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .date-display .time {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        /* Breadcrumb */
+        .breadcrumb-container {
+            margin-bottom: 25px;
+        }
+        
+        .breadcrumb {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e0e0e0;
+        }
+        
+        .breadcrumb-item a {
+            color: #666;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: color 0.3s;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #4CAF50;
+        }
+        
+        .breadcrumb-item.active {
+            color: #4CAF50;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Main Card */
+        .main-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            overflow: hidden;
+            background: white;
+        }
+        
+        .card-header-gradient {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 1.8rem;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .card-title {
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            background: white;
+            margin-bottom: 25px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: transform 0.3s;
+        }
+        
+        .info-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .info-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        /* Alert Styles */
+        .custom-alert {
+            background: #fff8e1;
+            border-left: 4px solid #ff9800;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 25px;
+        }
+        
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        .custom-table thead {
+            background: #f8f9fa;
+        }
+        
+        .custom-table th {
+            border: none;
+            padding: 1.2rem 1.5rem;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .custom-table td {
+            padding: 1.2rem 1.5rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .custom-table tbody tr {
+            transition: background 0.3s;
+        }
+        
+        .custom-table tbody tr:hover {
+            background-color: rgba(76, 175, 80, 0.05) !important;
+        }
+        
+        /* Student Avatar */
+        .student-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        
+        /* Status Buttons */
+        .status-btn-group {
+            display: flex;
+        }
+        
+        .status-btn {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-present {
+            border-color: #28a745;
+            color: #28a745;
+            border-radius: 8px 0 0 8px;
+        }
+        
+        .btn-absent {
+            border-color: #dc3545;
+            color: #dc3545;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .btn-check:checked + .btn-present {
+            background: #28a745 !important;
+            color: white !important;
+            border-color: #28a745 !important;
+        }
+        
+        .btn-check:checked + .btn-absent {
+            background: #dc3545 !important;
+            color: white !important;
+            border-color: #dc3545 !important;
+        }
+        
+        /* Stats Cards */
+        .stats-card {
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        .stats-present {
+            background: rgba(40, 167, 69, 0.08);
+            border: 2px solid rgba(40, 167, 69, 0.2);
+        }
+        
+        .stats-absent {
+            background: rgba(220, 53, 69, 0.08);
+            border: 2px solid rgba(220, 53, 69, 0.2);
+        }
+        
+        .stats-number {
+            color: #28a745;
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .stats-absent .stats-number {
+            color: #dc3545;
+        }
+        
+        /* Progress Bar */
+        .progress {
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 6px;
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-back {
+            background: white;
+            border: 2px solid #6c757d;
+            color: #333;
+        }
+        
+        .btn-all-present {
+            background: white;
+            border: 2px solid #28a745;
+            color: #28a745;
+        }
+        
+        .btn-all-absent {
+            background: white;
+            border: 2px solid #dc3545;
+            color: #dc3545;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 12px 30px;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* Badge Styles */
+        .custom-badge {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .badge-date {
+            background: rgba(255,255,255,0.9);
+            color: #4CAF50;
+        }
+        
+        .badge-warning {
+            background: rgba(255, 152, 0, 0.9);
+            color: white;
+        }
+        
+        .badge-count {
+            background: #4CAF50;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+        }
+        
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .action-buttons > div {
+                width: 100%;
+            }
+            
+            .action-buttons .d-flex {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .date-display {
+                text-align: center;
+            }
+            
+            .sidebar.active {
+                width: 100%;
+            }
+            
+            .sidebar.active ~ .main-content {
+                left: 0;
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-btn-group {
+                flex-direction: column;
+            }
+            
+            .btn-present, .btn-absent {
+                border-radius: 8px;
+                margin-bottom: 5px;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .main-card, .info-card {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    
+       
+        
+
+        <!-- Main Card -->
+        <div class="main-card">
+            <!-- Card Header -->
+            <div class="card-header-gradient">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h1 class="card-title">
+                            <i class="fas fa-clipboard-check me-3"></i>
+                            Prendre les présences
+                        </h1>
+                    </div>
+                    <div class="text-end">
+                        <span class="custom-badge badge-date">
+                            <i class="fas fa-calendar-day me-2"></i>{{ seance.date|date:"d/m/Y" }}
+                        </span>
+                        {% if presences_existantes %}
+                        <span class="custom-badge badge-warning ms-2">
+                            <i class="fas fa-clock-history me-2"></i> Déjà enregistrées
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card Body -->
+            <div style="background: #f8f9fa; padding: 2rem;">
+                <!-- Session Info Card -->
+                <div class="info-card">
+                    <div style="padding: 1.5rem;">
+                        <div class="row">
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="info-item" style="background: rgba(33, 150, 243, 0.1); border-left: 4px solid #2196F3;">
+                                    <i class="fas fa-book info-icon" style="color: #2196F3;"></i>
+                                    <div>
+                                        <small style="font-weight: 600; color: #666;">COURS</small>
+                                        <strong style="color: #333; font-size: 1.1rem; display: block;">{{ cours.libelle }}</strong>
+                                        <span style="color: #666; font-size: 0.9rem;">{{ cours.code }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="info-item" style="background: rgba(244, 67, 54, 0.1); border-left: 4px solid #f44336;">
+                                    <i class="fas fa-users info-icon" style="color: #f44336;"></i>
+                                    <div>
+                                        <small style="font-weight: 600; color: #666;">GROUPE</small>
+                                        <strong style="color: #333; font-size: 1.1rem; display: block;">{{ groupe.nom }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="info-item" style="background: rgba(255, 152, 0, 0.1); border-left: 4px solid #ff9800;">
+                                    <i class="fas fa-clock info-icon" style="color: #ff9800;"></i>
+                                    <div>
+                                        <small style="font-weight: 600; color: #666;">HORAIRE</small>
+                                        <strong style="color: #333; font-size: 1.1rem; display: block;">
+                                            {{ seance.heure_debut|time:"H:i" }} - {{ seance.heure_fin|time:"H:i" }}
+                                        </strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="info-item" style="background: rgba(76, 175, 80, 0.1); border-left: 4px solid #4CAF50;">
+                                    <i class="fas fa-user-check info-icon" style="color: #4CAF50;"></i>
+                                    <div>
+                                        <small style="font-weight: 600; color: #666;">ÉTUDIANTS</small>
+                                        <strong style="color: #333; font-size: 1.1rem; display: block;">{{ etudiants_data|length }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if seance.salle %}
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="info-item" style="background: rgba(108, 117, 125, 0.1); border-left: 4px solid #6c757d;">
+                                    <i class="fas fa-door-closed info-icon" style="color: #6c757d;"></i>
+                                    <div>
+                                        <small style="font-weight: 600; color: #666;">SALLE</small>
+                                        <strong style="color: #333; font-size: 1.1rem; display: block;">{{ seance.salle }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Warning Message if already recorded -->
+                {% if presences_existantes %}
+                <div class="custom-alert">
+                    <div style="display: flex; align-items: center;">
+                        <i class="fas fa-exclamation-triangle" style="color: #ff9800; font-size: 1.5rem; margin-right: 15px;"></i>
+                        <div>
+                            <h5 style="color: #333; font-weight: 600; margin-bottom: 0.5rem;">
+                                Présences déjà enregistrées
+                            </h5>
+                            <p style="color: #666; margin-bottom: 0;">
+                                Des présences ont déjà été saisies pour cette séance. Vous pouvez les modifier ci-dessous.
+                                <br>
+                                <strong>Dernière mise à jour : {{ date_derniere_mise_a_jour|date:"d/m/Y H:i" }}</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Presence Form -->
+                <form method="POST" id="presenceForm">
+                    {% csrf_token %}
+                    
+                    <!-- Students List -->
+                    <div class="info-card">
+                        <div style="background: white; border-bottom: 2px solid #f0f0f0; padding: 1.5rem;">
+                            <h5 style="color: #333; font-weight: 600; display: flex; align-items: center;">
+                                <i class="fas fa-users me-2"></i>
+                                Liste des étudiants
+                                <span class="badge-count ms-2">{{ etudiants_data|length }}</span>
+                            </h5>
+                        </div>
+                        <div style="padding: 0;">
+                            <div class="table-container">
+                                <table class="custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 5%;">#</th>
+                                            <th style="width: 40%;">Étudiant</th>
+                                            <th style="width: 15%;">Code</th>
+                                            <th style="width: 40%;">Statut</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for data in etudiants_data %}
+                                        <tr>
+                                            <td style="font-weight: 600; color: #666;">
+                                                {{ forloop.counter }}
+                                            </td>
+                                            <td>
+                                                <div style="display: flex; align-items: center;">
+                                                    <div class="student-avatar">
+                                                        {{ data.etudiant.utilisateur.prenom|first|upper }}{{ data.etudiant.utilisateur.nom|first|upper }}
+                                                    </div>
+                                                    <div>
+                                                        <strong style="color: #333; font-size: 1.05rem; display: block;">
+                                                            {{ data.etudiant.utilisateur.prenom }} {{ data.etudiant.utilisateur.nom }}
+                                                        </strong>
+                                                        <small style="color: #666; font-size: 0.9rem;">
+                                                            <i class="fas fa-envelope me-1"></i>{{ data.etudiant.utilisateur.email|default:"Pas d'email" }}
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 8px; font-weight: 500; font-size: 0.9rem; display: inline-block;">
+                                                    {{ data.etudiant.code_etudiant }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div style="display: flex; align-items: center;">
+                                                    <div class="status-btn-group">
+                                                        <input type="radio" 
+                                                               class="btn-check" 
+                                                               name="statut_{{ data.etudiant.id }}" 
+                                                               id="present_{{ data.etudiant.id }}" 
+                                                               value="PRESENT"
+                                                               {% if data.statut == 'PRESENT' %}checked{% endif %}>
+                                                        <label class="status-btn btn-present" for="present_{{ data.etudiant.id }}">
+                                                            <i class="fas fa-check-circle me-2"></i>Présent
+                                                        </label>
+                                                        
+                                                        <input type="radio" 
+                                                               class="btn-check" 
+                                                               name="statut_{{ data.etudiant.id }}" 
+                                                               id="absent_{{ data.etudiant.id }}" 
+                                                               value="ABSENT"
+                                                               {% if data.statut != 'PRESENT' or not data.statut %}checked{% endif %}>
+                                                        <label class="status-btn btn-absent" for="absent_{{ data.etudiant.id }}">
+                                                            <i class="fas fa-times-circle me-2"></i>Absent
+                                                        </label>
+                                                    </div>
+                                                    {% if data.presence %}
+                                                    <div style="margin-left: 15px;">
+                                                        <small style="color: #666; font-size: 0.85rem;">
+                                                            <i class="fas fa-history me-1"></i>
+                                                            {{ data.presence.date_saisie|date:"H:i" }}
+                                                        </small>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Summary -->
+                    <!-- Stats Summary -->
+    <div class="info-card">
+        <div style="background: white; border-bottom: 2px solid #f0f0f0; padding: 1.5rem;">
+            <h5 style="color: #333; font-weight: 600; display: flex; align-items: center;">
+                <i class="fas fa-chart-bar me-2"></i>
+                Résumé statistique
+            </h5>
+        </div>
+        <div style="background: white; padding: 2rem;">
+            <div class="row">
+                <div class="col-md-6 mb-4 mb-md-0">
+                    <div class="stats-card stats-present">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div>
+                                <h3 id="presentCount" class="stats-number">{{ presents_count|default:0 }}</h3>
+                                <p style="color: #666; margin-bottom: 0; font-weight: 500;">Présents</p>
+                            </div>
+                            <i class="fas fa-user-check" style="color: #28a745; font-size: 2.5rem;"></i>
+                        </div>
+                        <div class="progress">
+                            <div id="presentProgress" class="progress-bar" 
+                                 style="background: linear-gradient(90deg, #28a745, #5cb85c); width: {{ present_percentage|default:0 }}%">
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                            <small style="color: #666;" id="presentPercentage">{{ present_percentage|default:0 }}%</small>
+                            <small style="color: #666;">100%</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stats-card stats-absent">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div>
+                                <h3 id="absentCount" class="stats-number">{{ absents_count|default:0 }}</h3>
+                                <p style="color: #666; margin-bottom: 0; font-weight: 500;">Absents</p>
+                            </div>
+                            <i class="fas fa-user-times" style="color: #dc3545; font-size: 2.5rem;"></i>
+                        </div>
+                        <div class="progress">
+                            <div id="absentProgress" class="progress-bar" 
+                                 style="background: linear-gradient(90deg, #dc3545, #e74c3c); width: {{ absent_percentage|default:0 }}%">
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                            <small style="color: #666;" id="absentPercentage">{{ absent_percentage|default:0 }}%</small>
+                            <small style="color: #666;">100%</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 25px;">
+                <div style="background: #f8f9fa; border-radius: 10px; padding: 15px; display: inline-block;">
+                    <span style="color: #333; font-weight: 600; font-size: 1.1rem;">
+                        <i class="fas fa-users me-2"></i>
+                        Total : <span id="totalStudents" style="color: #4CAF50;">{{ etudiants_data|length }}</span> étudiants
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <div>
+            <a href="{% url 'professeurs:dashboard_professeur' %}" class="action-btn btn-back">
+                <i class="fas fa-arrow-left me-2"></i>
+                Retour au Dashboard
+            </a>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <button type="button" id="selectAllPresent" class="action-btn btn-all-present">
+                <i class="fas fa-check-circle me-2"></i>
+                Tous Présents
+            </button>
+            <button type="button" id="selectAllAbsent" class="action-btn btn-all-absent">
+                <i class="fas fa-times-circle me-2"></i>
+                Tous Absents
+            </button>
+            <button type="submit" class="action-btn btn-submit">
+                {% if presences_existantes %}
+                <i class="fas fa-sync-alt me-2"></i>
+                Mettre à jour
+                {% else %}
+                <i class="fas fa-save me-2"></i>
+                Enregistrer
+                {% endif %}
+            </button>
+        </div>
+    </div>
+</form>
+
+<script>
+// Fonction pour mettre à jour les compteurs
+function updateCounters() {
+    const totalStudents = {{ etudiants_data|length }};
+    let presentCount = 0;
+    let absentCount = 0;
+    
+    // Compter les présents et absents
+    const presentRadios = document.querySelectorAll('input[value="PRESENT"]:checked');
+    const absentRadios = document.querySelectorAll('input[value="ABSENT"]:checked');
+    
+    presentCount = presentRadios.length;
+    absentCount = absentRadios.length;
+    
+    // Calculer les pourcentages
+    const presentPercentage = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0;
+    const absentPercentage = totalStudents > 0 ? Math.round((absentCount / totalStudents) * 100) : 0;
+    
+    // Mettre à jour l'affichage
+    document.getElementById('presentCount').textContent = presentCount;
+    document.getElementById('absentCount').textContent = absentCount;
+    document.getElementById('presentPercentage').textContent = presentPercentage + '%';
+    document.getElementById('absentPercentage').textContent = absentPercentage + '%';
+    
+    // Mettre à jour les barres de progression
+    document.getElementById('presentProgress').style.width = presentPercentage + '%';
+    document.getElementById('absentProgress').style.width = absentPercentage + '%';
+}
+
+// Initialiser les compteurs au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    // Mettre à jour les compteurs au démarrage
+    updateCounters();
+    
+    // Bouton "Tous Présents"
+    document.getElementById('selectAllPresent').addEventListener('click', function() {
+        document.querySelectorAll('input[value="PRESENT"]').forEach(radio => {
+            radio.checked = true;
+            // Décocher les boutons "Absent" correspondants
+            const etudiantId = radio.name.split('_')[1];
+            document.querySelectorAll(`input[name="statut_${etudiantId}"][value="ABSENT"]`).forEach(absentRadio => {
+                absentRadio.checked = false;
+            });
+        });
+        updateCounters();
+    });
+    
+    // Bouton "Tous Absents"
+    document.getElementById('selectAllAbsent').addEventListener('click', function() {
+        document.querySelectorAll('input[value="ABSENT"]').forEach(radio => {
+            radio.checked = true;
+            // Décocher les boutons "Présent" correspondants
+            const etudiantId = radio.name.split('_')[1];
+            document.querySelectorAll(`input[name="statut_${etudiantId}"][value="PRESENT"]`).forEach(presentRadio => {
+                presentRadio.checked = false;
+            });
+        });
+        updateCounters();
+    });
+    
+    // Mettre à jour les compteurs quand un bouton radio change
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', updateCounters);
+    });
+    
+    // Confirmation avant soumission
+    document.getElementById('presenceForm').addEventListener('submit', function(e) {
+        const presentCount = parseInt(document.getElementById('presentCount').textContent);
+        const absentCount = parseInt(document.getElementById('absentCount').textContent);
+        const total = {{ etudiants_data|length }};
+        
+        // Vérifier que tous les étudiants ont un statut
+        if (presentCount + absentCount !== total) {
+            alert('⚠️ Certains étudiants n\'ont pas de statut sélectionné.');
+            e.preventDefault();
+            return false;
+        }
+        
+        const message = `📊 ${presentCount} étudiant(s) présent(s) et ${absentCount} étudiant(s) absent(s).\n\nConfirmer l'enregistrement ?`;
+        
+        if (!confirm(message)) {
+            e.preventDefault();
+            return false;
+        }
+        
+        return true;
+    });
+});
+</script>
+{% endblock %}
